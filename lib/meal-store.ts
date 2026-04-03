@@ -180,6 +180,45 @@ const mealDatabase: Record<DietType, Meal[]> = {
   ],
 }
 
+function apiFirstNumber(...vals: unknown[]): number {
+  for (const v of vals) {
+    if (v === undefined || v === null || v === "") continue
+    const n = typeof v === "number" ? v : Number(String(v).replace(/,/g, ""))
+    if (Number.isFinite(n)) return n
+  }
+  return 0
+}
+
+function apiNormalizeIngredientsList(meal: any): any[] {
+  if (Array.isArray(meal?.ingredients)) return meal.ingredients
+  if (Array.isArray(meal?.ingredientList)) return meal.ingredientList
+  if (typeof meal?.ingredients === "string") {
+    return meal.ingredients.split(",").map((s: string) => ({
+      name: s.trim(),
+      amount: "",
+      category: "",
+    }))
+  }
+  return []
+}
+
+function extractRecipeFromApiMeal(meal: any): { prepTime: number; cookTime: number; instructions: string[] } {
+  const r = meal?.recipe ?? {}
+  const prepTime = Math.round(apiFirstNumber(r.prepTime, r.prep_time, meal?.prepTime))
+  const cookTime = Math.round(apiFirstNumber(r.cookTime, r.cook_time, meal?.cookTime))
+  let instructions: string[] = []
+  if (Array.isArray(r.instructions)) {
+    instructions = r.instructions.map((s: unknown) => String(s))
+  } else if (Array.isArray(meal?.instructions)) {
+    instructions = meal.instructions.map((s: unknown) => String(s))
+  } else if (typeof r.instructions === "string") {
+    instructions = [r.instructions]
+  } else if (typeof meal?.instructions === "string") {
+    instructions = [meal.instructions]
+  }
+  return { prepTime, cookTime, instructions }
+}
+
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 export const useMealStore = create<MealStore>()(
@@ -255,6 +294,14 @@ export const useMealStore = create<MealStore>()(
           }
 
           data = (await res.json()) as unknown
+          console.log("[meal-store] Received from /api/generate-meal-plan:", JSON.stringify(data, null, 2))
+          const parsedPlan = data as { days?: { meals?: unknown[] }[] }
+          if (parsedPlan?.days?.[0]?.meals?.[0]) {
+            console.log(
+              "First meal:",
+              JSON.stringify(parsedPlan.days[0].meals[0], null, 2)
+            )
+          }
         } catch (err) {
           set({
             weekPlan: [],
@@ -273,7 +320,10 @@ export const useMealStore = create<MealStore>()(
           const dayMeals: Meal[] = Array.isArray(day?.meals)
             ? day.meals.map((meal: any, mealIdx: number) => {
                 const safeLower = (s: string) => s.toLowerCase()
-                const categoryRaw = safeLower(String(meal?.ingredients?.[0]?.category ?? ""))
+                const macros = meal?.macros ?? meal?.macro ?? {}
+                const nutrition = meal?.nutrition ?? {}
+                const rawIngredients = apiNormalizeIngredientsList(meal)
+                const categoryRaw = safeLower(String(rawIngredients[0]?.category ?? ""))
                 const mapCategory = (cat: unknown): Ingredient["category"] => {
                   const c = safeLower(String(cat ?? ""))
                   if (c.includes("protein")) return "protein"
@@ -286,27 +336,29 @@ export const useMealStore = create<MealStore>()(
                   return categoryRaw ? "protein" : "protein"
                 }
 
-                const ingredients: Ingredient[] = Array.isArray(meal?.ingredients)
-                  ? meal.ingredients.map((ing: any) => ({
-                      name: String(ing?.name ?? ""),
-                      amount: String(ing?.amount ?? ""),
-                      category: mapCategory(ing?.category),
-                    }))
-                  : []
+                const ingredients: Ingredient[] = rawIngredients.map((ing: any) => ({
+                  name: String(ing?.name ?? ing?.item ?? ing?.ingredient ?? "").trim(),
+                  amount: String(ing?.amount ?? ing?.quantity ?? ing?.qty ?? "").trim(),
+                  category: mapCategory(ing?.category),
+                }))
 
-                const recipe = meal?.recipe ?? {}
+                const { prepTime, cookTime, instructions } = extractRecipeFromApiMeal(meal)
 
                 return {
                   id: `${dayName}-${mealIdx}`,
                   name: String(meal?.name ?? ""),
-                  calories: Math.round(Number(meal?.calories ?? 0) || 0),
-                  protein: Math.round(Number(meal?.protein ?? 0) || 0),
-                  carbs: Math.round(Number(meal?.carbs ?? 0) || 0),
-                  fat: Math.round(Number(meal?.fat ?? 0) || 0),
+                  calories: Math.round(
+                    apiFirstNumber(meal?.calories, macros.calories, nutrition.calories)
+                  ),
+                  protein: Math.round(
+                    apiFirstNumber(meal?.protein, macros.protein, nutrition.protein)
+                  ),
+                  carbs: Math.round(apiFirstNumber(meal?.carbs, macros.carbs, nutrition.carbs)),
+                  fat: Math.round(apiFirstNumber(meal?.fat, macros.fat, nutrition.fat)),
                   ingredients,
-                  instructions: Array.isArray(recipe?.instructions) ? recipe.instructions.map((s: any) => String(s)) : [],
-                  prepTime: Math.round(Number(recipe?.prepTime ?? 0) || 0),
-                  cookTime: Math.round(Number(recipe?.cookTime ?? 0) || 0),
+                  instructions,
+                  prepTime,
+                  cookTime,
                 }
               })
             : []
@@ -320,6 +372,13 @@ export const useMealStore = create<MealStore>()(
             totalFat: dayMeals.reduce((sum, m) => sum + m.fat, 0),
           }
         })
+
+        if (mappedPlan[0]?.meals?.[0]) {
+          console.log(
+            "[meal-store] First meal after internal mapping:",
+            JSON.stringify(mappedPlan[0].meals[0], null, 2)
+          )
+        }
 
         const validation = validateMealPlan({
           plan: mappedPlan,

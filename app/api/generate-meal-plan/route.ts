@@ -30,6 +30,121 @@ function normalizeMealType(type: string): string {
   return type
 }
 
+function firstNumber(...vals: unknown[]): number {
+  for (const v of vals) {
+    if (v === undefined || v === null || v === "") continue
+    const n = typeof v === "number" ? v : Number(String(v).replace(/,/g, ""))
+    if (Number.isFinite(n)) return n
+  }
+  return 0
+}
+
+function normalizeIngredientsForResponse(meal: any): any[] {
+  if (Array.isArray(meal?.ingredients)) return meal.ingredients
+  if (Array.isArray(meal?.ingredientList)) return meal.ingredientList
+  if (typeof meal?.ingredients === "string") {
+    return meal.ingredients.split(",").map((s: string) => ({
+      name: s.trim(),
+      amount: "",
+      category: "",
+    }))
+  }
+  return []
+}
+
+function normalizeRecipeForResponse(meal: any) {
+  const r = meal?.recipe ?? {}
+  const prepTime = firstNumber(r.prepTime, r.prep_time, meal?.prepTime)
+  const cookTime = firstNumber(r.cookTime, r.cook_time, meal?.cookTime)
+  let instructions: string[] = []
+  if (Array.isArray(r.instructions)) {
+    instructions = r.instructions.map((s: unknown) => String(s))
+  } else if (Array.isArray(meal?.instructions)) {
+    instructions = meal.instructions.map((s: unknown) => String(s))
+  } else if (typeof r.instructions === "string") {
+    instructions = [r.instructions]
+  } else if (typeof meal?.instructions === "string") {
+    instructions = [meal.instructions]
+  }
+  return { prepTime, cookTime, instructions }
+}
+
+/** Map Claude alternate shapes (foods/item/kcal) before standard normalization. */
+function macrosFromIngredientKcal(kcal: number, category: string, name: string) {
+  const t = `${category} ${name}`.toLowerCase()
+  if (
+    /protein|chicken|egg|eggs|fish|beef|turkey|yogurt|dairy|meat|tuna|salmon|shrimp|pork|lentil|tofu/.test(
+      t
+    )
+  ) {
+    return { p: kcal / 4, c: 0, f: 0 }
+  }
+  if (/carb|rice|oat|oats|potato|fruit|grain|bread|pasta|banana|honey|quinoa|granola/.test(t)) {
+    return { p: 0, c: kcal / 4, f: 0 }
+  }
+  if (/fat|oil|nut|nuts|avocado|butter|seed|seeds|peanut/.test(t)) {
+    return { p: 0, c: 0, f: kcal / 9 }
+  }
+  const third = kcal / 3
+  return { p: third / 4, c: third / 4, f: third / 9 }
+}
+
+function normalizeClaudeMealAlternatives(meal: any): any {
+  const m = { ...meal }
+  const hasFoods = Array.isArray(m.foods) && m.foods.length > 0
+  const hasIngredients = Array.isArray(m.ingredients) && m.ingredients.length > 0
+  const rawList =
+    hasIngredients ? m.ingredients : hasFoods ? m.foods : []
+
+  let sumIngredientKcal = 0
+  let estP = 0
+  let estC = 0
+  let estF = 0
+
+  const ingredients = rawList.map((row: any) => {
+    const name = String(row?.name ?? row?.item ?? "").trim()
+    const amount = String(row?.amount ?? row?.quantity ?? row?.qty ?? "").trim()
+    const category = String(row?.category ?? "")
+    const kcal = firstNumber(row?.kcal, row?.calories)
+    if (kcal > 0) {
+      sumIngredientKcal += kcal
+      const add = macrosFromIngredientKcal(kcal, category, name)
+      estP += add.p
+      estC += add.c
+      estF += add.f
+    }
+    return { name, amount, category }
+  })
+
+  delete m.foods
+  m.ingredients = ingredients
+
+  const mealCal = firstNumber(m.calories)
+  if (mealCal === 0 && sumIngredientKcal > 0) {
+    m.calories = Math.round(sumIngredientKcal)
+  }
+
+  if (firstNumber(m.protein) === 0) {
+    m.protein = Math.round(estP)
+  }
+  if (firstNumber(m.carbs) === 0) {
+    m.carbs = Math.round(estC)
+  }
+  if (firstNumber(m.fat) === 0) {
+    m.fat = Math.round(estF)
+  }
+
+  return m
+}
+
+function applyClaudeResponseNormalizer(days: any[]): any[] {
+  if (!Array.isArray(days)) return []
+  return days.map((day: any) => ({
+    ...day,
+    meals: Array.isArray(day?.meals) ? day.meals.map(normalizeClaudeMealAlternatives) : [],
+  }))
+}
+
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY
@@ -64,20 +179,42 @@ export async function POST(req: Request) {
 
     const callClaudeForDays = async (requestedDays: string[]) => {
       const daysList = requestedDays.join(", ")
-      const daysJsonExample = requestedDays
-        .map((d) => `{"day":"${d}","meals":[...]}`)
-        .join(",\n")
-      const prompt = `Generate a ${body.mealsPerDay}-meal plan for these days: ${daysList}.
+      const prompt = `Generate a ${body.mealsPerDay}-meal plan for EACH of these days: ${daysList}.
 User: ${body.dailyCalories}kcal/day, goal: ${goal}, diet: ${body.dietType}
 Allowed ingredients: ${selectedIngredients.join(", ")}
-Return JSON: {"days":[${daysJsonExample}]}`
+
+Return ONLY this exact JSON structure, no variations:
+{
+  "days": [{
+    "day": "Monday",
+    "meals": [{
+      "name": "meal name here",
+      "type": "Breakfast",
+      "calories": 500,
+      "protein": 40,
+      "carbs": 35,
+      "fat": 15,
+      "ingredients": [
+        {"name": "Chicken breast", "amount": "150g", "category": "Protein"}
+      ],
+      "recipe": {
+        "prepTime": 10,
+        "cookTime": 20,
+        "instructions": ["Step 1", "Step 2"]
+      }
+    }]
+  }]
+}
+Include one object in "days" for each day in this list: ${daysList}.
+Do NOT use 'foods', 'item', 'kcal' fields.
+Use ONLY the field names shown above.`
 
       console.log("[generate-meal-plan] Prompt sent to Claude:", prompt)
 
       const response = await Promise.race([
         anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 3000,
+          max_tokens: 8000,
           system: "Output strict JSON only.",
           messages: [{ role: "user", content: prompt }],
         }),
@@ -101,33 +238,66 @@ Return JSON: {"days":[${daysJsonExample}]}`
       }
 
       const jsonText = extractJSON(text)
-      return JSON.parse(jsonText) as { days?: unknown[] }
+      const parsed = JSON.parse(jsonText) as { days?: unknown[] }
+      if (!Array.isArray(parsed.days) || parsed.days.length === 0) {
+        console.error(
+          "[generate-meal-plan] Chunk missing or empty days array. Raw text:",
+          text
+        )
+        throw new Error(
+          "Claude response chunk has no days: expected a non-empty days array for this request"
+        )
+      }
+      return parsed
     }
 
-    const [firstChunk, secondChunk] = await Promise.all([
+    const [firstChunk, secondChunk, thirdChunk] = await Promise.all([
       callClaudeForDays(["Monday", "Tuesday", "Wednesday"]),
-      callClaudeForDays(["Thursday", "Friday", "Saturday", "Sunday"]),
+      callClaudeForDays(["Thursday", "Friday", "Saturday"]),
+      callClaudeForDays(["Sunday"]),
     ])
     const days = [
       ...(Array.isArray(firstChunk.days) ? firstChunk.days : []),
       ...(Array.isArray(secondChunk.days) ? secondChunk.days : []),
+      ...(Array.isArray(thirdChunk.days) ? thirdChunk.days : []),
     ]
-    const normalizedDays = days
-      .map((day: any) => ({
-        ...day,
-        meals: Array.isArray(day?.meals)
-          ? day.meals.map((meal: any) => ({
+    const coercedDays = applyClaudeResponseNormalizer(days)
+    const normalizedDays = coercedDays.map((day: any) => ({
+      ...day,
+      meals: Array.isArray(day?.meals)
+        ? day.meals.map((meal: any) => {
+            const macros = meal?.macros ?? meal?.macro ?? {}
+            const nutrition = meal?.nutrition ?? {}
+            const recipe = normalizeRecipeForResponse(meal)
+            const rawIngredients = normalizeIngredientsForResponse(meal)
+            return {
               ...meal,
+              calories: firstNumber(meal?.calories, macros.calories, nutrition.calories),
+              protein: firstNumber(meal?.protein, macros.protein, nutrition.protein),
+              carbs: firstNumber(meal?.carbs, macros.carbs, nutrition.carbs),
+              fat: firstNumber(meal?.fat, macros.fat, nutrition.fat),
               type: normalizeMealType(String(meal?.type ?? "")),
-              ingredients: Array.isArray(meal?.ingredients)
-                ? meal.ingredients.map((ingredient: any) => ({
-                    ...ingredient,
-                    category: normalizeCategory(String(ingredient?.category ?? "")),
-                  }))
-                : [],
-            }))
-          : [],
-      }))
+              ingredients: rawIngredients.map((ingredient: any) => ({
+                name: String(ingredient?.name ?? ingredient?.item ?? ingredient?.ingredient ?? "").trim(),
+                amount: String(ingredient?.amount ?? ingredient?.quantity ?? ingredient?.qty ?? "").trim(),
+                category: normalizeCategory(String(ingredient?.category ?? "")),
+              })),
+              recipe,
+            }
+          })
+        : [],
+    }))
+
+    if (normalizedDays[0]?.meals?.[0]) {
+      console.log(
+        "[generate-meal-plan] Final first meal before return:",
+        JSON.stringify(normalizedDays[0].meals[0], null, 2)
+      )
+    }
+    console.log(
+      "[generate-meal-plan] Final object before return:",
+      JSON.stringify({ days: normalizedDays }, null, 2)
+    )
 
     return NextResponse.json({
       days: normalizedDays,
