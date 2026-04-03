@@ -53,7 +53,9 @@ export function Onboarding() {
     const { calories, macros } = calculateMacros(
       getWeightInKg(weight),
       parseFloat(bodyFat),
-      selectedGoal
+      selectedGoal,
+      "moderate",
+      "balanced"
     )
 
     const now = new Date().toISOString()

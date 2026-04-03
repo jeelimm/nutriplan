@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useMealStore, type DietType } from "@/lib/meal-store"
+import { calculateNutritionTargets, toKg } from "@/lib/nutrition"
 import { Salad, Beef, Scale, Clock, Utensils, ChevronLeft, Flame, Droplets, Wheat, Zap } from "lucide-react"
 
 const dietTypes: { id: DietType; label: string; description: string; icon: React.ReactNode }[] = [
@@ -17,8 +18,19 @@ const mealCounts = [2, 3, 4, 5]
 
 export function MealPlanConfig() {
   const { userProfile, setMealPlanConfig, setCurrentStep, generateMealPlan, setUserProfile } = useMealStore()
-  const [selectedDiet, setSelectedDiet] = useState<DietType | null>(null)
-  const [mealsPerDay, setMealsPerDay] = useState<number>(3)
+  const [selectedDiet, setSelectedDiet] = useState<DietType | null>(userProfile?.dietType ?? null)
+  const [mealsPerDay, setMealsPerDay] = useState<number>(userProfile?.mealsPerDay ?? 3)
+
+  const targetDiet = selectedDiet ?? userProfile?.dietType ?? "balanced"
+  const liveTargets = userProfile
+    ? calculateNutritionTargets({
+        weightKg: toKg(userProfile.weight, userProfile.unit),
+        bodyFat: userProfile.bodyFat,
+        activityLevel: userProfile.activityLevel,
+        goal: userProfile.goal,
+        dietType: targetDiet,
+      })
+    : null
 
   const handleComplete = () => {
     if (!selectedDiet) return
@@ -28,10 +40,19 @@ export function MealPlanConfig() {
       mealsPerDay,
     })
     if (userProfile) {
+      const updatedTargets = calculateNutritionTargets({
+        weightKg: toKg(userProfile.weight, userProfile.unit),
+        bodyFat: userProfile.bodyFat,
+        activityLevel: userProfile.activityLevel,
+        goal: userProfile.goal,
+        dietType: selectedDiet,
+      })
       setUserProfile({
         ...userProfile,
         dietType: selectedDiet,
         mealsPerDay,
+        dailyCalories: updatedTargets.calories,
+        macros: updatedTargets.macros,
         lastUpdatedAt: new Date().toISOString(),
       })
     }
@@ -61,26 +82,29 @@ export function MealPlanConfig() {
               <div className="mb-4 text-center">
                 <div className="text-4xl font-bold">{userProfile.dailyCalories}</div>
                 <div className="text-primary-foreground/80">calories per day</div>
+                <div className="mt-1 text-xs text-primary-foreground/80">
+                  Estimated based on Katch-McArdle formula
+                </div>
               </div>
               <div className="grid grid-cols-4 gap-2">
                 <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
                   <Beef className="mx-auto mb-1 h-5 w-5" />
-                  <div className="text-lg font-bold">{userProfile.macros.protein}g</div>
+                  <div className="text-lg font-bold">{liveTargets?.macros.protein ?? userProfile.macros.protein}g</div>
                   <div className="text-xs text-primary-foreground/80">Protein</div>
                 </div>
                 <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
                   <Wheat className="mx-auto mb-1 h-5 w-5" />
-                  <div className="text-lg font-bold">{userProfile.macros.carbs}g</div>
+                  <div className="text-lg font-bold">{liveTargets?.macros.carbs ?? userProfile.macros.carbs}g</div>
                   <div className="text-xs text-primary-foreground/80">Carbs</div>
                 </div>
                 <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
                   <Droplets className="mx-auto mb-1 h-5 w-5" />
-                  <div className="text-lg font-bold">{userProfile.macros.fat}g</div>
+                  <div className="text-lg font-bold">{liveTargets?.macros.fat ?? userProfile.macros.fat}g</div>
                   <div className="text-xs text-primary-foreground/80">Fat</div>
                 </div>
                 <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
                   <Zap className="mx-auto mb-1 h-5 w-5" />
-                  <div className="text-lg font-bold">{userProfile.macros.minerals}mg</div>
+                  <div className="text-lg font-bold">{liveTargets?.macros.minerals ?? userProfile.macros.minerals}mg</div>
                   <div className="text-xs text-primary-foreground/80">Minerals</div>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { calculateNutritionTargets } from '@/lib/nutrition'
 
 export type Goal = 'lose-fat' | 'gain-muscle' | 'recomposition'
 export type DietType = 'keto' | 'high-protein' | 'balanced' | 'intermittent-fasting'
@@ -70,7 +71,13 @@ interface MealStore {
   setWeekPlan: (plan: DayPlan[]) => void
   selectedDay: number
   setSelectedDay: (day: number) => void
-  calculateMacros: (weight: number, bodyFat: number, goal: Goal) => { calories: number; macros: UserProfile['macros'] }
+  calculateMacros: (
+    weightKg: number,
+    bodyFat: number,
+    goal: Goal,
+    activityLevel: ActivityLevel,
+    dietType: DietType
+  ) => { calories: number; macros: UserProfile['macros'] }
   generateMealPlan: () => void
 }
 
@@ -190,44 +197,14 @@ export const useMealStore = create<MealStore>()(
       selectedDay: 0,
       setSelectedDay: (day) => set({ selectedDay: day }),
       
-      calculateMacros: (weight, bodyFat, goal) => {
-        const leanMass = weight * (1 - bodyFat / 100)
-        let calories: number
-        let proteinRatio: number
-        let carbsRatio: number
-        let fatRatio: number
-        
-        switch (goal) {
-          case 'lose-fat':
-            calories = Math.round(weight * 12)
-            proteinRatio = 0.40
-            carbsRatio = 0.30
-            fatRatio = 0.30
-            break
-          case 'gain-muscle':
-            calories = Math.round(weight * 18)
-            proteinRatio = 0.35
-            carbsRatio = 0.45
-            fatRatio = 0.20
-            break
-          case 'recomposition':
-            calories = Math.round(weight * 15)
-            proteinRatio = 0.35
-            carbsRatio = 0.35
-            fatRatio = 0.30
-            break
-        }
-        
-        return {
-          calories,
-          macros: {
-            protein: Math.round((calories * proteinRatio) / 4),
-            carbs: Math.round((calories * carbsRatio) / 4),
-            fat: Math.round((calories * fatRatio) / 9),
-            minerals: Math.round(leanMass * 0.05),
-          },
-        }
-      },
+      calculateMacros: (weightKg, bodyFat, goal, activityLevel, dietType) =>
+        calculateNutritionTargets({
+          weightKg,
+          bodyFat,
+          goal,
+          activityLevel,
+          dietType,
+        }),
       
       generateMealPlan: () => {
         const { mealPlanConfig, userProfile } = get()

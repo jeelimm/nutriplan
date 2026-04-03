@@ -50,8 +50,6 @@ export function DailyView() {
   const [showGroceryList, setShowGroceryList] = useState(false)
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set())
 
-  const toKg = (value: number, unit: "kg" | "lbs") => (unit === "lbs" ? value * 0.453592 : value)
-
   const editProfile = () => {
     if (!userProfile) return
 
@@ -107,7 +105,13 @@ export function DailyView() {
     const mealsPerDay = Math.max(1, Math.floor(Number(mealsInput) || userProfile.mealsPerDay))
     if (!Number.isFinite(weight) || !Number.isFinite(bodyFat) || !Number.isFinite(muscleMass)) return
 
-    const { calories, macros } = calculateMacros(toKg(weight, unit), bodyFat, goal)
+    const { calories, macros } = calculateMacros(
+      unit === "lbs" ? weight * 0.453592 : weight,
+      bodyFat,
+      goal,
+      activityLevel,
+      dietType
+    )
     const now = new Date().toISOString()
 
     setUserProfile({
