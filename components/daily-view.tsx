@@ -39,16 +39,16 @@ function MacroProgress({ current, target, label, icon, color }: {
 }
 
 const activityLevels: { id: ActivityLevel; label: string; description: string }[] = [
-  { id: "sedentary", label: "Sedentary", description: "Little or no exercise" },
-  { id: "light", label: "Light activity", description: "Light exercise most days" },
-  { id: "moderate", label: "Moderate", description: "3-5 days/week" },
-  { id: "very-active", label: "Very active", description: "Hard exercise 6-7 days/week" },
+  { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, little planned exercise" },
+  { id: "light", label: "Light activity", description: "Easy walks, light workouts, or on-your-feet days" },
+  { id: "moderate", label: "Moderate", description: "Regular workouts or active job, most weeks" },
+  { id: "very-active", label: "Very active", description: "Hard training or very physical days most of the week" },
 ]
 
 const goals: { id: Goal; label: string; description: string }[] = [
-  { id: "lose-fat", label: "Lose Fat", description: "Caloric deficit with high protein" },
-  { id: "gain-muscle", label: "Gain Muscle", description: "Caloric surplus for growth" },
-  { id: "recomposition", label: "Lean Recomposition", description: "Build muscle while losing fat" },
+  { id: "lose-fat", label: "Lose Fat", description: "Slightly fewer calories, with protein to help you stay full" },
+  { id: "gain-muscle", label: "Gain Muscle", description: "A bit more fuel to support strength work and recovery" },
+  { id: "recomposition", label: "Lean Recomposition", description: "Steady eating with room to train and trim fat over time" },
 ]
 
 export function DailyView() {
@@ -80,10 +80,10 @@ export function DailyView() {
   const [showLongWaitError, setShowLongWaitError] = useState(false)
 
   const loadingMessages = [
-    "Building your personalized meal plan...",
-    "Calculating your macros...",
-    "Finding the best ingredients for you...",
-    "Almost ready...",
+    "Lining up meals for your week…",
+    "Working with your calories and macros…",
+    "Pulling from the ingredients you chose…",
+    "Almost there—thanks for waiting…",
   ]
 
   useEffect(() => {
@@ -173,10 +173,10 @@ export function DailyView() {
         <div className="mx-auto flex max-w-lg flex-col items-center justify-center rounded-3xl border border-border bg-card p-10 text-center shadow-lg">
           <Spinner className="mb-4 size-8 text-primary" />
           <h2 className="text-xl font-semibold text-foreground">{loadingMessages[loadingMessageIndex]}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">This may take up to 30 seconds</p>
+          <p className="mt-2 text-sm text-muted-foreground">Usually under a minute</p>
           {showLongWaitError && (
             <p className="mt-4 text-sm font-medium text-destructive">
-              Taking longer than expected. Please try again.
+              This is taking longer than usual. Try again in a moment—nothing you did wrong.
             </p>
           )}
         </div>
@@ -190,14 +190,14 @@ export function DailyView() {
         <div className="mx-auto max-w-lg">
           <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-lg text-destructive">We couldn&apos;t build a valid meal plan</CardTitle>
+              <CardTitle className="text-lg text-destructive">We couldn&apos;t finish this meal plan</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                {mealPlanValidation.errors[0] ?? "Your meal plan failed validation. Please regenerate."}
+                {mealPlanValidation.errors[0] ?? "Something didn’t line up with your settings. Try generating again—you won’t lose your profile."}
               </p>
               <Button className="w-full" onClick={generateMealPlan}>
-                Regenerate Plan
+                Try again
               </Button>
             </CardContent>
           </Card>
@@ -234,7 +234,7 @@ export function DailyView() {
             className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
-            Back to Settings
+            Back to plan setup
           </button>
 
           {/* Day Selector */}
@@ -259,7 +259,7 @@ export function DailyView() {
             </button>
           </div>
           <Button variant="outline" className="mt-3 h-9 w-full" onClick={openEditProfileModal}>
-            Edit Profile
+            Edit profile
           </Button>
 
           {/* Day Dots */}
@@ -289,7 +289,7 @@ export function DailyView() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Flame className="h-5 w-5 text-primary" />
-                Daily Progress
+                Today vs your targets
               </CardTitle>
               <div className="text-right">
                 <div className="text-2xl font-bold text-foreground">{currentDay.totalCalories}</div>
@@ -342,7 +342,7 @@ export function DailyView() {
         <div className="space-y-3">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <UtensilsCrossed className="h-5 w-5 text-primary" />
-            Today&apos;s Meals
+            Meals for this day
           </h2>
 
           {currentDay.meals.map((meal, idx) => {
@@ -382,7 +382,7 @@ export function DailyView() {
                     onClick={() => toggleMealExpanded(meal.id)}
                     className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-secondary py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary/80"
                   >
-                    View Recipe
+                    Recipe & details
                     <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                   </button>
 
@@ -445,7 +445,7 @@ export function DailyView() {
           onClick={() => setShowGroceryList(true)}
         >
           <ShoppingCart className="mr-2 h-5 w-5" />
-          View Grocery List for {currentDay.day}
+          Shopping list for {currentDay.day}
         </Button>
 
         {/* Weekly Grocery List Link */}
@@ -454,7 +454,7 @@ export function DailyView() {
           onClick={() => setCurrentStep(3)}
         >
           <ShoppingCart className="mr-2 h-5 w-5" />
-          View Weekly Grocery List
+          Full week shopping list
         </Button>
       </div>
 
@@ -463,7 +463,7 @@ export function DailyView() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm md:items-center">
           <div className="max-h-[85vh] w-full max-w-lg overflow-auto rounded-t-3xl bg-card p-6 shadow-2xl md:rounded-3xl">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-foreground">Grocery List - {currentDay.day}</h2>
+              <h2 className="text-xl font-bold text-foreground">Shopping list · {currentDay.day}</h2>
               <button
                 onClick={() => setShowGroceryList(false)}
                 className="rounded-full p-2 hover:bg-secondary"
@@ -506,7 +506,7 @@ export function DailyView() {
       {showEditProfileModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm md:items-center">
           <div className="w-full max-w-lg rounded-t-3xl bg-card p-6 shadow-2xl md:rounded-3xl">
-            <h2 className="mb-4 text-xl font-bold text-foreground">Edit Profile</h2>
+            <h2 className="mb-4 text-xl font-bold text-foreground">Update your profile</h2>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="profileName">Profile Name</Label>
@@ -600,7 +600,7 @@ export function DailyView() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm md:items-center">
           <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-2xl md:rounded-3xl">
             <h3 className="text-lg font-semibold text-foreground">
-              Profile updated. Regenerate meal plan with new settings?
+              Profile saved. Want a fresh 7-day plan with these numbers?
             </h3>
             <div className="mt-5 flex gap-3">
               <Button
@@ -608,7 +608,7 @@ export function DailyView() {
                 className="flex-1"
                 onClick={() => setShowRegenerateConfirmModal(false)}
               >
-                No
+                Not now
               </Button>
               <Button
                 className="flex-1"
@@ -620,7 +620,7 @@ export function DailyView() {
                   setShowRegenerateConfirmModal(false)
                 }}
               >
-                Yes
+                Regenerate plan
               </Button>
             </div>
           </div>

@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'NutriPlan - Smart Meal Planning',
-  description: 'Plan your meals based on your body goals with personalized nutrition tracking',
+  title: 'NutriPlan — meal planning that fits real life',
+  description: 'Set simple targets from your stats, get a week of meals and a shopping list you can actually use',
   generator: 'v0.app',
   icons: {
     icon: [

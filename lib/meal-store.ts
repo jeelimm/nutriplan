@@ -286,7 +286,7 @@ export const useMealStore = create<MealStore>()(
               weekPlan: [],
               mealPlanValidation: {
                 isValid: false,
-                errors: ["Meal plan generation failed. Please try again."],
+                errors: ["We couldn’t generate a plan that time. Try again in a moment."],
                 warnings: [],
               },
             })
@@ -307,7 +307,7 @@ export const useMealStore = create<MealStore>()(
             weekPlan: [],
             mealPlanValidation: {
               isValid: false,
-              errors: ["Meal plan generation failed due to a network error."],
+              errors: ["Connection hiccup—check your network and try generating again."],
               warnings: [],
             },
           })

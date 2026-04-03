@@ -20,23 +20,23 @@ import {
 } from "lucide-react"
 
 const goals: { id: Goal; label: string; description: string; icon: React.ReactNode }[] = [
-  { id: "lose-fat", label: "Lose Fat", description: "Caloric deficit with high protein", icon: <TrendingUp className="h-6 w-6" /> },
-  { id: "gain-muscle", label: "Gain Muscle", description: "Caloric surplus for growth", icon: <Dumbbell className="h-6 w-6" /> },
-  { id: "recomposition", label: "Lean Recomposition", description: "Build muscle while losing fat", icon: <RefreshCw className="h-6 w-6" /> },
+  { id: "lose-fat", label: "Lose Fat", description: "Slightly fewer calories, with protein to help you stay full", icon: <TrendingUp className="h-6 w-6" /> },
+  { id: "gain-muscle", label: "Gain Muscle", description: "A bit more fuel to support strength work and recovery", icon: <Dumbbell className="h-6 w-6" /> },
+  { id: "recomposition", label: "Lean Recomposition", description: "Steady eating with room to train and trim fat over time", icon: <RefreshCw className="h-6 w-6" /> },
 ]
 
 const activityLevels: { id: ActivityLevel; label: string; description: string; multiplier: number }[] = [
-  { id: "sedentary", label: "Sedentary", description: "Little or no exercise", multiplier: 1.2 },
-  { id: "light", label: "Light activity", description: "Light exercise most days", multiplier: 1.375 },
-  { id: "moderate", label: "Moderate", description: "3-5 days/week", multiplier: 1.55 },
-  { id: "very-active", label: "Very active", description: "Hard exercise 6-7 days/week", multiplier: 1.725 },
+  { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, little planned exercise", multiplier: 1.2 },
+  { id: "light", label: "Light activity", description: "Easy walks, light workouts, or on-your-feet days", multiplier: 1.375 },
+  { id: "moderate", label: "Moderate", description: "Regular workouts or active job, most weeks", multiplier: 1.55 },
+  { id: "very-active", label: "Very active", description: "Hard training or very physical days most of the week", multiplier: 1.725 },
 ]
 
 const dietTypes: { id: DietType; label: string; description: string }[] = [
-  { id: "keto", label: "Keto", description: "Low carb, high fat" },
-  { id: "high-protein", label: "High Protein", description: "Maximum protein intake" },
-  { id: "balanced", label: "Balanced", description: "Equal macro distribution" },
-  { id: "intermittent-fasting", label: "Intermittent Fasting", description: "Larger meals, time-restricted" },
+  { id: "keto", label: "Keto", description: "Fewer carbs, more fat—if that’s how you like to eat" },
+  { id: "high-protein", label: "High Protein", description: "Extra protein in each day’s mix" },
+  { id: "balanced", label: "Balanced", description: "Carbs, protein, and fat in an even split" },
+  { id: "intermittent-fasting", label: "Intermittent Fasting", description: "Fewer, larger meals in a set eating window" },
 ]
 
 type IngredientCategory = "protein" | "carbs" | "fats" | "vegetables"
@@ -99,8 +99,8 @@ const budgetPresets: {
 }[] = [
   {
     id: "low",
-    label: "Low Budget 💰",
-    weeklyCost: "~$50/week",
+    label: "Budget-friendly",
+    weeklyCost: "~$50/week · simple staples",
     items: [
       "Chicken breast",
       "Eggs",
@@ -120,8 +120,8 @@ const budgetPresets: {
   },
   {
     id: "medium",
-    label: "Medium Budget 💰💰",
-    weeklyCost: "~$80/week",
+    label: "Balanced spend",
+    weeklyCost: "~$80/week · mix of basics and upgrades",
     items: [
       "Chicken breast",
       "Salmon",
@@ -145,8 +145,8 @@ const budgetPresets: {
   },
   {
     id: "high",
-    label: "High Budget 💰💰💰",
-    weeklyCost: "~$120/week",
+    label: "More variety",
+    weeklyCost: "~$120/week · wider ingredient range",
     items: [
       "Ribeye",
       "Salmon",
@@ -216,14 +216,14 @@ export function Onboarding() {
   const isIngredientSelectionValid = ingredientCounts.protein >= 2 && ingredientCounts.carbs >= 1 && ingredientCounts.fats >= 1
 
   const sustainabilityLabel = useMemo(() => {
-    if (!selectedCatalogItems.length) return "Moderate ⚠"
+    if (!selectedCatalogItems.length) return "Pick ingredients to see a cost mix"
     const scoreMap: Record<CostTier, number> = { "$": 1, "$$": 2, "$$$": 3 }
     const avgScore =
       selectedCatalogItems.reduce((sum, item) => sum + scoreMap[item.cost], 0) / selectedCatalogItems.length
 
-    if (avgScore <= 1.5) return "Sustainable ✓"
-    if (avgScore <= 2.2) return "Moderate ⚠"
-    return "Expensive ✗"
+    if (avgScore <= 1.5) return "Mostly budget-friendly"
+    if (avgScore <= 2.2) return "Mix of price points"
+    return "Includes pricier picks"
   }, [selectedCatalogItems])
 
   const macroPreview = useMemo(() => {
@@ -296,7 +296,7 @@ export function Onboarding() {
       })
       addIngredientFromSearch(data.name)
     } catch {
-      window.alert("Ingredient not found. Claude lookup endpoint is unavailable.")
+      window.alert("We couldn’t look up that ingredient right now. Try another name or pick from the list.")
     } finally {
       setFetchingIngredient(false)
     }
@@ -362,18 +362,20 @@ export function Onboarding() {
             <Activity className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">NutriPlan</h1>
-          <p className="mt-2 text-muted-foreground">Your personalized nutrition journey starts here</p>
+          <p className="mt-2 text-muted-foreground" suppressHydrationWarning>
+            A plan you can actually follow—adjust when life gets in the way
+          </p>
         </div>
 
         {step === "body" && (
           <Card className="border-0 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-xl">
+              <CardTitle className="flex items-center justify-center gap-2 text-xl" suppressHydrationWarning>
                 <Scale className="h-5 w-5 text-primary" />
-                Enter Your Body Stats
+                Your body stats
               </CardTitle>
-              <CardDescription>
-                We&apos;ll use your InBody results to calculate your ideal nutrition plan
+              <CardDescription suppressHydrationWarning>
+                Add weight, body fat, and muscle mass from a scan or your best estimate—we&apos;ll set daily targets from there
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -451,11 +453,13 @@ export function Onboarding() {
         {step === "activity" && (
           <Card className="border-0 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-xl">
+              <CardTitle className="flex items-center justify-center gap-2 text-xl" suppressHydrationWarning>
                 <HeartPulse className="h-5 w-5 text-primary" />
-                Select Activity Level
+                How active is your week?
               </CardTitle>
-              <CardDescription>Choose the level that best represents your weekly routine</CardDescription>
+              <CardDescription suppressHydrationWarning>
+                Pick what&apos;s closest—regular weeks vary, and you can update this anytime
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {activityLevels.map((level) => (
@@ -490,12 +494,12 @@ export function Onboarding() {
         {step === "goal" && (
           <Card className="border-0 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-xl">
+              <CardTitle className="flex items-center justify-center gap-2 text-xl" suppressHydrationWarning>
                 <Target className="h-5 w-5 text-primary" />
-                Select Your Goal
+                What are you aiming for?
               </CardTitle>
-              <CardDescription>
-                Choose what you want to achieve with your nutrition
+              <CardDescription suppressHydrationWarning>
+                No wrong answer—this just nudges calories and macros in the right direction
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -546,11 +550,13 @@ export function Onboarding() {
         {step === "diet" && (
           <Card className="border-0 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-xl">
+              <CardTitle className="flex items-center justify-center gap-2 text-xl" suppressHydrationWarning>
                 <Salad className="h-5 w-5 text-primary" />
-                Choose Diet Style
+                How do you like to eat?
               </CardTitle>
-              <CardDescription>Macros preview updates in real-time as you select a diet style</CardDescription>
+              <CardDescription suppressHydrationWarning>
+                Keep it simple: tap a style and see a rough calorie and macro preview below
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {dietTypes.map((diet) => (
@@ -568,7 +574,9 @@ export function Onboarding() {
               ))}
               {macroPreview && (
                 <div className="rounded-xl bg-secondary p-4">
-                  <div className="text-sm font-medium text-foreground">Macro Preview</div>
+                  <div className="text-sm font-medium text-foreground" suppressHydrationWarning>
+                    Rough preview
+                  </div>
                   <div className="mt-2 grid grid-cols-4 gap-2 text-center text-xs">
                     <div><div className="font-bold">{macroPreview.calories}</div><div className="text-muted-foreground">kcal</div></div>
                     <div><div className="font-bold">{macroPreview.macros.protein}g</div><div className="text-muted-foreground">Protein</div></div>
@@ -592,19 +600,27 @@ export function Onboarding() {
         {step === "ingredient-mode" && (
           <Card className="border-0 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="text-xl">Ingredient Selection</CardTitle>
-              <CardDescription>Choose how you want to build your ingredient list</CardDescription>
+              <CardTitle className="text-xl" suppressHydrationWarning>
+                Build your food list
+              </CardTitle>
+              <CardDescription suppressHydrationWarning>
+                Use a starter list by budget, or choose ingredients yourself—both are fine
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <button
+                <button
                 type="button"
                 onClick={() => setIngredientMode("recommend")}
                 className={`w-full rounded-xl border-2 p-4 text-left ${
                   ingredientMode === "recommend" ? "border-primary bg-primary/10" : "border-border"
                 }`}
               >
-                <div className="font-semibold">Recommend for me</div>
-                <div className="text-sm text-muted-foreground">Use budget presets</div>
+                <div className="font-semibold" suppressHydrationWarning>
+                  Suggest a list for me
+                </div>
+                <div className="text-sm text-muted-foreground" suppressHydrationWarning>
+                  Start from a budget-friendly, balanced, or wider-cost preset
+                </div>
               </button>
               <button
                 type="button"
@@ -616,8 +632,12 @@ export function Onboarding() {
                   ingredientMode === "custom" ? "border-primary bg-primary/10" : "border-border"
                 }`}
               >
-                <div className="font-semibold">I&apos;ll choose myself</div>
-                <div className="text-sm text-muted-foreground">Pick ingredients by category</div>
+                <div className="font-semibold" suppressHydrationWarning>
+                  I&apos;ll pick my own
+                </div>
+                <div className="text-sm text-muted-foreground" suppressHydrationWarning>
+                  Browse by protein, carbs, fats, and vegetables
+                </div>
               </button>
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" className="h-12 flex-1" onClick={moveToPreviousStep}>
@@ -634,9 +654,11 @@ export function Onboarding() {
         {step === "ingredients" && (
           <Card className="border-0 shadow-lg">
             <CardHeader className="text-center">
-              <CardTitle className="text-xl">Select Ingredients</CardTitle>
-              <CardDescription>
-                Pick at least 2 proteins, 1 carb, and 1 fat
+              <CardTitle className="text-xl" suppressHydrationWarning>
+                Choose ingredients
+              </CardTitle>
+              <CardDescription suppressHydrationWarning>
+                For a workable plan: at least 2 proteins, 1 carb, and 1 fat (vegetables are a nice add-on)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -653,9 +675,9 @@ export function Onboarding() {
                           : "border-border hover:border-primary"
                       }`}
                     >
-                      <div className="font-semibold">{preset.label}</div>
-                      <div className="text-sm text-muted-foreground">{preset.weeklyCost}</div>
-                      <div className="mt-2 text-xs text-muted-foreground">{preset.items.join(", ")}</div>
+                      <div className="font-semibold" suppressHydrationWarning>{preset.label}</div>
+                      <div className="text-sm text-muted-foreground" suppressHydrationWarning>{preset.weeklyCost}</div>
+                      <div className="mt-2 text-xs text-muted-foreground" suppressHydrationWarning>{preset.items.join(", ")}</div>
                     </button>
                   ))}
                 </div>
@@ -693,8 +715,9 @@ export function Onboarding() {
                         className="w-full"
                         onClick={fetchIngredientViaClaude}
                         disabled={fetchingIngredient}
+                        suppressHydrationWarning
                       >
-                        {fetchingIngredient ? "Looking up..." : "Not found? Fetch via Claude API"}
+                        {fetchingIngredient ? "Looking that up…" : "Can’t find it? Look up with AI"}
                       </Button>
                     </div>
                   )}
@@ -743,9 +766,11 @@ export function Onboarding() {
               )}
 
               <div className="rounded-xl bg-secondary p-3 text-sm">
-                <div className="font-medium">Sustainability Score: {sustainabilityLabel}</div>
-                <div className="text-muted-foreground">
-                  Selected: Protein {ingredientCounts.protein}, Carbs {ingredientCounts.carbs}, Fats {ingredientCounts.fats}
+                <div className="font-medium" suppressHydrationWarning>
+                  Typical cost mix: {sustainabilityLabel}
+                </div>
+                <div className="text-muted-foreground" suppressHydrationWarning>
+                  So far: Protein {ingredientCounts.protein}, Carbs {ingredientCounts.carbs}, Fats {ingredientCounts.fats}
                 </div>
               </div>
 
@@ -757,8 +782,9 @@ export function Onboarding() {
                   className="h-12 flex-1"
                   onClick={handleComplete}
                   disabled={!isIngredientSelectionValid}
+                  suppressHydrationWarning
                 >
-                  Generate Meal Plan ({selectedIngredients.length} ingredients selected)
+                  Create my 7-day plan ({selectedIngredients.length} ingredients)
                 </Button>
               </div>
             </CardContent>

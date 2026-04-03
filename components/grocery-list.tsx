@@ -84,14 +84,14 @@ export function GroceryList() {
             className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
-            Back to Meal Plan
+            Back to your meal plan
           </button>
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Weekly Grocery List</h1>
+              <h1 className="text-2xl font-bold text-foreground">Week shopping list</h1>
               <p className="text-sm text-muted-foreground">
-                {checkedCount} of {totalItems} items checked
+                {checkedCount} of {totalItems} checked off
               </p>
             </div>
             <Button
@@ -103,12 +103,12 @@ export function GroceryList() {
               {copied ? (
                 <>
                   <Check className="h-4 w-4" />
-                  Copied!
+                  Copied
                 </>
               ) : (
                 <>
                   <Copy className="h-4 w-4" />
-                  Copy List
+                  Copy list
                 </>
               )}
             </Button>
@@ -133,9 +133,9 @@ export function GroceryList() {
                 <ShoppingCart className="h-6 w-6" />
               </div>
               <div>
-                <div className="font-semibold">7-Day Shopping List</div>
+                <div className="font-semibold">Everything for the week</div>
                 <div className="text-sm text-primary-foreground/80">
-                  {totalItems} unique items across {groceryCategories.length} categories
+                  {totalItems} lines to grab, sorted into {groceryCategories.length} groups
                 </div>
               </div>
             </div>
@@ -204,18 +204,18 @@ export function GroceryList() {
             {copied ? (
               <>
                 <Check className="mr-2 h-5 w-5" />
-                List Copied to Clipboard!
+                On your clipboard
               </>
             ) : (
               <>
                 <Copy className="mr-2 h-5 w-5" />
-                Export / Copy List
+                Copy full list
               </>
             )}
           </Button>
           
           <p className="text-center text-xs text-muted-foreground">
-            Copy your list to paste into your favorite shopping app
+            Paste into notes or your usual grocery app—however you shop is fine
           </p>
         </div>
       </div>

@@ -149,7 +149,10 @@ export async function POST(req: Request) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: "Missing ANTHROPIC_API_KEY" }, { status: 500 })
+      return NextResponse.json(
+        { error: "Meal generation isn’t available on the server right now (configuration missing)." },
+        { status: 500 }
+      )
     }
 
     const body = (await req.json()) as {
@@ -214,12 +217,12 @@ Use ONLY the field names shown above.`
       const response = await Promise.race([
         anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 8000,
+          max_tokens: 10000,
           system: "Output strict JSON only.",
           messages: [{ role: "user", content: prompt }],
         }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Claude timeout")), 45000)
+          setTimeout(() => reject(new Error("Claude timeout")), 40000)
         ),
       ])
 
@@ -251,15 +254,13 @@ Use ONLY the field names shown above.`
       return parsed
     }
 
-    const [firstChunk, secondChunk, thirdChunk] = await Promise.all([
+    const [firstChunk, secondChunk] = await Promise.all([
       callClaudeForDays(["Monday", "Tuesday", "Wednesday"]),
-      callClaudeForDays(["Thursday", "Friday", "Saturday"]),
-      callClaudeForDays(["Sunday"]),
+      callClaudeForDays(["Thursday", "Friday", "Saturday", "Sunday"]),
     ])
     const days = [
       ...(Array.isArray(firstChunk.days) ? firstChunk.days : []),
       ...(Array.isArray(secondChunk.days) ? secondChunk.days : []),
-      ...(Array.isArray(thirdChunk.days) ? thirdChunk.days : []),
     ]
     const coercedDays = applyClaudeResponseNormalizer(days)
     const normalizedDays = coercedDays.map((day: any) => ({
@@ -310,7 +311,7 @@ Use ONLY the field names shown above.`
     )
     return NextResponse.json(
       {
-        error: "Failed to generate meal plan",
+        error: "Couldn’t build a meal plan this time. Try again in a moment.",
         details: err instanceof Error ? err.message : String(err),
       },
       { status: 500 }

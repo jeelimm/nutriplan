@@ -67,21 +67,21 @@ export function MealPlanConfig() {
           className="mb-4 flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to Profile
+          Back to profile setup
         </button>
 
         {/* Calculated Results */}
         {userProfile && (
           <Card className="mb-6 border-0 bg-primary text-primary-foreground shadow-lg">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Your Daily Targets</CardTitle>
+              <CardTitle className="text-lg">Your daily targets</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="mb-4 text-center">
                 <div className="text-4xl font-bold">{userProfile.dailyCalories}</div>
                 <div className="text-primary-foreground/80">calories per day</div>
                 <div className="mt-1 text-xs text-primary-foreground/80">
-                  Estimated based on Katch-McArdle formula
+                  Ballpark from your stats and activity—tweak your profile anytime if life changes
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-2">
@@ -115,10 +115,10 @@ export function MealPlanConfig() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <Utensils className="h-5 w-5 text-primary" />
-              Meals Per Day
+              Meals per day
             </CardTitle>
             <CardDescription>
-              How many meals do you want to eat daily?
+              What fits your routine? Smaller meals or a few bigger ones both work.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -142,7 +142,7 @@ export function MealPlanConfig() {
               <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-secondary p-3">
                 <Flame className="h-4 w-4 text-primary" />
                 <span className="text-sm text-muted-foreground">
-                  ~{Math.round(userProfile.dailyCalories / mealsPerDay)} calories per meal
+                  Roughly {Math.round(userProfile.dailyCalories / mealsPerDay)} calories per meal on average
                 </span>
               </div>
             )}
@@ -157,10 +157,10 @@ export function MealPlanConfig() {
           {isGenerating ? (
             <span className="inline-flex items-center justify-center gap-2">
               <Spinner />
-              Generating...
+              Building your week…
             </span>
           ) : (
-            "Generate 7-Day Meal Plan"
+            "Create my 7-day meal plan"
           )}
         </Button>
       </div>
