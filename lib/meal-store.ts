@@ -7,6 +7,7 @@ export type DietType = 'keto' | 'high-protein' | 'balanced' | 'intermittent-fast
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active'
 
 export interface UserProfile {
+  profileName?: string
   weight: number
   bodyFat: number
   muscleMass: number
@@ -120,6 +121,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
   const dailyCalories = toNumber(profile.dailyCalories, 0)
 
   return {
+    profileName: typeof profile.profileName === 'string' ? profile.profileName : '',
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
     muscleMass: toNumber(profile.muscleMass, 0),

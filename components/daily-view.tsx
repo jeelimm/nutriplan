@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock } from "lucide-react"
@@ -35,6 +37,19 @@ function MacroProgress({ current, target, label, icon, color }: {
   )
 }
 
+const activityLevels: { id: ActivityLevel; label: string; description: string }[] = [
+  { id: "sedentary", label: "Sedentary", description: "Little or no exercise" },
+  { id: "light", label: "Light activity", description: "Light exercise most days" },
+  { id: "moderate", label: "Moderate", description: "3-5 days/week" },
+  { id: "very-active", label: "Very active", description: "Hard exercise 6-7 days/week" },
+]
+
+const goals: { id: Goal; label: string; description: string }[] = [
+  { id: "lose-fat", label: "Lose Fat", description: "Caloric deficit with high protein" },
+  { id: "gain-muscle", label: "Gain Muscle", description: "Caloric surplus for growth" },
+  { id: "recomposition", label: "Lean Recomposition", description: "Build muscle while losing fat" },
+]
+
 export function DailyView() {
   const {
     weekPlan,
@@ -49,95 +64,61 @@ export function DailyView() {
   } = useMealStore()
   const [showGroceryList, setShowGroceryList] = useState(false)
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set())
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [showRegenerateConfirmModal, setShowRegenerateConfirmModal] = useState(false)
+  const [profileName, setProfileName] = useState("")
+  const [weight, setWeight] = useState("")
+  const [bodyFat, setBodyFat] = useState("")
+  const [muscleMass, setMuscleMass] = useState("")
+  const [unit, setUnit] = useState<"kg" | "lbs">("kg")
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel>("moderate")
+  const [goal, setGoal] = useState<Goal>("recomposition")
 
-  const editProfile = () => {
+  const openEditProfileModal = () => {
     if (!userProfile) return
+    setProfileName(userProfile.profileName ?? "")
+    setWeight(String(userProfile.weight))
+    setBodyFat(String(userProfile.bodyFat))
+    setMuscleMass(String(userProfile.muscleMass))
+    setUnit(userProfile.unit)
+    setActivityLevel(userProfile.activityLevel)
+    setGoal(userProfile.goal)
+    setShowEditProfileModal(true)
+  }
 
-    const weightInput = window.prompt("Weight", String(userProfile.weight))
-    if (weightInput === null) return
-    const bodyFatInput = window.prompt("Body fat %", String(userProfile.bodyFat))
-    if (bodyFatInput === null) return
-    const muscleMassInput = window.prompt("Muscle mass", String(userProfile.muscleMass))
-    if (muscleMassInput === null) return
-    const unitInput = window.prompt("Unit (kg or lbs)", userProfile.unit)
-    if (unitInput === null) return
-    const goalInput = window.prompt("Goal (lose-fat | gain-muscle | recomposition)", userProfile.goal)
-    if (goalInput === null) return
-    const dietInput = window.prompt(
-      "Diet type (keto | high-protein | balanced | intermittent-fasting)",
-      userProfile.dietType
-    )
-    if (dietInput === null) return
-    const activityInput = window.prompt(
-      "Activity level (sedentary | light | moderate | active | very-active)",
-      userProfile.activityLevel
-    )
-    if (activityInput === null) return
-    const ingredientsInput = window.prompt(
-      "Preferred ingredients (comma-separated)",
-      userProfile.selectedIngredients.join(", ")
-    )
-    if (ingredientsInput === null) return
-    const mealsInput = window.prompt("Meals per day", String(userProfile.mealsPerDay))
-    if (mealsInput === null) return
-
-    const unit = unitInput === "lbs" ? "lbs" : "kg"
-    const goal: Goal =
-      goalInput === "lose-fat" || goalInput === "gain-muscle" || goalInput === "recomposition"
-        ? goalInput
-        : userProfile.goal
-    const dietType: DietType =
-      dietInput === "keto" || dietInput === "high-protein" || dietInput === "balanced" || dietInput === "intermittent-fasting"
-        ? dietInput
-        : userProfile.dietType
-    const activityLevel: ActivityLevel =
-      activityInput === "sedentary" ||
-      activityInput === "light" ||
-      activityInput === "moderate" ||
-      activityInput === "active" ||
-      activityInput === "very-active"
-        ? activityInput
-        : userProfile.activityLevel
-
-    const weight = Number(weightInput)
-    const bodyFat = Number(bodyFatInput)
-    const muscleMass = Number(muscleMassInput)
-    const mealsPerDay = Math.max(1, Math.floor(Number(mealsInput) || userProfile.mealsPerDay))
-    if (!Number.isFinite(weight) || !Number.isFinite(bodyFat) || !Number.isFinite(muscleMass)) return
+  const handleSaveProfile = () => {
+    if (!userProfile) return
+    const nextWeight = Number(weight)
+    const nextBodyFat = Number(bodyFat)
+    const nextMuscleMass = Number(muscleMass)
+    const mealsPerDay = userProfile.mealsPerDay
+    if (!Number.isFinite(nextWeight) || !Number.isFinite(nextBodyFat) || !Number.isFinite(nextMuscleMass)) return
 
     const { calories, macros } = calculateMacros(
-      unit === "lbs" ? weight * 0.453592 : weight,
-      bodyFat,
+      unit === "lbs" ? nextWeight * 0.453592 : nextWeight,
+      nextBodyFat,
       goal,
       activityLevel,
-      dietType
+      userProfile.dietType
     )
     const now = new Date().toISOString()
 
     setUserProfile({
       ...userProfile,
-      weight,
-      bodyFat,
-      muscleMass,
+      profileName: profileName.trim(),
+      weight: nextWeight,
+      bodyFat: nextBodyFat,
+      muscleMass: nextMuscleMass,
       unit,
       goal,
-      dietType,
       activityLevel,
       mealsPerDay,
-      selectedIngredients: ingredientsInput
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
       dailyCalories: calories,
       macros,
       lastUpdatedAt: now,
     })
-
-    const shouldRegenerate = window.confirm("Profile updated. Regenerate meal plan with new settings?")
-    if (shouldRegenerate) {
-      setMealPlanConfig({ dietType, mealsPerDay })
-      generateMealPlan()
-    }
+    setShowEditProfileModal(false)
+    setShowRegenerateConfirmModal(true)
   }
 
   const toggleMealExpanded = (mealId: string) => {
@@ -204,7 +185,7 @@ export function DailyView() {
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <Button variant="outline" className="mt-3 h-9 w-full" onClick={editProfile}>
+          <Button variant="outline" className="mt-3 h-9 w-full" onClick={openEditProfileModal}>
             Edit Profile
           </Button>
 
@@ -440,6 +421,130 @@ export function DailyView() {
             >
               Close
             </Button>
+          </div>
+        </div>
+      )}
+
+      {showEditProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm md:items-center">
+          <div className="w-full max-w-lg rounded-t-3xl bg-card p-6 shadow-2xl md:rounded-3xl">
+            <h2 className="mb-4 text-xl font-bold text-foreground">Edit Profile</h2>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="profileName">Profile Name</Label>
+                <Input
+                  id="profileName"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  placeholder="e.g. Joe"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Weight</Label>
+                <div className="mb-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setUnit("kg")}
+                    className={`rounded-lg px-3 py-2 text-sm ${unit === "kg" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
+                  >
+                    kg
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUnit("lbs")}
+                    className={`rounded-lg px-3 py-2 text-sm ${unit === "lbs" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
+                  >
+                    lbs
+                  </button>
+                </div>
+                <Input value={weight} onChange={(e) => setWeight(e.target.value)} type="number" inputMode="decimal" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Body Fat %</Label>
+                  <Input value={bodyFat} onChange={(e) => setBodyFat(e.target.value)} type="number" inputMode="decimal" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Muscle Mass</Label>
+                  <Input value={muscleMass} onChange={(e) => setMuscleMass(e.target.value)} type="number" inputMode="decimal" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Activity Level</Label>
+                <div className="space-y-2">
+                  {activityLevels.map((level) => (
+                    <button
+                      key={level.id}
+                      type="button"
+                      onClick={() => setActivityLevel(level.id)}
+                      className={`w-full rounded-xl border-2 p-3 text-left ${
+                        activityLevel === level.id ? "border-primary bg-primary/10" : "border-border"
+                      }`}
+                    >
+                      <div className="font-medium">{level.label}</div>
+                      <div className="text-xs text-muted-foreground">{level.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Goal</Label>
+                <div className="space-y-2">
+                  {goals.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setGoal(item.id)}
+                      className={`w-full rounded-xl border-2 p-3 text-left ${
+                        goal === item.id ? "border-primary bg-primary/10" : "border-border"
+                      }`}
+                    >
+                      <div className="font-medium">{item.label}</div>
+                      <div className="text-xs text-muted-foreground">{item.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setShowEditProfileModal(false)}>
+                Cancel
+              </Button>
+              <Button className="flex-1" onClick={handleSaveProfile}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRegenerateConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm md:items-center">
+          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-2xl md:rounded-3xl">
+            <h3 className="text-lg font-semibold text-foreground">
+              Profile updated. Regenerate meal plan with new settings?
+            </h3>
+            <div className="mt-5 flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowRegenerateConfirmModal(false)}
+              >
+                No
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  if (userProfile) {
+                    setMealPlanConfig({ dietType: userProfile.dietType as DietType, mealsPerDay: userProfile.mealsPerDay })
+                    generateMealPlan()
+                  }
+                  setShowRegenerateConfirmModal(false)
+                }}
+              >
+                Yes
+              </Button>
+            </div>
           </div>
         </div>
       )}
