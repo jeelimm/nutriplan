@@ -36,7 +36,7 @@ const normalizedCategorySet = new Set(["protein", "carbs", "fat", "vegetables", 
 const CALORIE_TOLERANCE_KCAL = 400
 const PROTEIN_MIN_FRACTION = 0.6
 
-/** Hard-fail only: missing days, empty meals, missing recipe (instructions). */
+/** Hard-fail only: missing days, missing/empty meals, missing meal name. */
 const ruleCriticalStructure: ValidationRule = ({ plan }, result) => {
   if (!Array.isArray(plan) || plan.length === 0) {
     result.errors.push("Meal plan is missing days data.")
@@ -49,13 +49,17 @@ const ruleCriticalStructure: ValidationRule = ({ plan }, result) => {
       return
     }
     for (const meal of day.meals) {
+      if (!hasAnyText(meal.name)) {
+        result.errors.push("One or more meals are missing a name.")
+        return
+      }
+
       const instructions = meal.instructions
       const hasRecipe =
         Array.isArray(instructions) &&
         instructions.some((step) => hasAnyText(step))
       if (!hasRecipe) {
-        result.errors.push("One or more meals are missing recipe instructions.")
-        return
+        result.warnings.push("One or more meals are missing recipe instructions.")
       }
     }
   }

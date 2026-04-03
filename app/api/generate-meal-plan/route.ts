@@ -63,23 +63,26 @@ export async function POST(req: Request) {
         : "recomposition"
 
     const callClaudeForDays = async (requestedDays: string[]) => {
-      const day = requestedDays[0] ?? "Monday"
-      const prompt = `Generate a ${body.mealsPerDay}-meal plan for ${day}.
+      const daysList = requestedDays.join(", ")
+      const daysJsonExample = requestedDays
+        .map((d) => `{"day":"${d}","meals":[...]}`)
+        .join(",\n")
+      const prompt = `Generate a ${body.mealsPerDay}-meal plan for these days: ${daysList}.
 User: ${body.dailyCalories}kcal/day, goal: ${goal}, diet: ${body.dietType}
 Allowed ingredients: ${selectedIngredients.join(", ")}
-Return JSON: {"days":[{"day":"${day}","meals":[{"name":"","type":"","calories":0,"protein":0,"carbs":0,"fat":0,"ingredients":[{"name":"","amount":"","category":""}],"recipe":{"prepTime":0,"cookTime":0,"instructions":[""]}}]}]}`
+Return JSON: {"days":[${daysJsonExample}]}`
 
       console.log("[generate-meal-plan] Prompt sent to Claude:", prompt)
 
       const response = await Promise.race([
         anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 1500,
+          max_tokens: 3000,
           system: "Output strict JSON only.",
           messages: [{ role: "user", content: prompt }],
         }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Claude timeout")), 25000)
+          setTimeout(() => reject(new Error("Claude timeout")), 45000)
         ),
       ])
 
@@ -101,24 +104,14 @@ Return JSON: {"days":[{"day":"${day}","meals":[{"name":"","type":"","calories":0
       return JSON.parse(jsonText) as { days?: unknown[] }
     }
 
-    async function runInBatches(days: string[], batchSize: number) {
-      const results = []
-      for (let i = 0; i < days.length; i += batchSize) {
-        const batch = days.slice(i, i + batchSize)
-        const batchResults = await Promise.all(
-          batch.map(day => callClaudeForDays([day]))
-        )
-        results.push(...batchResults)
-        if (i + batchSize < days.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000))
-        }
-      }
-      return results
-    }
-
-    const allDays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
-    const chunks = await runInBatches(allDays, 2)
-    const days = chunks.flatMap(chunk => chunk.days ?? [])
+    const [firstChunk, secondChunk] = await Promise.all([
+      callClaudeForDays(["Monday", "Tuesday", "Wednesday"]),
+      callClaudeForDays(["Thursday", "Friday", "Saturday", "Sunday"]),
+    ])
+    const days = [
+      ...(Array.isArray(firstChunk.days) ? firstChunk.days : []),
+      ...(Array.isArray(secondChunk.days) ? secondChunk.days : []),
+    ]
     const normalizedDays = days
       .map((day: any) => ({
         ...day,
