@@ -54,6 +54,7 @@ export function DailyView() {
   const {
     weekPlan,
     userProfile,
+    mealPlanValidation,
     selectedDay,
     setSelectedDay,
     setCurrentStep,
@@ -133,7 +134,31 @@ export function DailyView() {
     })
   }
 
-  if (!weekPlan.length || !userProfile) return null
+  if (!userProfile) return null
+
+  if (!weekPlan.length && !mealPlanValidation.isValid) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8">
+        <div className="mx-auto max-w-lg">
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg text-destructive">We couldn&apos;t build a valid meal plan</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {mealPlanValidation.errors[0] ?? "Your meal plan failed validation. Please regenerate."}
+              </p>
+              <Button className="w-full" onClick={generateMealPlan}>
+                Regenerate Plan
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (!weekPlan.length) return null
 
   const currentDay = weekPlan[selectedDay]
 
@@ -205,6 +230,11 @@ export function DailyView() {
       </div>
 
       <div className="mx-auto max-w-lg px-4">
+        {mealPlanValidation.warnings.length > 0 && (
+          <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            {mealPlanValidation.warnings[0]}
+          </div>
+        )}
         {/* Daily Progress Card */}
         <Card className="mb-4 border-0 shadow-lg">
           <CardHeader className="pb-2">

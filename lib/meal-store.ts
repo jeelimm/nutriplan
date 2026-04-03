@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { calculateNutritionTargets } from '@/lib/nutrition'
+import { validateMealPlan, type MealPlanValidationResult } from '@/lib/meal-validator'
 
 export type Goal = 'lose-fat' | 'gain-muscle' | 'recomposition'
 export type DietType = 'keto' | 'high-protein' | 'balanced' | 'intermittent-fasting'
@@ -70,6 +71,7 @@ interface MealStore {
   setMealPlanConfig: (config: MealPlanConfig) => void
   weekPlan: DayPlan[]
   setWeekPlan: (plan: DayPlan[]) => void
+  mealPlanValidation: MealPlanValidationResult
   selectedDay: number
   setSelectedDay: (day: number) => void
   calculateMacros: (
@@ -196,6 +198,7 @@ export const useMealStore = create<MealStore>()(
       setMealPlanConfig: (config) => set({ mealPlanConfig: config }),
       weekPlan: [],
       setWeekPlan: (plan) => set({ weekPlan: plan }),
+      mealPlanValidation: { isValid: true, errors: [], warnings: [] },
       selectedDay: 0,
       setSelectedDay: (day) => set({ selectedDay: day }),
       
@@ -242,7 +245,20 @@ export const useMealStore = create<MealStore>()(
           }
         })
         
-        set({ weekPlan: plan })
+        const validation = validateMealPlan({
+          plan,
+          selectedIngredients: userProfile.selectedIngredients ?? [],
+          avoidedIngredients: ((userProfile as unknown as { avoidedIngredients?: string[] }).avoidedIngredients ?? []),
+          dailyCalorieTarget: userProfile.dailyCalories,
+          dailyProteinTarget: userProfile.macros.protein,
+        })
+
+        if (!validation.isValid) {
+          set({ weekPlan: [], mealPlanValidation: validation })
+          return
+        }
+
+        set({ weekPlan: plan, mealPlanValidation: validation })
       },
     }),
     {
