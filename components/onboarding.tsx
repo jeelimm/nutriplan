@@ -501,7 +501,7 @@ export function Onboarding() {
               {goals.map((goal) => (
                 <button
                   key={goal.id}
-                  onClick={() => handleGoalSelect(goal.id)}
+                  onClick={() => setSelectedGoal(goal.id)}
                   className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
                     selectedGoal === goal.id
                       ? "border-primary bg-primary/10"
