@@ -3,12 +3,18 @@ import { persist } from 'zustand/middleware'
 
 export type Goal = 'lose-fat' | 'gain-muscle' | 'recomposition'
 export type DietType = 'keto' | 'high-protein' | 'balanced' | 'intermittent-fasting'
+export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active'
 
 export interface UserProfile {
   weight: number
-  bodyFatPercentage: number
+  bodyFat: number
   muscleMass: number
+  unit: 'kg' | 'lbs'
+  activityLevel: ActivityLevel
   goal: Goal
+  dietType: DietType
+  mealsPerDay: number
+  selectedIngredients: string[]
   dailyCalories: number
   macros: {
     protein: number
@@ -16,6 +22,8 @@ export interface UserProfile {
     fat: number
     minerals: number
   }
+  createdAt: string
+  lastUpdatedAt: string
 }
 
 export interface Meal {
@@ -66,6 +74,68 @@ interface MealStore {
   generateMealPlan: () => void
 }
 
+const PROFILE_VERSION = 2
+
+const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'moderate'
+const DEFAULT_DIET_TYPE: DietType = 'balanced'
+const DEFAULT_MEALS_PER_DAY = 3
+
+const toNumber = (value: unknown, fallback = 0): number => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const ensureIsoDate = (value: unknown, fallback: string): string => {
+  if (typeof value !== 'string' || !value.trim()) return fallback
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? fallback : date.toISOString()
+}
+
+const ensureGoal = (value: unknown): Goal =>
+  value === 'lose-fat' || value === 'gain-muscle' || value === 'recomposition' ? value : 'recomposition'
+
+const ensureDietType = (value: unknown): DietType =>
+  value === 'keto' || value === 'high-protein' || value === 'balanced' || value === 'intermittent-fasting'
+    ? value
+    : DEFAULT_DIET_TYPE
+
+const ensureActivityLevel = (value: unknown): ActivityLevel =>
+  value === 'sedentary' || value === 'light' || value === 'moderate' || value === 'active' || value === 'very-active'
+    ? value
+    : DEFAULT_ACTIVITY_LEVEL
+
+const ensureUnit = (value: unknown): 'kg' | 'lbs' => (value === 'lbs' ? 'lbs' : 'kg')
+
+function normalizeUserProfile(raw: unknown): UserProfile | null {
+  if (!raw || typeof raw !== 'object') return null
+  const profile = raw as Partial<UserProfile> & { bodyFatPercentage?: number }
+  const now = new Date().toISOString()
+  const dailyCalories = toNumber(profile.dailyCalories, 0)
+
+  return {
+    weight: toNumber(profile.weight, 0),
+    bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
+    muscleMass: toNumber(profile.muscleMass, 0),
+    unit: ensureUnit(profile.unit),
+    activityLevel: ensureActivityLevel(profile.activityLevel),
+    goal: ensureGoal(profile.goal),
+    dietType: ensureDietType(profile.dietType),
+    mealsPerDay: Math.max(1, Math.floor(toNumber(profile.mealsPerDay, DEFAULT_MEALS_PER_DAY))),
+    selectedIngredients: Array.isArray(profile.selectedIngredients)
+      ? profile.selectedIngredients.filter((item): item is string => typeof item === 'string')
+      : [],
+    dailyCalories,
+    macros: {
+      protein: toNumber(profile.macros?.protein, 0),
+      carbs: toNumber(profile.macros?.carbs, 0),
+      fat: toNumber(profile.macros?.fat, 0),
+      minerals: toNumber(profile.macros?.minerals, 0),
+    },
+    createdAt: ensureIsoDate(profile.createdAt, now),
+    lastUpdatedAt: ensureIsoDate(profile.lastUpdatedAt, now),
+  }
+}
+
 // Sample meal database
 const mealDatabase: Record<DietType, Meal[]> = {
   'keto': [
@@ -106,7 +176,13 @@ export const useMealStore = create<MealStore>()(
       currentStep: 0,
       setCurrentStep: (step) => set({ currentStep: step }),
       userProfile: null,
-      setUserProfile: (profile) => set({ userProfile: profile }),
+      setUserProfile: (profile) =>
+        set({
+          userProfile: normalizeUserProfile({
+            ...profile,
+            lastUpdatedAt: new Date().toISOString(),
+          }),
+        }),
       mealPlanConfig: null,
       setMealPlanConfig: (config) => set({ mealPlanConfig: config }),
       weekPlan: [],
@@ -192,6 +268,34 @@ export const useMealStore = create<MealStore>()(
     }),
     {
       name: 'meal-plan-storage',
+      version: PROFILE_VERSION,
+      migrate: (persistedState) => {
+        const state = persistedState as Partial<MealStore> | undefined
+        if (!state) return state as MealStore
+        return {
+          ...state,
+          userProfile: normalizeUserProfile(state.userProfile),
+        } as MealStore
+      },
+      partialize: (state) => ({
+        userProfile: state.userProfile,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (!state) return
+        const normalized = normalizeUserProfile(state.userProfile)
+        if (!normalized) {
+          state.setCurrentStep(0)
+          return
+        }
+
+        state.setUserProfile(normalized)
+        state.setMealPlanConfig({
+          dietType: normalized.dietType,
+          mealsPerDay: normalized.mealsPerDay,
+        })
+        state.generateMealPlan()
+        state.setCurrentStep(2)
+      },
     }
   )
 )

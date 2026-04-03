@@ -56,13 +56,21 @@ export function Onboarding() {
       selectedGoal
     )
 
+    const now = new Date().toISOString()
     setUserProfile({
       weight: parseFloat(weight),
-      bodyFatPercentage: parseFloat(bodyFat),
+      bodyFat: parseFloat(bodyFat),
       muscleMass: parseFloat(muscleMass),
+      unit,
+      activityLevel: "moderate",
       goal: selectedGoal,
+      dietType: "balanced",
+      mealsPerDay: 3,
+      selectedIngredients: [],
       dailyCalories: calories,
       macros,
+      createdAt: now,
+      lastUpdatedAt: now,
     })
 
     setCurrentStep(1)

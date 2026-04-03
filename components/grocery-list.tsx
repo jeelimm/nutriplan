@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useMealStore, type Ingredient } from "@/lib/meal-store"
+import { useMealStore } from "@/lib/meal-store"
+import { buildGroceryCategories } from "@/lib/grocery"
 import { ChevronLeft, ShoppingCart, Copy, Check, Beef, Carrot, Wheat, Milk, Droplets, Apple, Sparkles } from "lucide-react"
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -43,31 +44,9 @@ export function GroceryList() {
 
   if (!weekPlan.length) return null
 
-  // Consolidate all ingredients for the week
-  const allIngredients = weekPlan.flatMap(day => 
-    day.meals.flatMap(meal => meal.ingredients)
+  const groceryCategories = buildGroceryCategories(
+    weekPlan.flatMap((day) => day.meals.flatMap((meal) => meal.ingredients))
   )
-
-  // Group and combine quantities
-  const groupedGroceries = allIngredients.reduce((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = new Map<string, string[]>()
-    const existing = acc[item.category].get(item.name)
-    if (existing) {
-      existing.push(item.amount)
-    } else {
-      acc[item.category].set(item.name, [item.amount])
-    }
-    return acc
-  }, {} as Record<string, Map<string, string[]>>)
-
-  // Convert to array format
-  const groceryCategories = Object.entries(groupedGroceries).map(([category, items]) => ({
-    category,
-    items: Array.from(items.entries()).map(([name, amounts]) => ({
-      name,
-      amounts: combineAmounts(amounts),
-    })),
-  }))
 
   // Sort categories by item count
   groceryCategories.sort((a, b) => b.items.length - a.items.length)
@@ -242,25 +221,4 @@ export function GroceryList() {
       </div>
     </div>
   )
-}
-
-// Helper function to combine similar amounts
-function combineAmounts(amounts: string[]): string {
-  const combined = amounts.reduce((acc, amount) => {
-    const match = amount.match(/^([\d.\/]+)\s*(.*)$/)
-    if (match) {
-      const num = parseFloat(eval(match[1])) || 1
-      const unit = match[2].trim()
-      if (!acc[unit]) acc[unit] = 0
-      acc[unit] += num
-    } else {
-      if (!acc[amount]) acc[amount] = 0
-      acc[amount] += 1
-    }
-    return acc
-  }, {} as Record<string, number>)
-
-  return Object.entries(combined)
-    .map(([unit, count]) => unit ? `${count} ${unit}` : `${count}x`)
-    .join(', ')
 }

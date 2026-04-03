@@ -16,7 +16,7 @@ const dietTypes: { id: DietType; label: string; description: string; icon: React
 const mealCounts = [2, 3, 4, 5]
 
 export function MealPlanConfig() {
-  const { userProfile, setMealPlanConfig, setCurrentStep, generateMealPlan } = useMealStore()
+  const { userProfile, setMealPlanConfig, setCurrentStep, generateMealPlan, setUserProfile } = useMealStore()
   const [selectedDiet, setSelectedDiet] = useState<DietType | null>(null)
   const [mealsPerDay, setMealsPerDay] = useState<number>(3)
 
@@ -27,6 +27,14 @@ export function MealPlanConfig() {
       dietType: selectedDiet,
       mealsPerDay,
     })
+    if (userProfile) {
+      setUserProfile({
+        ...userProfile,
+        dietType: selectedDiet,
+        mealsPerDay,
+        lastUpdatedAt: new Date().toISOString(),
+      })
+    }
 
     generateMealPlan()
     setCurrentStep(2)

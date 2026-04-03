@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useMealStore } from "@/lib/meal-store"
+import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
+import { buildGroceryCategories } from "@/lib/grocery"
 import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock } from "lucide-react"
 
 function MacroProgress({ current, target, label, icon, color }: { 
@@ -35,9 +36,105 @@ function MacroProgress({ current, target, label, icon, color }: {
 }
 
 export function DailyView() {
-  const { weekPlan, userProfile, selectedDay, setSelectedDay, setCurrentStep } = useMealStore()
+  const {
+    weekPlan,
+    userProfile,
+    selectedDay,
+    setSelectedDay,
+    setCurrentStep,
+    setUserProfile,
+    calculateMacros,
+    setMealPlanConfig,
+    generateMealPlan,
+  } = useMealStore()
   const [showGroceryList, setShowGroceryList] = useState(false)
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set())
+
+  const toKg = (value: number, unit: "kg" | "lbs") => (unit === "lbs" ? value * 0.453592 : value)
+
+  const editProfile = () => {
+    if (!userProfile) return
+
+    const weightInput = window.prompt("Weight", String(userProfile.weight))
+    if (weightInput === null) return
+    const bodyFatInput = window.prompt("Body fat %", String(userProfile.bodyFat))
+    if (bodyFatInput === null) return
+    const muscleMassInput = window.prompt("Muscle mass", String(userProfile.muscleMass))
+    if (muscleMassInput === null) return
+    const unitInput = window.prompt("Unit (kg or lbs)", userProfile.unit)
+    if (unitInput === null) return
+    const goalInput = window.prompt("Goal (lose-fat | gain-muscle | recomposition)", userProfile.goal)
+    if (goalInput === null) return
+    const dietInput = window.prompt(
+      "Diet type (keto | high-protein | balanced | intermittent-fasting)",
+      userProfile.dietType
+    )
+    if (dietInput === null) return
+    const activityInput = window.prompt(
+      "Activity level (sedentary | light | moderate | active | very-active)",
+      userProfile.activityLevel
+    )
+    if (activityInput === null) return
+    const ingredientsInput = window.prompt(
+      "Preferred ingredients (comma-separated)",
+      userProfile.selectedIngredients.join(", ")
+    )
+    if (ingredientsInput === null) return
+    const mealsInput = window.prompt("Meals per day", String(userProfile.mealsPerDay))
+    if (mealsInput === null) return
+
+    const unit = unitInput === "lbs" ? "lbs" : "kg"
+    const goal: Goal =
+      goalInput === "lose-fat" || goalInput === "gain-muscle" || goalInput === "recomposition"
+        ? goalInput
+        : userProfile.goal
+    const dietType: DietType =
+      dietInput === "keto" || dietInput === "high-protein" || dietInput === "balanced" || dietInput === "intermittent-fasting"
+        ? dietInput
+        : userProfile.dietType
+    const activityLevel: ActivityLevel =
+      activityInput === "sedentary" ||
+      activityInput === "light" ||
+      activityInput === "moderate" ||
+      activityInput === "active" ||
+      activityInput === "very-active"
+        ? activityInput
+        : userProfile.activityLevel
+
+    const weight = Number(weightInput)
+    const bodyFat = Number(bodyFatInput)
+    const muscleMass = Number(muscleMassInput)
+    const mealsPerDay = Math.max(1, Math.floor(Number(mealsInput) || userProfile.mealsPerDay))
+    if (!Number.isFinite(weight) || !Number.isFinite(bodyFat) || !Number.isFinite(muscleMass)) return
+
+    const { calories, macros } = calculateMacros(toKg(weight, unit), bodyFat, goal)
+    const now = new Date().toISOString()
+
+    setUserProfile({
+      ...userProfile,
+      weight,
+      bodyFat,
+      muscleMass,
+      unit,
+      goal,
+      dietType,
+      activityLevel,
+      mealsPerDay,
+      selectedIngredients: ingredientsInput
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+      dailyCalories: calories,
+      macros,
+      lastUpdatedAt: now,
+    })
+
+    const shouldRegenerate = window.confirm("Profile updated. Regenerate meal plan with new settings?")
+    if (shouldRegenerate) {
+      setMealPlanConfig({ dietType, mealsPerDay })
+      generateMealPlan()
+    }
+  }
 
   const toggleMealExpanded = (mealId: string) => {
     setExpandedMeals(prev => {
@@ -55,17 +152,7 @@ export function DailyView() {
 
   const currentDay = weekPlan[selectedDay]
 
-  const groceryList = currentDay.meals.flatMap(meal => meal.ingredients)
-  const groupedGroceries = groceryList.reduce((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = []
-    const existing = acc[item.category].find(i => i.name === item.name)
-    if (existing) {
-      existing.amount += `, ${item.amount}`
-    } else {
-      acc[item.category].push({ ...item })
-    }
-    return acc
-  }, {} as Record<string, typeof groceryList>)
+  const groceryCategories = buildGroceryCategories(currentDay.meals.flatMap((meal) => meal.ingredients))
 
   const categoryLabels: Record<string, string> = {
     protein: "Proteins",
@@ -113,6 +200,9 @@ export function DailyView() {
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
+          <Button variant="outline" className="mt-3 h-9 w-full" onClick={editProfile}>
+            Edit Profile
+          </Button>
 
           {/* Day Dots */}
           <div className="mt-3 flex justify-center gap-1.5">
@@ -320,19 +410,19 @@ export function DailyView() {
             </div>
 
             <div className="space-y-4">
-              {Object.entries(groupedGroceries).map(([category, items]) => (
+              {groceryCategories.map(({ category, items }) => (
                 <div key={category}>
                   <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-primary">
                     {categoryLabels[category] || category}
                   </h3>
                   <div className="space-y-1">
-                    {items.map((item, idx) => (
+                    {items.map((item) => (
                       <div
-                        key={idx}
+                        key={item.name}
                         className="flex items-center justify-between rounded-lg bg-secondary p-3"
                       >
                         <span className="text-foreground">{item.name}</span>
-                        <span className="text-sm text-muted-foreground">{item.amount}</span>
+                        <span className="text-sm text-muted-foreground">{item.amounts}</span>
                       </div>
                     ))}
                   </div>
