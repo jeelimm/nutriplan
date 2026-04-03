@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Spinner } from "@/components/ui/spinner"
 import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock } from "lucide-react"
@@ -55,6 +56,7 @@ export function DailyView() {
     weekPlan,
     userProfile,
     mealPlanValidation,
+    isGeneratingMealPlan,
     selectedDay,
     setSelectedDay,
     setCurrentStep,
@@ -74,6 +76,35 @@ export function DailyView() {
   const [unit, setUnit] = useState<"kg" | "lbs">("kg")
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>("moderate")
   const [goal, setGoal] = useState<Goal>("recomposition")
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
+  const [showLongWaitError, setShowLongWaitError] = useState(false)
+
+  const loadingMessages = [
+    "Building your personalized meal plan...",
+    "Calculating your macros...",
+    "Finding the best ingredients for you...",
+    "Almost ready...",
+  ]
+
+  useEffect(() => {
+    if (!isGeneratingMealPlan) {
+      setLoadingMessageIndex(0)
+      setShowLongWaitError(false)
+      return
+    }
+
+    const interval = window.setInterval(() => {
+      setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length)
+    }, 3000)
+    const timeout = window.setTimeout(() => {
+      setShowLongWaitError(true)
+    }, 45000)
+
+    return () => {
+      window.clearInterval(interval)
+      window.clearTimeout(timeout)
+    }
+  }, [isGeneratingMealPlan])
 
   const openEditProfileModal = () => {
     if (!userProfile) return
@@ -135,6 +166,23 @@ export function DailyView() {
   }
 
   if (!userProfile) return null
+
+  if (isGeneratingMealPlan && !weekPlan.length) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8">
+        <div className="mx-auto flex max-w-lg flex-col items-center justify-center rounded-3xl border border-border bg-card p-10 text-center shadow-lg">
+          <Spinner className="mb-4 size-8 text-primary" />
+          <h2 className="text-xl font-semibold text-foreground">{loadingMessages[loadingMessageIndex]}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">This may take up to 30 seconds</p>
+          {showLongWaitError && (
+            <p className="mt-4 text-sm font-medium text-destructive">
+              Taking longer than expected. Please try again.
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   if (!weekPlan.length && !mealPlanValidation.isValid) {
     return (

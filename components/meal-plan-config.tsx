@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useMealStore } from "@/lib/meal-store"
 import { calculateNutritionTargets, toKg } from "@/lib/nutrition"
+import { Spinner } from "@/components/ui/spinner"
 import { Beef, Utensils, ChevronLeft, Flame, Wheat, Droplets, Zap } from "lucide-react"
 
 const mealCounts = [2, 3, 4, 5]
@@ -12,6 +13,7 @@ const mealCounts = [2, 3, 4, 5]
 export function MealPlanConfig() {
   const { userProfile, setMealPlanConfig, setCurrentStep, generateMealPlan, setUserProfile } = useMealStore()
   const [mealsPerDay, setMealsPerDay] = useState<number>(userProfile?.mealsPerDay ?? 3)
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const targetDiet = userProfile?.dietType ?? "balanced"
   const liveTargets = userProfile
@@ -24,14 +26,17 @@ export function MealPlanConfig() {
       })
     : null
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!userProfile) return
+    if (isGenerating) return
 
-    setMealPlanConfig({
-      dietType: userProfile.dietType,
-      mealsPerDay,
-    })
-    if (userProfile) {
+    setIsGenerating(true)
+
+    try {
+      setMealPlanConfig({
+        dietType: userProfile.dietType,
+        mealsPerDay,
+      })
       const updatedTargets = calculateNutritionTargets({
         weightKg: toKg(userProfile.weight, userProfile.unit),
         bodyFat: userProfile.bodyFat,
@@ -46,10 +51,12 @@ export function MealPlanConfig() {
         macros: updatedTargets.macros,
         lastUpdatedAt: new Date().toISOString(),
       })
-    }
 
-    generateMealPlan()
-    setCurrentStep(2)
+      await generateMealPlan()
+      setCurrentStep(2)
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   return (
@@ -145,9 +152,16 @@ export function MealPlanConfig() {
         <Button
           className="h-14 w-full text-lg font-semibold"
           onClick={handleComplete}
-          disabled={!userProfile}
+          disabled={!userProfile || isGenerating}
         >
-          Generate 7-Day Meal Plan
+          {isGenerating ? (
+            <span className="inline-flex items-center justify-center gap-2">
+              <Spinner />
+              Generating...
+            </span>
+          ) : (
+            "Generate 7-Day Meal Plan"
+          )}
         </Button>
       </div>
     </div>

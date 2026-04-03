@@ -72,6 +72,7 @@ interface MealStore {
   weekPlan: DayPlan[]
   setWeekPlan: (plan: DayPlan[]) => void
   mealPlanValidation: MealPlanValidationResult
+  isGeneratingMealPlan: boolean
   selectedDay: number
   setSelectedDay: (day: number) => void
   calculateMacros: (
@@ -81,7 +82,7 @@ interface MealStore {
     activityLevel: ActivityLevel,
     dietType: DietType
   ) => { calories: number; macros: UserProfile['macros'] }
-  generateMealPlan: () => void
+  generateMealPlan: () => Promise<void>
 }
 
 const PROFILE_VERSION = 2
@@ -199,6 +200,7 @@ export const useMealStore = create<MealStore>()(
       weekPlan: [],
       setWeekPlan: (plan) => set({ weekPlan: plan }),
       mealPlanValidation: { isValid: true, errors: [], warnings: [] },
+      isGeneratingMealPlan: false,
       selectedDay: 0,
       setSelectedDay: (day) => set({ selectedDay: day }),
       
@@ -211,32 +213,106 @@ export const useMealStore = create<MealStore>()(
           dietType,
         }),
       
-      generateMealPlan: () => {
+      generateMealPlan: async () => {
         const { mealPlanConfig, userProfile } = get()
         if (!mealPlanConfig || !userProfile) return
-        
-        const meals = mealDatabase[mealPlanConfig.dietType]
-        const plan: DayPlan[] = days.map((day) => {
-          const dayMeals: Meal[] = []
-          const targetCaloriesPerMeal = userProfile.dailyCalories / mealPlanConfig.mealsPerDay
-          
-          for (let i = 0; i < mealPlanConfig.mealsPerDay; i++) {
-            // Select a random meal and adjust portions
-            const randomMeal = { ...meals[Math.floor(Math.random() * meals.length)] }
-            const scaleFactor = targetCaloriesPerMeal / randomMeal.calories
-            
-            dayMeals.push({
-              ...randomMeal,
-              id: `${day}-${i}`,
-              calories: Math.round(randomMeal.calories * scaleFactor),
-              protein: Math.round(randomMeal.protein * scaleFactor),
-              carbs: Math.round(randomMeal.carbs * scaleFactor),
-              fat: Math.round(randomMeal.fat * scaleFactor),
+        set({ isGeneratingMealPlan: true })
+        try {
+
+        const payload = {
+          weight: userProfile.weight,
+          bodyFat: userProfile.bodyFat,
+          muscleMass: userProfile.muscleMass,
+          unit: userProfile.unit,
+          goal: userProfile.goal,
+          dietType: mealPlanConfig.dietType,
+          activityLevel: userProfile.activityLevel,
+          mealsPerDay: mealPlanConfig.mealsPerDay,
+          dailyCalories: userProfile.dailyCalories,
+          macros: userProfile.macros,
+          selectedIngredients: userProfile.selectedIngredients,
+        }
+
+        let data: unknown
+        try {
+          const res = await fetch("/api/generate-meal-plan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            cache: "no-store",
+          })
+
+          if (!res.ok) {
+            set({
+              weekPlan: [],
+              mealPlanValidation: {
+                isValid: false,
+                errors: ["Meal plan generation failed. Please try again."],
+                warnings: [],
+              },
             })
+            return
           }
-          
+
+          data = (await res.json()) as unknown
+        } catch (err) {
+          set({
+            weekPlan: [],
+            mealPlanValidation: {
+              isValid: false,
+              errors: ["Meal plan generation failed due to a network error."],
+              warnings: [],
+            },
+          })
+          return
+        }
+
+        // Map Claude JSON -> internal DayPlan/Meal structures.
+        const mappedPlan: DayPlan[] = (data as any)?.days?.map((day: any, dayIdx: number) => {
+          const dayName = typeof day?.day === "string" ? day.day : days[dayIdx] ?? "Monday"
+          const dayMeals: Meal[] = Array.isArray(day?.meals)
+            ? day.meals.map((meal: any, mealIdx: number) => {
+                const safeLower = (s: string) => s.toLowerCase()
+                const categoryRaw = safeLower(String(meal?.ingredients?.[0]?.category ?? ""))
+                const mapCategory = (cat: unknown): Ingredient["category"] => {
+                  const c = safeLower(String(cat ?? ""))
+                  if (c.includes("protein")) return "protein"
+                  if (c.includes("carb")) return "carbs"
+                  if (c.includes("fat")) return "fats"
+                  if (c.includes("veget")) return "vegetables"
+                  if (c.includes("dairy")) return "dairy"
+                  if (c.includes("fruit")) return "fruits"
+                  if (c.includes("spice")) return "spices"
+                  return categoryRaw ? "protein" : "protein"
+                }
+
+                const ingredients: Ingredient[] = Array.isArray(meal?.ingredients)
+                  ? meal.ingredients.map((ing: any) => ({
+                      name: String(ing?.name ?? ""),
+                      amount: String(ing?.amount ?? ""),
+                      category: mapCategory(ing?.category),
+                    }))
+                  : []
+
+                const recipe = meal?.recipe ?? {}
+
+                return {
+                  id: `${dayName}-${mealIdx}`,
+                  name: String(meal?.name ?? ""),
+                  calories: Math.round(Number(meal?.calories ?? 0) || 0),
+                  protein: Math.round(Number(meal?.protein ?? 0) || 0),
+                  carbs: Math.round(Number(meal?.carbs ?? 0) || 0),
+                  fat: Math.round(Number(meal?.fat ?? 0) || 0),
+                  ingredients,
+                  instructions: Array.isArray(recipe?.instructions) ? recipe.instructions.map((s: any) => String(s)) : [],
+                  prepTime: Math.round(Number(recipe?.prepTime ?? 0) || 0),
+                  cookTime: Math.round(Number(recipe?.cookTime ?? 0) || 0),
+                }
+              })
+            : []
+
           return {
-            day,
+            day: dayName,
             meals: dayMeals,
             totalCalories: dayMeals.reduce((sum, m) => sum + m.calories, 0),
             totalProtein: dayMeals.reduce((sum, m) => sum + m.protein, 0),
@@ -244,13 +320,14 @@ export const useMealStore = create<MealStore>()(
             totalFat: dayMeals.reduce((sum, m) => sum + m.fat, 0),
           }
         })
-        
+
         const validation = validateMealPlan({
-          plan,
+          plan: mappedPlan,
           selectedIngredients: userProfile.selectedIngredients ?? [],
-          avoidedIngredients: ((userProfile as unknown as { avoidedIngredients?: string[] }).avoidedIngredients ?? []),
+          avoidedIngredients: [],
           dailyCalorieTarget: userProfile.dailyCalories,
           dailyProteinTarget: userProfile.macros.protein,
+          rawClaudeResponse: data,
         })
 
         if (!validation.isValid) {
@@ -258,7 +335,10 @@ export const useMealStore = create<MealStore>()(
           return
         }
 
-        set({ weekPlan: plan, mealPlanValidation: validation })
+        set({ weekPlan: mappedPlan, mealPlanValidation: validation })
+        } finally {
+          set({ isGeneratingMealPlan: false })
+        }
       },
     }),
     {
