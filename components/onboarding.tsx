@@ -191,6 +191,7 @@ export function Onboarding() {
   const [selectedActivityLevel, setSelectedActivityLevel] = useState<ActivityLevel | null>(null)
   const [selectedDietType, setSelectedDietType] = useState<DietType | null>(null)
   const [ingredientMode, setIngredientMode] = useState<"recommend" | "custom" | null>(null)
+  const [selectedBudgetPreset, setSelectedBudgetPreset] = useState<"low" | "medium" | "high" | null>(null)
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([])
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState<IngredientCategory>("protein")
@@ -258,9 +259,9 @@ export function Onboarding() {
     setSelectedIngredients((prev) => (prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]))
   }
 
-  const chooseBudgetPreset = (presetItems: string[]) => {
+  const chooseBudgetPreset = (presetId: "low" | "medium" | "high", presetItems: string[]) => {
+    setSelectedBudgetPreset(presetId)
     setSelectedIngredients(presetItems)
-    setStep("ingredients")
   }
 
   const addIngredientFromSearch = (name: string) => {
@@ -607,7 +608,10 @@ export function Onboarding() {
               </button>
               <button
                 type="button"
-                onClick={() => setIngredientMode("custom")}
+                onClick={() => {
+                  setIngredientMode("custom")
+                  setSelectedBudgetPreset(null)
+                }}
                 className={`w-full rounded-xl border-2 p-4 text-left ${
                   ingredientMode === "custom" ? "border-primary bg-primary/10" : "border-border"
                 }`}
@@ -642,8 +646,12 @@ export function Onboarding() {
                     <button
                       key={preset.id}
                       type="button"
-                      onClick={() => chooseBudgetPreset(preset.items)}
-                      className="w-full rounded-xl border border-border p-4 text-left hover:border-primary"
+                      onClick={() => chooseBudgetPreset(preset.id, preset.items)}
+                      className={`w-full rounded-xl border p-4 text-left transition-all ${
+                        selectedBudgetPreset === preset.id
+                          ? "border-green-600 bg-green-50 dark:bg-green-950/30"
+                          : "border-border hover:border-primary"
+                      }`}
                     >
                       <div className="font-semibold">{preset.label}</div>
                       <div className="text-sm text-muted-foreground">{preset.weeklyCost}</div>

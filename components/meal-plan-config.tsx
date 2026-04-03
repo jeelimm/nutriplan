@@ -3,25 +3,17 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useMealStore, type DietType } from "@/lib/meal-store"
+import { useMealStore } from "@/lib/meal-store"
 import { calculateNutritionTargets, toKg } from "@/lib/nutrition"
-import { Salad, Beef, Scale, Clock, Utensils, ChevronLeft, Flame, Droplets, Wheat, Zap } from "lucide-react"
-
-const dietTypes: { id: DietType; label: string; description: string; icon: React.ReactNode }[] = [
-  { id: "keto", label: "Keto", description: "Low carb, high fat", icon: <Droplets className="h-6 w-6" /> },
-  { id: "high-protein", label: "High Protein", description: "Maximum protein intake", icon: <Beef className="h-6 w-6" /> },
-  { id: "balanced", label: "Balanced", description: "Equal macro distribution", icon: <Scale className="h-6 w-6" /> },
-  { id: "intermittent-fasting", label: "Intermittent Fasting", description: "Larger meals, time-restricted", icon: <Clock className="h-6 w-6" /> },
-]
+import { Beef, Utensils, ChevronLeft, Flame, Wheat, Droplets, Zap } from "lucide-react"
 
 const mealCounts = [2, 3, 4, 5]
 
 export function MealPlanConfig() {
   const { userProfile, setMealPlanConfig, setCurrentStep, generateMealPlan, setUserProfile } = useMealStore()
-  const [selectedDiet, setSelectedDiet] = useState<DietType | null>(userProfile?.dietType ?? null)
   const [mealsPerDay, setMealsPerDay] = useState<number>(userProfile?.mealsPerDay ?? 3)
 
-  const targetDiet = selectedDiet ?? userProfile?.dietType ?? "balanced"
+  const targetDiet = userProfile?.dietType ?? "balanced"
   const liveTargets = userProfile
     ? calculateNutritionTargets({
         weightKg: toKg(userProfile.weight, userProfile.unit),
@@ -33,10 +25,10 @@ export function MealPlanConfig() {
     : null
 
   const handleComplete = () => {
-    if (!selectedDiet) return
+    if (!userProfile) return
 
     setMealPlanConfig({
-      dietType: selectedDiet,
+      dietType: userProfile.dietType,
       mealsPerDay,
     })
     if (userProfile) {
@@ -45,11 +37,10 @@ export function MealPlanConfig() {
         bodyFat: userProfile.bodyFat,
         activityLevel: userProfile.activityLevel,
         goal: userProfile.goal,
-        dietType: selectedDiet,
+        dietType: userProfile.dietType,
       })
       setUserProfile({
         ...userProfile,
-        dietType: selectedDiet,
         mealsPerDay,
         dailyCalories: updatedTargets.calories,
         macros: updatedTargets.macros,
@@ -112,44 +103,6 @@ export function MealPlanConfig() {
           </Card>
         )}
 
-        {/* Diet Type Selection */}
-        <Card className="mb-6 border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Salad className="h-5 w-5 text-primary" />
-              Choose Your Diet Type
-            </CardTitle>
-            <CardDescription>
-              Select a diet style that fits your lifestyle
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {dietTypes.map((diet) => (
-              <button
-                key={diet.id}
-                onClick={() => setSelectedDiet(diet.id)}
-                className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
-                  selectedDiet === diet.id
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-lg ${
-                    selectedDiet === diet.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {diet.icon}
-                </div>
-                <div>
-                  <div className="font-semibold text-foreground">{diet.label}</div>
-                  <div className="text-sm text-muted-foreground">{diet.description}</div>
-                </div>
-              </button>
-            ))}
-          </CardContent>
-        </Card>
-
         {/* Meals Per Day */}
         <Card className="mb-6 border-0 shadow-lg">
           <CardHeader>
@@ -192,7 +145,7 @@ export function MealPlanConfig() {
         <Button
           className="h-14 w-full text-lg font-semibold"
           onClick={handleComplete}
-          disabled={!selectedDiet}
+          disabled={!userProfile}
         >
           Generate 7-Day Meal Plan
         </Button>
