@@ -73,11 +73,12 @@ export function MealPlanConfig() {
     <div className="min-h-screen bg-background p-4 pb-24 md:p-8 md:pb-24">
       <div className="mx-auto max-w-lg">
         <button
+          type="button"
           onClick={() => setCurrentStep(0)}
           className="mb-4 flex items-center gap-1 text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to profile setup
+          Back
         </button>
 
         {/* Calculated Results */}

@@ -6,7 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
-import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
+import {
+  useMealStore,
+  CUISINE_OPTIONS,
+  type ActivityLevel,
+  type CuisinePreference,
+  type DietType,
+  type Goal,
+} from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
@@ -78,6 +85,7 @@ export function DailyView() {
   const [unit, setUnit] = useState<"kg" | "lbs">("kg")
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>("moderate")
   const [goal, setGoal] = useState<Goal>("recomposition")
+  const [editCuisines, setEditCuisines] = useState<CuisinePreference[]>([])
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
 
@@ -127,11 +135,25 @@ export function DailyView() {
     setUnit(userProfile.unit)
     setActivityLevel(userProfile.activityLevel)
     setGoal(userProfile.goal)
+    setEditCuisines(
+      userProfile.cuisinePreference && userProfile.cuisinePreference.length > 0
+        ? [...userProfile.cuisinePreference]
+        : []
+    )
     setShowEditProfileModal(true)
+  }
+
+  const toggleEditCuisine = (id: CuisinePreference) => {
+    setEditCuisines((prev) => {
+      if (prev.includes(id)) return prev.filter((c) => c !== id)
+      if (prev.length < 2) return [...prev, id]
+      return [prev[1], id]
+    })
   }
 
   const handleSaveProfile = () => {
     if (!userProfile) return
+    if (editCuisines.length < 1) return
     const nextWeight = Number(weight)
     const nextBodyFat = Number(bodyFat)
     const nextMuscleMass = Number(muscleMass)
@@ -165,6 +187,7 @@ export function DailyView() {
       goal,
       activityLevel,
       mealsPerDay,
+      cuisinePreference: editCuisines,
       dailyCalories: calories,
       macros,
       lastUpdatedAt: now,
@@ -637,12 +660,31 @@ export function DailyView() {
                   ))}
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label>Cuisine (pick 1–2)</Label>
+                <p className="text-xs text-muted-foreground">Used when generating your meal plan</p>
+                <div className="grid gap-2">
+                  {CUISINE_OPTIONS.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleEditCuisine(c.id)}
+                      className={`rounded-xl border-2 p-3 text-left text-sm ${
+                        editCuisines.includes(c.id) ? "border-primary bg-primary/10" : "border-border"
+                      }`}
+                    >
+                      <div className="font-medium">{c.title}</div>
+                      <div className="text-xs text-muted-foreground">{c.hint}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="mt-6 flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setShowEditProfileModal(false)}>
                 Cancel
               </Button>
-              <Button className="flex-1" onClick={handleSaveProfile}>
+              <Button className="flex-1" onClick={handleSaveProfile} disabled={editCuisines.length < 1}>
                 Save
               </Button>
             </div>

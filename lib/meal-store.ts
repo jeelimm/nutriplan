@@ -153,6 +153,15 @@ const CUISINE_IDS = new Set<CuisinePreference>([
   'asian-fusion',
 ])
 
+export const CUISINE_OPTIONS: { id: CuisinePreference; title: string; hint: string }[] = [
+  { id: 'western', title: '🌍 Western', hint: 'bread, pasta, chicken, beef' },
+  { id: 'korean', title: '🇰🇷 Korean', hint: 'rice, kimchi, tofu, pork, seafood' },
+  { id: 'japanese', title: '🇯🇵 Japanese', hint: 'rice, fish, miso, tofu, noodles' },
+  { id: 'chinese', title: '🇨🇳 Chinese', hint: 'rice, noodles, pork, vegetables' },
+  { id: 'mediterranean', title: '🫒 Mediterranean', hint: 'olive oil, fish, legumes, grains' },
+  { id: 'asian-fusion', title: '🌏 Asian Fusion', hint: 'mix of Asian ingredients' },
+]
+
 function ensureCuisinePreference(value: unknown): CuisinePreference[] {
   if (!Array.isArray(value)) return []
   return value.filter((item): item is CuisinePreference => typeof item === 'string' && CUISINE_IDS.has(item as CuisinePreference))

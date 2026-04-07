@@ -37,21 +37,16 @@ function splitRemainingCarbsFatKcal(
 ): { carbKcal: number; fatKcal: number } {
   if (remainingKcal <= 0) return { carbKcal: 0, fatKcal: 0 }
 
-  if (dietType === "balanced") {
-    const c = 45 / (45 + 35)
+  if (dietType === "balanced" || dietType === "intermittent-fasting") {
+    const c = 55 / (55 + 45)
     return { carbKcal: remainingKcal * c, fatKcal: remainingKcal * (1 - c) }
   }
   if (dietType === "high-protein") {
-    const c = 35 / (35 + 30)
-    return { carbKcal: remainingKcal * c, fatKcal: remainingKcal * (1 - c) }
-  }
-  if (dietType === "intermittent-fasting") {
-    const c = 40 / (40 + 30)
+    const c = 45 / (45 + 55)
     return { carbKcal: remainingKcal * c, fatKcal: remainingKcal * (1 - c) }
   }
   const carbCapKcal = 50 * 4
-  const carbFromRatio = remainingKcal * (5 / (70 + 5))
-  const carbKcal = Math.min(carbCapKcal, carbFromRatio)
+  const carbKcal = Math.min(carbCapKcal, remainingKcal)
   return { carbKcal, fatKcal: remainingKcal - carbKcal }
 }
 
@@ -92,9 +87,10 @@ export function calculateNutritionTargets(input: {
   let calories = Math.round(Math.max(minCalories, adjustedCalories))
 
   const proteinPerKg = proteinGPerKgLbm(input.goal, input.dietType)
-  let proteinG = Math.round(lbmForFormula * proteinPerKg)
+  const minProteinG = Math.round(lbmForFormula * 1.2)
   const maxProteinG = Math.round(lbmForFormula * 2.2)
-  proteinG = Math.min(proteinG, maxProteinG)
+  let proteinG = Math.round(lbmForFormula * proteinPerKg)
+  proteinG = Math.min(maxProteinG, Math.max(minProteinG, proteinG))
 
   const proteinKcal = proteinG * 4
   let remainingKcal = calories - proteinKcal

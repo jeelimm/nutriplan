@@ -145,26 +145,43 @@ function applyClaudeResponseNormalizer(days: any[]): any[] {
   }))
 }
 
-const CUISINE_LABELS: Record<string, string> = {
-  western: "Western",
-  korean: "Korean",
-  japanese: "Japanese",
-  chinese: "Chinese",
-  mediterranean: "Mediterranean",
-  "asian-fusion": "Asian Fusion",
-}
-
 function buildCuisinePromptBlock(cuisines: unknown): string {
   const list = Array.isArray(cuisines) ? cuisines.filter((c): c is string => typeof c === "string") : []
   if (!list.length) return ""
-  const readable = list.map((id) => CUISINE_LABELS[id] ?? id).filter(Boolean)
-  if (!readable.length) return ""
-  const joined = readable.join(" and ")
+
+  const blocks: string[] = []
+
+  if (list.includes("korean")) {
+    blocks.push(`KOREAN (mandatory when this applies): Generate KOREAN-style meals only.
+Meal names must be Korean dishes (e.g., 제육볶음, 된장국, 계란볶음밥, 닭갈비, 참치김치볶음밥, 두부조림).
+Use ONLY these ingredients where possible: rice, tofu, pork belly, kimchi, doenjang, gochujang, sesame oil, eggs, spinach, bean sprouts, zucchini, mushrooms, chicken, beef, seafood, seaweed.
+Do NOT use: quinoa, kale, Brussels sprouts, pasta, bread, avocado, Greek yogurt.`)
+  }
+  if (list.includes("western")) {
+    blocks.push(`WESTERN: Generate Western-style meals.
+Use: chicken breast, beef, pasta, potatoes, broccoli, eggs, olive oil, bread, oats.`)
+  }
+  if (list.includes("japanese")) {
+    blocks.push(`JAPANESE: Generate Japanese-style meals (e.g., salmon teriyaki, miso soup, onigiri, yakitori, tamago gohan).
+Use: rice, salmon, tofu, miso, eggs, edamame, noodles, soy sauce.`)
+  }
+  if (list.includes("mediterranean")) {
+    blocks.push(`MEDITERRANEAN: Generate Mediterranean-style meals.
+Use: olive oil, fish, legumes, chickpeas, lentils, vegetables, whole grains, feta.`)
+  }
+  if (list.includes("chinese")) {
+    blocks.push(`CHINESE: Generate Chinese-style meals with regional staples (e.g., stir-fries, rice, noodles, soy, ginger, garlic, pork, chicken, leafy greens, tofu). Avoid Western defaults like sandwiches or pasta unless fusion is explicitly required.`)
+  }
+  if (list.includes("asian-fusion")) {
+    blocks.push(`ASIAN FUSION: Combine East/Southeast Asian ingredients authentically (rice, noodles, soy, fish sauce, tofu, aromatics). Do not default to Western plates.`)
+  }
+
+  if (!blocks.length) return ""
+
   return `
 
-Cuisine: Generate meals using ingredients typical for ${joined} cuisine. Avoid ingredients that are hard to find or expensive in this cuisine's home region.
-For Korean cuisine: use rice, kimchi, doenjang, gochujang, tofu, pork belly, seafood, sesame oil. Avoid: quinoa, kale, Brussels sprouts.
-For Western cuisine: use chicken breast, beef, pasta, bread, potatoes, broccoli, olive oil.
+STRICT CUISINE (non-negotiable — every meal must comply; do not substitute Western/American defaults when a listed cuisine forbids it):
+${blocks.join("\n\n")}
 `
 }
 
@@ -249,7 +266,7 @@ Use ONLY the field names shown above.`
         anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 10000,
-          system: "Output strict JSON only.",
+          system: "Output strict JSON only. When the user message includes STRICT CUISINE, follow it for every meal and meal name — do not ignore it.",
           messages: [{ role: "user", content: prompt }],
         }),
         new Promise<never>((_, reject) =>

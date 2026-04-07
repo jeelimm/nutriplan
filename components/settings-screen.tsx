@@ -3,7 +3,14 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
+import {
+  useMealStore,
+  CUISINE_OPTIONS,
+  type ActivityLevel,
+  type CuisinePreference,
+  type DietType,
+  type Goal,
+} from "@/lib/meal-store"
 import { toKg } from "@/lib/nutrition"
 import { ChevronLeft, Settings } from "lucide-react"
 
@@ -140,6 +147,38 @@ export function SettingsScreen() {
                     {item.label}
                   </Button>
                 ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Cuisine (pick 1–2)</Label>
+              <p className="text-xs text-muted-foreground">Used when regenerating your meal plan</p>
+              <div className="grid gap-2">
+                {CUISINE_OPTIONS.map((c) => {
+                  const selected = (userProfile.cuisinePreference ?? []).includes(c.id)
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        const prev = userProfile.cuisinePreference ?? []
+                        if (prev.includes(c.id)) {
+                          if (prev.length <= 1) return
+                          updatePreferences({ cuisinePreference: prev.filter((x) => x !== c.id) })
+                          return
+                        }
+                        const next: CuisinePreference[] =
+                          prev.length < 2 ? [...prev, c.id] : [prev[1], c.id]
+                        updatePreferences({ cuisinePreference: next })
+                      }}
+                      className={`rounded-xl border-2 p-3 text-left text-sm transition-colors ${
+                        selected ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="font-medium text-foreground">{c.title}</div>
+                      <div className="text-xs text-muted-foreground">{c.hint}</div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </CardContent>

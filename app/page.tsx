@@ -15,8 +15,12 @@ export default function MealPlanApp() {
 
   return (
     <main className="min-h-screen">
-      {currentStep === 0 && <Onboarding />}
-      {currentStep === 1 && <MealPlanConfig />}
+      <div className={currentStep === 0 ? "block" : "hidden"}>
+        <Onboarding />
+      </div>
+      <div className={currentStep === 1 ? "block" : "hidden"}>
+        <MealPlanConfig />
+      </div>
       {currentStep === 2 && <DailyView />}
       {currentStep === 3 && <GroceryList />}
       {currentStep === 4 && <SettingsScreen />}

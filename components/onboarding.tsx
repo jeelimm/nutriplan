@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   useMealStore,
+  CUISINE_OPTIONS,
   type ActivityLevel,
   type CuisinePreference,
   type DietType,
@@ -188,14 +189,6 @@ const categoryTabs: { id: IngredientCategory; label: string }[] = [
 
 const stepOrder = ["body", "activity", "goal", "target-weight", "cuisine", "diet", "ingredient-mode", "ingredients"] as const
 
-const cuisineOptions: { id: CuisinePreference; title: string; hint: string }[] = [
-  { id: "western", title: "🌍 Western", hint: "bread, pasta, chicken, beef" },
-  { id: "korean", title: "🇰🇷 Korean", hint: "rice, kimchi, tofu, pork, seafood" },
-  { id: "japanese", title: "🇯🇵 Japanese", hint: "rice, fish, miso, tofu, noodles" },
-  { id: "chinese", title: "🇨🇳 Chinese", hint: "rice, noodles, pork, vegetables" },
-  { id: "mediterranean", title: "🫒 Mediterranean", hint: "olive oil, fish, legumes, grains" },
-  { id: "asian-fusion", title: "🌏 Asian Fusion", hint: "mix of Asian ingredients" },
-]
 type OnboardingStep = (typeof stepOrder)[number] | "quick-estimate"
 
 export function Onboarding() {
@@ -899,7 +892,7 @@ export function Onboarding() {
             <CardContent className="space-y-3">
               <p className="text-center text-xs text-muted-foreground">Pick one or two</p>
               <div className="space-y-2">
-                {cuisineOptions.map((c) => (
+                {CUISINE_OPTIONS.map((c) => (
                   <button
                     key={c.id}
                     type="button"
