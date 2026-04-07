@@ -179,7 +179,7 @@ const categoryTabs: { id: IngredientCategory; label: string }[] = [
 ]
 
 const stepOrder = ["body", "activity", "goal", "diet", "ingredient-mode", "ingredients"] as const
-type OnboardingStep = (typeof stepOrder)[number]
+type OnboardingStep = (typeof stepOrder)[number] | "quick-estimate"
 
 export function Onboarding() {
   const { setUserProfile, setCurrentStep, calculateMacros } = useMealStore()
@@ -189,7 +189,6 @@ export function Onboarding() {
   const [weight, setWeight] = useState("")
   const [bodyFat, setBodyFat] = useState("")
   const [muscleMass, setMuscleMass] = useState("")
-  const [showQuickStart, setShowQuickStart] = useState(false)
   const [quickHeight, setQuickHeight] = useState("")
   const [quickAge, setQuickAge] = useState("")
   const [quickBodyType, setQuickBodyType] = useState<BodyType | null>(null)
@@ -203,7 +202,8 @@ export function Onboarding() {
   const [activeCategory, setActiveCategory] = useState<IngredientCategory>("protein")
   const [fetchingIngredient, setFetchingIngredient] = useState(false)
 
-  const currentStepIndex = stepOrder.indexOf(step)
+  const currentStepIndex = stepOrder.indexOf(step as (typeof stepOrder)[number])
+  const displayStepIndex = currentStepIndex === -1 ? 0 : currentStepIndex
   const totalSteps = stepOrder.length
 
   const selectedCatalogItems = useMemo(
@@ -277,16 +277,16 @@ export function Onboarding() {
 
     setBodyFat(String(Number(estimatedBodyFat.toFixed(1))))
     setMuscleMass(String(Number(estimatedMuscleMass.toFixed(1))))
-    setShowQuickStart(false)
+    setStep("activity")
   }
 
   const moveToNextStep = () => {
-    const next = stepOrder[currentStepIndex + 1]
+    const next = stepOrder[displayStepIndex + 1]
     if (next) setStep(next)
   }
 
   const moveToPreviousStep = () => {
-    const previous = stepOrder[currentStepIndex - 1]
+    const previous = stepOrder[displayStepIndex - 1]
     if (previous) setStep(previous)
   }
 
@@ -384,13 +384,13 @@ export function Onboarding() {
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-lg">
         <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
-          <span>Step {currentStepIndex + 1} of {totalSteps}</span>
-          <span>{Math.round(((currentStepIndex + 1) / totalSteps) * 100)}%</span>
+          <span>Step {displayStepIndex + 1} of {totalSteps}</span>
+          <span>{Math.round(((displayStepIndex + 1) / totalSteps) * 100)}%</span>
         </div>
         <div className="mb-6 h-2 w-full rounded-full bg-secondary">
           <div
             className="h-2 rounded-full bg-primary transition-all"
-            style={{ width: `${((currentStepIndex + 1) / totalSteps) * 100}%` }}
+            style={{ width: `${((displayStepIndex + 1) / totalSteps) * 100}%` }}
           />
         </div>
 
@@ -418,7 +418,7 @@ export function Onboarding() {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label>Sex</Label>
-                <div className="flex gap-2">
+                <div className="flex justify-center gap-2">
                   <button
                     type="button"
                     onClick={() => setSex("male")}
@@ -499,69 +499,9 @@ export function Onboarding() {
                   className="h-12 text-lg"
                 />
               </div>
-              <Button type="button" variant="outline" className="w-full" onClick={() => setShowQuickStart((prev) => !prev)}>
+              <Button type="button" variant="outline" className="w-full" onClick={() => setStep("quick-estimate")}>
                 Don&apos;t have InBody data? Use quick estimate instead
               </Button>
-              {showQuickStart && (
-                <div className="space-y-4 rounded-xl border border-border p-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="quickHeight">Height ({unit === "kg" ? "cm" : "in"})</Label>
-                      <Input
-                        id="quickHeight"
-                        type="text"
-                        inputMode="decimal"
-                        placeholder={unit === "kg" ? "e.g., 175" : "e.g., 69"}
-                        value={quickHeight}
-                        onChange={(e) => handleNumericInput(e.target.value, setQuickHeight)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="quickAge">Age</Label>
-                      <Input
-                        id="quickAge"
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="e.g., 30"
-                        value={quickAge}
-                        onChange={(e) => handleNumericInput(e.target.value, setQuickAge)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Body type</Label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {([
-                        { id: "lean", label: "Lean", description: "Naturally slim, low body fat" },
-                        { id: "average", label: "Average", description: "Typical build, some body fat" },
-                        { id: "athletic", label: "Athletic", description: "Visibly muscular, active lifestyle" },
-                        { id: "heavy-set", label: "Heavy-set", description: "Carrying extra weight currently" },
-                      ] as const).map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => setQuickBodyType(item.id)}
-                          className={`rounded-lg border p-3 text-left ${quickBodyType === item.id ? "border-primary bg-primary/10" : "border-border"}`}
-                        >
-                          <div className="font-medium">{item.label}</div>
-                          <div className="text-xs text-muted-foreground">{item.description}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-secondary p-3 text-xs text-muted-foreground">
-                    These are estimates - update anytime with real InBody data for better accuracy
-                  </div>
-                  <Button
-                    type="button"
-                    className="w-full"
-                    onClick={applyQuickEstimate}
-                    disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
-                  >
-                    Apply quick estimate
-                  </Button>
-                </div>
-              )}
               <Button
                 className="h-12 w-full text-lg font-semibold"
                 onClick={moveToNextStep}
@@ -569,6 +509,140 @@ export function Onboarding() {
               >
                 Continue
               </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === "quick-estimate" && (
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2 text-xl">
+                <Scale className="h-5 w-5 text-primary" />
+                Quick body estimate
+              </CardTitle>
+              <CardDescription>
+                No InBody scan needed — just a few basics and we&apos;ll estimate the rest
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Sex</Label>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSex("male")}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                      sex === "male" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    Male
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSex("female")}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                      sex === "female" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    Female
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setUnit("kg")}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    unit === "kg"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  kg
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnit("lbs")}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    unit === "lbs"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  lbs
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="quickWeight">Weight ({unit})</Label>
+                  <Input
+                    id="quickWeight"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={unit === "kg" ? "e.g., 80" : "e.g., 175"}
+                    value={weight}
+                    onChange={(e) => handleNumericInput(e.target.value, setWeight)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="quickHeight">Height ({unit === "kg" ? "cm" : "in"})</Label>
+                  <Input
+                    id="quickHeight"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={unit === "kg" ? "e.g., 175" : "e.g., 69"}
+                    value={quickHeight}
+                    onChange={(e) => handleNumericInput(e.target.value, setQuickHeight)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quickAge">Age</Label>
+                <Input
+                  id="quickAge"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="e.g., 30"
+                  value={quickAge}
+                  onChange={(e) => handleNumericInput(e.target.value, setQuickAge)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Body type</Label>
+                <div className="grid grid-cols-1 gap-2">
+                  {([
+                    { id: "lean", label: "Lean", description: "Naturally slim, low body fat" },
+                    { id: "average", label: "Average", description: "Typical build, some body fat" },
+                    { id: "athletic", label: "Athletic", description: "Visibly muscular, active lifestyle" },
+                    { id: "heavy-set", label: "Heavy-set", description: "Carrying extra weight currently" },
+                  ] as const).map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setQuickBodyType(item.id)}
+                      className={`rounded-lg border p-3 text-left ${quickBodyType === item.id ? "border-primary bg-primary/10" : "border-border"}`}
+                    >
+                      <div className="font-medium">{item.label}</div>
+                      <div className="text-xs text-muted-foreground">{item.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-lg bg-secondary p-3 text-xs text-muted-foreground">
+                These are estimates — update anytime with real InBody data for better accuracy
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" className="h-12 flex-1" onClick={() => setStep("body")}>
+                  Back
+                </Button>
+                <Button
+                  className="h-12 flex-1"
+                  onClick={applyQuickEstimate}
+                  disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
+                >
+                  Apply estimate &amp; continue
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
