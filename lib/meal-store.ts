@@ -530,6 +530,7 @@ export const useMealStore = create<MealStore>()(
       },
       partialize: (state) => ({
         userProfile: state.userProfile,
+        weekPlan: state.weekPlan,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return
@@ -544,8 +545,8 @@ export const useMealStore = create<MealStore>()(
           dietType: normalized.dietType,
           mealsPerDay: normalized.mealsPerDay,
         })
-        state.generateMealPlan()
-        state.setCurrentStep(2)
+        const hasPlan = Array.isArray(state.weekPlan) && state.weekPlan.length > 0
+        state.setCurrentStep(hasPlan ? 2 : 1)
       },
     }
   )
