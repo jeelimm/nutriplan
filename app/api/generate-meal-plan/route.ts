@@ -215,71 +215,41 @@ export async function POST(req: Request) {
       const targetCarbs = ensureNumber(body.macros?.carbs)
       const targetFat = ensureNumber(body.macros?.fat)
       const mealsPerDay = Math.max(1, body.mealsPerDay)
-      const avgProteinPerMeal = targetProtein > 0 ? Math.round(targetProtein / mealsPerDay) : 0
-      const exampleChicken = avgProteinPerMeal > 0 ? Math.round((350 * avgProteinPerMeal) / 80) : 0
-      const exampleTofu = avgProteinPerMeal > 0 ? Math.round((400 * avgProteinPerMeal) / 80) : 0
-      const exampleSalmon = avgProteinPerMeal > 0 ? Math.round((300 * avgProteinPerMeal) / 80) : 0
 
       const proteinCritical =
         targetProtein > 0
           ? `
 
-CRITICAL: Daily protein MUST reach ${targetProtein}g.
-This is non-negotiable.
-
-Each meal must contain a substantial protein source:
-- Breakfast: minimum ${Math.round(targetProtein * 0.25)}g protein
-- Lunch: minimum ${Math.round(targetProtein * 0.35)}g protein
-- Dinner: minimum ${Math.round(targetProtein * 0.35)}g protein
-
-Use larger portions of protein sources to hit these targets.
-Example: if target is ${targetProtein}g protein/day with ${mealsPerDay} meals,
-each meal needs ~${avgProteinPerMeal}g protein.
-For ${avgProteinPerMeal}g protein you need approximately:
-- ${exampleChicken}g chicken breast, OR
-- ${exampleTofu}g tofu, OR
-- ${exampleSalmon}g salmon
-
-Adjust ALL portion sizes until protein target is met.
-Do NOT reduce protein to make calories work —
-adjust carbs and fat instead.
+CRITICAL: Daily protein MUST reach ${targetProtein}g (non-negotiable).
+Each meal: substantial protein—Breakfast ≥${Math.round(targetProtein * 0.25)}g, Lunch ≥${Math.round(targetProtein * 0.35)}g, Dinner ≥${Math.round(targetProtein * 0.35)}g.
+Do NOT reduce protein for calories; adjust carbs and fat instead.
 `
           : ""
 
-      const calorieCritical = `
+      const targetsBlock = `
 
-CRITICAL CALORIE REQUIREMENTS:
-- Daily calorie target: ${dailyCalories} kcal
-- Daily protein target: ${targetProtein}g (already set - do not reduce)
-- Daily carbs target: ${targetCarbs}g
-- Daily fat target: ${targetFat}g
+TARGETS PER DAY (must hit these):
+- Calories: ${dailyCalories} kcal
+- Protein: ${targetProtein}g
+- Carbs: ${targetCarbs}g
+- Fat: ${targetFat}g
 
-Each meal must hit these approximate targets:
-- Calories per meal: ~${Math.round(dailyCalories / mealsPerDay)} kcal
-- Carbs per meal: ~${Math.round(targetCarbs / mealsPerDay)}g
-- Fat per meal: ~${Math.round(targetFat / mealsPerDay)}g
+Per meal targets (~${mealsPerDay} meals):
+- Cal: ${Math.round(dailyCalories / mealsPerDay)} kcal
+- Protein: ${Math.round(targetProtein / mealsPerDay)}g
+- Carbs: ${Math.round(targetCarbs / mealsPerDay)}g
+- Fat: ${Math.round(targetFat / mealsPerDay)}g
 
-To hit carb targets, use LARGER portions:
-- Rice: 200-300g cooked per meal
-- Oats: 100-150g dry per meal
-- Sweet potato: 250-350g per meal
-
-To hit fat targets, add fat sources to every meal:
-- Olive oil: 1-2 tbsp per meal
-- Nuts: 30-50g per meal
-- Avocado: 100g per meal
-
-Do NOT reduce portion sizes to fit calorie targets down.
-INCREASE portions of carbs and fats until
-daily total reaches ${dailyCalories} kcal.
+Use large enough portions to hit these.
+Adjust carbs and fat portions up if needed.
 `
 
       const prompt = `${body.mealsPerDay} meals/day for: ${daysList}. Target ${body.dailyCalories} kcal/day (${calLo}–${calHi} per day); ~${perMealKcal} kcal/meal. Goal: ${goal}. Diet: ${body.dietType}. Units: ${units}.
-Ingredients (prefer): ${selectedIngredients.join(", ")}.${buildCuisineLine(body.cuisinePreference)}${proteinCritical}${calorieCritical}
+Ingredients (prefer): ${selectedIngredients.join(", ")}.${buildCuisineLine(body.cuisinePreference)}${proteinCritical}${targetsBlock}
 
 Return JSON only, shape: {"days":[{"day":"Monday","meals":[{"name":"str","type":"Breakfast|Lunch|Dinner|Snack","calories":N,"protein":N,"carbs":N,"fat":N,"ingredients":[{"name":"str","amount":"str","category":"str"}],"recipe":{"prepTime":N,"cookTime":N,"instructions":["str"]}}]}]} — one days[] entry per: ${daysList}. No foods/item/kcal keys.`
 
-      console.log("Prompt length:", prompt.length)
+      console.log("Prompt chars:", prompt.length)
 
       const response = await Promise.race([
         anthropic.messages.create({
