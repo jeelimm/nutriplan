@@ -186,6 +186,11 @@ export async function POST(req: Request) {
 User: ${body.dailyCalories}kcal/day, goal: ${goal}, diet: ${body.dietType}
 Allowed ingredients: ${selectedIngredients.join(", ")}
 
+CRITICAL: The total calories for each day MUST be between ${body.dailyCalories - 150} and ${body.dailyCalories + 150} kcal.
+Current target: ${body.dailyCalories} kcal/day
+Each meal should be approximately ${Math.round(body.dailyCalories / body.mealsPerDay)} kcal.
+Adjust ALL portion sizes until daily total hits this range. This is non-negotiable.
+
 Return ONLY this exact JSON structure, no variations:
 {
   "days": [{

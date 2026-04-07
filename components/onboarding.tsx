@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
+import { useMealStore, type ActivityLevel, type DietType, type Goal, type Sex } from "@/lib/meal-store"
 import {
   Scale,
   Target,
@@ -41,6 +41,7 @@ const dietTypes: { id: DietType; label: string; description: string }[] = [
 
 type IngredientCategory = "protein" | "carbs" | "fats" | "vegetables"
 type CostTier = "$" | "$$" | "$$$"
+type BodyType = "lean" | "average" | "athletic" | "heavy-set"
 
 interface IngredientOption {
   name: string
@@ -183,10 +184,15 @@ type OnboardingStep = (typeof stepOrder)[number]
 export function Onboarding() {
   const { setUserProfile, setCurrentStep, calculateMacros } = useMealStore()
   const [step, setStep] = useState<OnboardingStep>("body")
+  const [sex, setSex] = useState<Sex>("male")
   const [unit, setUnit] = useState<"kg" | "lbs">("kg")
   const [weight, setWeight] = useState("")
   const [bodyFat, setBodyFat] = useState("")
   const [muscleMass, setMuscleMass] = useState("")
+  const [showQuickStart, setShowQuickStart] = useState(false)
+  const [quickHeight, setQuickHeight] = useState("")
+  const [quickAge, setQuickAge] = useState("")
+  const [quickBodyType, setQuickBodyType] = useState<BodyType | null>(null)
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
   const [selectedActivityLevel, setSelectedActivityLevel] = useState<ActivityLevel | null>(null)
   const [selectedDietType, setSelectedDietType] = useState<DietType | null>(null)
@@ -230,8 +236,8 @@ export function Onboarding() {
     if (!weight || !bodyFat || !selectedGoal || !selectedActivityLevel || !selectedDietType) return null
     const weightKg = unit === "lbs" ? parseFloat(weight) * 0.453592 : parseFloat(weight)
     if (!Number.isFinite(weightKg)) return null
-    return calculateMacros(weightKg, parseFloat(bodyFat), selectedGoal, selectedActivityLevel, selectedDietType)
-  }, [weight, bodyFat, unit, selectedGoal, selectedActivityLevel, selectedDietType, calculateMacros])
+    return calculateMacros(weightKg, parseFloat(bodyFat), selectedGoal, selectedActivityLevel, selectedDietType, sex)
+  }, [weight, bodyFat, unit, selectedGoal, selectedActivityLevel, selectedDietType, sex, calculateMacros])
 
   const handleNumericInput = (value: string, setter: (val: string) => void) => {
     const sanitized = value.replace(/[^0-9.]/g, "")
@@ -243,6 +249,35 @@ export function Onboarding() {
   const getWeightInKg = (value: string): number => {
     const num = parseFloat(value)
     return unit === "lbs" ? num * 0.453592 : num
+  }
+
+  const quickEstimateMap: Record<Sex, Record<BodyType, { bodyFatRange: [number, number]; muscleRatio: number }>> = {
+    male: {
+      lean: { bodyFatRange: [10, 14], muscleRatio: 0.45 },
+      average: { bodyFatRange: [18, 22], muscleRatio: 0.4 },
+      athletic: { bodyFatRange: [12, 16], muscleRatio: 0.48 },
+      "heavy-set": { bodyFatRange: [25, 30], muscleRatio: 0.35 },
+    },
+    female: {
+      lean: { bodyFatRange: [16, 20], muscleRatio: 0.35 },
+      average: { bodyFatRange: [25, 30], muscleRatio: 0.3 },
+      athletic: { bodyFatRange: [18, 22], muscleRatio: 0.38 },
+      "heavy-set": { bodyFatRange: [32, 38], muscleRatio: 0.28 },
+    },
+  }
+
+  const applyQuickEstimate = () => {
+    if (!weight || !quickHeight || !quickAge || !quickBodyType) return
+    const weightValue = parseFloat(weight)
+    if (!Number.isFinite(weightValue)) return
+
+    const estimate = quickEstimateMap[sex][quickBodyType]
+    const estimatedBodyFat = (estimate.bodyFatRange[0] + estimate.bodyFatRange[1]) / 2
+    const estimatedMuscleMass = weightValue * estimate.muscleRatio
+
+    setBodyFat(String(Number(estimatedBodyFat.toFixed(1))))
+    setMuscleMass(String(Number(estimatedMuscleMass.toFixed(1))))
+    setShowQuickStart(false)
   }
 
   const moveToNextStep = () => {
@@ -320,11 +355,13 @@ export function Onboarding() {
       parseFloat(bodyFat),
       selectedGoal,
       selectedActivityLevel,
-      selectedDietType
+      selectedDietType,
+      sex
     )
 
     const now = new Date().toISOString()
     setUserProfile({
+      sex,
       weight: parseFloat(weight),
       bodyFat: parseFloat(bodyFat),
       muscleMass: parseFloat(muscleMass),
@@ -379,6 +416,29 @@ export function Onboarding() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Sex</Label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSex("male")}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                      sex === "male" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    Male
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSex("female")}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                      sex === "female" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    Female
+                  </button>
+                </div>
+              </div>
               <div className="flex items-center justify-center gap-2">
                 <button
                   type="button"
@@ -439,6 +499,69 @@ export function Onboarding() {
                   className="h-12 text-lg"
                 />
               </div>
+              <Button type="button" variant="outline" className="w-full" onClick={() => setShowQuickStart((prev) => !prev)}>
+                Don&apos;t have InBody data? Use quick estimate instead
+              </Button>
+              {showQuickStart && (
+                <div className="space-y-4 rounded-xl border border-border p-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="quickHeight">Height ({unit === "kg" ? "cm" : "in"})</Label>
+                      <Input
+                        id="quickHeight"
+                        type="text"
+                        inputMode="decimal"
+                        placeholder={unit === "kg" ? "e.g., 175" : "e.g., 69"}
+                        value={quickHeight}
+                        onChange={(e) => handleNumericInput(e.target.value, setQuickHeight)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="quickAge">Age</Label>
+                      <Input
+                        id="quickAge"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="e.g., 30"
+                        value={quickAge}
+                        onChange={(e) => handleNumericInput(e.target.value, setQuickAge)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Body type</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {([
+                        { id: "lean", label: "Lean", description: "Naturally slim, low body fat" },
+                        { id: "average", label: "Average", description: "Typical build, some body fat" },
+                        { id: "athletic", label: "Athletic", description: "Visibly muscular, active lifestyle" },
+                        { id: "heavy-set", label: "Heavy-set", description: "Carrying extra weight currently" },
+                      ] as const).map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setQuickBodyType(item.id)}
+                          className={`rounded-lg border p-3 text-left ${quickBodyType === item.id ? "border-primary bg-primary/10" : "border-border"}`}
+                        >
+                          <div className="font-medium">{item.label}</div>
+                          <div className="text-xs text-muted-foreground">{item.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-secondary p-3 text-xs text-muted-foreground">
+                    These are estimates - update anytime with real InBody data for better accuracy
+                  </div>
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={applyQuickEstimate}
+                    disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
+                  >
+                    Apply quick estimate
+                  </Button>
+                </div>
+              )}
               <Button
                 className="h-12 w-full text-lg font-semibold"
                 onClick={moveToNextStep}

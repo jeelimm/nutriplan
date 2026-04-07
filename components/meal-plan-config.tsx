@@ -23,6 +23,7 @@ export function MealPlanConfig() {
         activityLevel: userProfile.activityLevel,
         goal: userProfile.goal,
         dietType: targetDiet,
+        sex: userProfile.sex,
       })
     : null
 
@@ -43,6 +44,7 @@ export function MealPlanConfig() {
         activityLevel: userProfile.activityLevel,
         goal: userProfile.goal,
         dietType: userProfile.dietType,
+        sex: userProfile.sex,
       })
       setUserProfile({
         ...userProfile,

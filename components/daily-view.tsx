@@ -131,7 +131,8 @@ export function DailyView() {
       nextBodyFat,
       goal,
       activityLevel,
-      userProfile.dietType
+      userProfile.dietType,
+      userProfile.sex
     )
     const now = new Date().toISOString()
 

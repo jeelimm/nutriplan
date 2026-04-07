@@ -1,4 +1,4 @@
-import type { ActivityLevel, DietType, Goal, UserProfile } from "@/lib/meal-store"
+import type { ActivityLevel, DietType, Goal, Sex, UserProfile } from "@/lib/meal-store"
 
 type MacroRatios = {
   protein: number
@@ -46,18 +46,29 @@ export function calculateNutritionTargets(input: {
   activityLevel: ActivityLevel
   goal: Goal
   dietType: DietType
+  sex?: Sex
 }): { calories: number; macros: UserProfile["macros"] } {
   const bodyFat = Number.isFinite(input.bodyFat) ? input.bodyFat : 0
   const safeBodyFat = Math.min(Math.max(bodyFat, 0), 60)
   const leanBodyMass = input.weightKg * (1 - safeBodyFat / 100)
   const lbmForFormula = leanBodyMass > 0 ? leanBodyMass : input.weightKg
 
-  const bmr = 370 + 21.6 * lbmForFormula
+  const sex = input.sex ?? "male"
+  const bmrMultiplier = sex === "female" ? 0.9 : 1
+  const bmr = 370 + 21.6 * lbmForFormula * bmrMultiplier
   const tdee = bmr * ACTIVITY_MULTIPLIERS[input.activityLevel]
   const adjustedCalories = tdee + GOAL_CALORIE_ADJUSTMENT[input.goal]
   const calories = Math.round(Math.max(1200, adjustedCalories))
 
-  const ratios = DIET_MACRO_RATIOS[input.dietType]
+  const baseRatios = DIET_MACRO_RATIOS[input.dietType]
+  const ratios =
+    sex === "female"
+      ? {
+          protein: Math.max(0.2, baseRatios.protein - 0.02),
+          fat: Math.min(0.75, baseRatios.fat + 0.02),
+          carbs: baseRatios.carbs,
+        }
+      : baseRatios
 
   return {
     calories,

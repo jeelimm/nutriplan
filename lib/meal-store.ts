@@ -6,9 +6,11 @@ import { validateMealPlan, type MealPlanValidationResult } from '@/lib/meal-vali
 export type Goal = 'lose-fat' | 'gain-muscle' | 'recomposition'
 export type DietType = 'keto' | 'high-protein' | 'balanced' | 'intermittent-fasting'
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active'
+export type Sex = 'male' | 'female'
 
 export interface UserProfile {
   profileName?: string
+  sex?: Sex
   weight: number
   bodyFat: number
   muscleMass: number
@@ -80,7 +82,8 @@ interface MealStore {
     bodyFat: number,
     goal: Goal,
     activityLevel: ActivityLevel,
-    dietType: DietType
+    dietType: DietType,
+    sex?: Sex
   ) => { calories: number; macros: UserProfile['macros'] }
   generateMealPlan: () => Promise<void>
 }
@@ -90,6 +93,7 @@ const PROFILE_VERSION = 2
 const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'moderate'
 const DEFAULT_DIET_TYPE: DietType = 'balanced'
 const DEFAULT_MEALS_PER_DAY = 3
+const DEFAULT_SEX: Sex = 'male'
 
 const toNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value)
@@ -116,6 +120,7 @@ const ensureActivityLevel = (value: unknown): ActivityLevel =>
     : DEFAULT_ACTIVITY_LEVEL
 
 const ensureUnit = (value: unknown): 'kg' | 'lbs' => (value === 'lbs' ? 'lbs' : 'kg')
+const ensureSex = (value: unknown): Sex => (value === 'female' ? 'female' : DEFAULT_SEX)
 
 function normalizeUserProfile(raw: unknown): UserProfile | null {
   if (!raw || typeof raw !== 'object') return null
@@ -125,6 +130,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
 
   return {
     profileName: typeof profile.profileName === 'string' ? profile.profileName : '',
+    sex: ensureSex(profile.sex),
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
     muscleMass: toNumber(profile.muscleMass, 0),
@@ -243,13 +249,14 @@ export const useMealStore = create<MealStore>()(
       selectedDay: 0,
       setSelectedDay: (day) => set({ selectedDay: day }),
       
-      calculateMacros: (weightKg, bodyFat, goal, activityLevel, dietType) =>
+      calculateMacros: (weightKg, bodyFat, goal, activityLevel, dietType, sex = DEFAULT_SEX) =>
         calculateNutritionTargets({
           weightKg,
           bodyFat,
           goal,
           activityLevel,
           dietType,
+          sex,
         }),
       
       generateMealPlan: async () => {
