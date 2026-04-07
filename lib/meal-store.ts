@@ -8,11 +8,13 @@ export type DietType = 'keto' | 'high-protein' | 'balanced' | 'intermittent-fast
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active'
 export type Sex = 'male' | 'female'
 export type RecipeUnitSystem = 'metric' | 'imperial'
+export type Language = 'en' | 'ko'
 
 export interface UserProfile {
   profileName?: string
   sex?: Sex
   unitSystem?: RecipeUnitSystem
+  language?: Language
   weight: number
   bodyFat: number
   muscleMass: number
@@ -72,6 +74,7 @@ interface MealStore {
   userProfile: UserProfile | null
   setUserProfile: (profile: UserProfile) => void
   setUnitSystem: (unitSystem: RecipeUnitSystem) => void
+  clearAllData: () => void
   mealPlanConfig: MealPlanConfig | null
   setMealPlanConfig: (config: MealPlanConfig) => void
   weekPlan: DayPlan[]
@@ -98,6 +101,7 @@ const DEFAULT_DIET_TYPE: DietType = 'balanced'
 const DEFAULT_MEALS_PER_DAY = 3
 const DEFAULT_SEX: Sex = 'male'
 const DEFAULT_RECIPE_UNIT_SYSTEM: RecipeUnitSystem = 'metric'
+const DEFAULT_LANGUAGE: Language = 'en'
 
 const toNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value)
@@ -127,6 +131,7 @@ const ensureUnit = (value: unknown): 'kg' | 'lbs' => (value === 'lbs' ? 'lbs' : 
 const ensureSex = (value: unknown): Sex => (value === 'female' ? 'female' : DEFAULT_SEX)
 const ensureRecipeUnitSystem = (value: unknown): RecipeUnitSystem =>
   value === 'imperial' ? 'imperial' : DEFAULT_RECIPE_UNIT_SYSTEM
+const ensureLanguage = (value: unknown): Language => (value === 'ko' ? 'ko' : DEFAULT_LANGUAGE)
 
 function normalizeUserProfile(raw: unknown): UserProfile | null {
   if (!raw || typeof raw !== 'object') return null
@@ -138,6 +143,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
     profileName: typeof profile.profileName === 'string' ? profile.profileName : '',
     sex: ensureSex(profile.sex),
     unitSystem: ensureRecipeUnitSystem(profile.unitSystem),
+    language: ensureLanguage(profile.language),
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
     muscleMass: toNumber(profile.muscleMass, 0),
@@ -257,6 +263,16 @@ export const useMealStore = create<MealStore>()(
               lastUpdatedAt: new Date().toISOString(),
             }),
           }
+        }),
+      clearAllData: () =>
+        set({
+          currentStep: 0,
+          userProfile: null,
+          mealPlanConfig: null,
+          weekPlan: [],
+          mealPlanValidation: { isValid: true, errors: [], warnings: [] },
+          isGeneratingMealPlan: false,
+          selectedDay: 0,
         }),
       mealPlanConfig: null,
       setMealPlanConfig: (config) => set({ mealPlanConfig: config }),

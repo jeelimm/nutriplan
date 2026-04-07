@@ -9,7 +9,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
-import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Settings } from "lucide-react"
 
 function MacroProgress({ current, target, label, icon, color }: { 
   current: number
@@ -62,7 +62,6 @@ export function DailyView() {
     setSelectedDay,
     setCurrentStep,
     setUserProfile,
-    setUnitSystem,
     calculateMacros,
     setMealPlanConfig,
     generateMealPlan,
@@ -275,6 +274,13 @@ export function DailyView() {
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
+          <button
+            onClick={() => setCurrentStep(4)}
+            className="mt-3 ml-auto flex rounded-full p-2 hover:bg-secondary"
+            aria-label="Open settings"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
           <Button variant="outline" className="mt-3 h-9 w-full" onClick={openEditProfileModal}>
             Edit profile
           </Button>
@@ -404,29 +410,6 @@ export function DailyView() {
                   {/* Expandable Recipe Section */}
                   {isExpanded && (
                     <div className="mt-4 space-y-4 border-t border-border pt-4">
-                      <div className="flex items-center justify-between rounded-lg bg-secondary p-2">
-                        <span className="text-xs font-medium text-muted-foreground">Metric / Imperial</span>
-                        <div className="flex gap-1">
-                          <button
-                            type="button"
-                            onClick={() => setUnitSystem("metric")}
-                            className={`rounded-md px-2 py-1 text-xs font-medium ${
-                              recipeUnitSystem === "metric" ? "bg-primary text-primary-foreground" : "bg-background text-foreground"
-                            }`}
-                          >
-                            Metric
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setUnitSystem("imperial")}
-                            className={`rounded-md px-2 py-1 text-xs font-medium ${
-                              recipeUnitSystem === "imperial" ? "bg-primary text-primary-foreground" : "bg-background text-foreground"
-                            }`}
-                          >
-                            Imperial
-                          </button>
-                        </div>
-                      </div>
                       {/* Prep + Cook Time */}
                       <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1">

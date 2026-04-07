@@ -5,6 +5,7 @@ import { Onboarding } from "@/components/onboarding"
 import { MealPlanConfig } from "@/components/meal-plan-config"
 import { DailyView } from "@/components/daily-view"
 import { GroceryList } from "@/components/grocery-list"
+import { SettingsScreen } from "@/components/settings-screen"
 
 export default function MealPlanApp() {
   const { currentStep } = useMealStore()
@@ -15,6 +16,7 @@ export default function MealPlanApp() {
       {currentStep === 1 && <MealPlanConfig />}
       {currentStep === 2 && <DailyView />}
       {currentStep === 3 && <GroceryList />}
+      {currentStep === 4 && <SettingsScreen />}
     </main>
   )
 }
