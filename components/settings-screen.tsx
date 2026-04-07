@@ -69,7 +69,8 @@ export function SettingsScreen() {
       next.activityLevel,
       next.dietType,
       next.sex ?? "male",
-      targetKg
+      targetKg,
+      next.weightLossPace ?? null
     )
     setUserProfile({
       ...next,

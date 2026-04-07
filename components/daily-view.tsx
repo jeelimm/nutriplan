@@ -123,7 +123,7 @@ export function DailyView() {
       userProfile.targetWeight != null && Number.isFinite(userProfile.targetWeight)
         ? toKg(userProfile.targetWeight, userProfile.unit)
         : undefined
-    return getGoalWeightTimeline(wKg, tKg, userProfile.goal, userProfile.unit)
+    return getGoalWeightTimeline(wKg, tKg, userProfile.goal, userProfile.unit, userProfile.weightLossPace)
   }, [userProfile])
 
   const openEditProfileModal = () => {
@@ -173,7 +173,8 @@ export function DailyView() {
       activityLevel,
       userProfile.dietType,
       userProfile.sex,
-      targetKg
+      targetKg,
+      userProfile.weightLossPace ?? null
     )
     const now = new Date().toISOString()
 
@@ -400,10 +401,7 @@ export function DailyView() {
             <CardContent className="space-y-2 pt-6 text-sm">
               {goalTimeline.kind === "estimate" && (
                 <>
-                  <p className="font-medium text-foreground">
-                    Estimated time to goal: ~{goalTimeline.weeks} weeks
-                  </p>
-                  <p className="text-muted-foreground">{goalTimeline.paceLabel}</p>
+                  <p className="font-medium text-foreground">{goalTimeline.summaryLine}</p>
                   <p className="text-xs text-muted-foreground">{goalTimeline.disclaimer}</p>
                 </>
               )}

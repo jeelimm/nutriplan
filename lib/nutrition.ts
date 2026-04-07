@@ -1,4 +1,4 @@
-import type { ActivityLevel, DietType, Goal, Sex, UserProfile } from "@/lib/meal-store"
+import type { ActivityLevel, DietType, Goal, Sex, UserProfile, WeightLossPace } from "@/lib/meal-store"
 
 const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
   sedentary: 1.2,
@@ -8,10 +8,27 @@ const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
   "very-active": 1.725,
 }
 
-const GOAL_CALORIE_ADJUSTMENT: Record<Goal, number> = {
-  "lose-fat": -500,
-  "gain-muscle": 300,
-  recomposition: -200,
+const WEIGHT_LOSS_DEFICIT_KCAL: Record<WeightLossPace, number> = {
+  steady: 550,
+  moderate: 820,
+  aggressive: 1100,
+}
+
+const WEIGHT_LOSS_PACE_KG_PER_WEEK: Record<WeightLossPace, number> = {
+  steady: 0.5,
+  moderate: 0.75,
+  aggressive: 1,
+}
+
+const WEIGHT_LOSS_PACE_DISPLAY: Record<WeightLossPace, string> = {
+  steady: "Steady",
+  moderate: "Moderate",
+  aggressive: "Aggressive",
+}
+
+function resolveWeightLossPace(pace: WeightLossPace | undefined): WeightLossPace {
+  if (pace === "steady" || pace === "aggressive") return pace
+  return "moderate"
 }
 
 /**
@@ -81,7 +98,8 @@ export function calculateNutritionTargets(input: {
   dietType: DietType
   sex?: Sex
   targetWeightKg?: number
-}): { calories: number; macros: UserProfile["macros"] } {
+  weightLossPace?: WeightLossPace
+}): { calories: number; macros: UserProfile["macros"]; calorieFloorApplied: boolean } {
   const lbmForFormula = getLbmKgForNutrition(input.weightKg, input.bodyFat)
 
   const sex = input.sex ?? "male"
@@ -89,18 +107,18 @@ export function calculateNutritionTargets(input: {
   const bmr = 370 + 21.6 * lbmForFormula * bmrMultiplier
   const tdee = bmr * ACTIVITY_MULTIPLIERS[input.activityLevel]
 
-  let adjustedCalories = tdee + GOAL_CALORIE_ADJUSTMENT[input.goal]
-  const targetKg = input.targetWeightKg
-  if (targetKg != null && Number.isFinite(targetKg)) {
-    const deltaKg = input.weightKg - targetKg
-    if (deltaKg > 0) {
-      if (input.goal === "lose-fat") adjustedCalories = tdee - 550
-      else if (input.goal === "recomposition") adjustedCalories = tdee - 275
-    }
+  let adjustedCalories: number
+  if (input.goal === "gain-muscle") {
+    adjustedCalories = tdee + 300
+  } else {
+    const pace = resolveWeightLossPace(input.weightLossPace)
+    adjustedCalories = tdee - WEIGHT_LOSS_DEFICIT_KCAL[pace]
   }
 
   const minCalories = sex === "female" ? 1200 : 1500
-  let calories = Math.round(Math.max(minCalories, adjustedCalories))
+  const rawRounded = Math.round(adjustedCalories)
+  const calorieFloorApplied = rawRounded < minCalories
+  let calories = Math.max(minCalories, rawRounded)
 
   const proteinPerKg = proteinGPerKgLbm(input.goal, input.dietType)
   const minProteinG = Math.round(lbmForFormula * 1.2)
@@ -128,6 +146,7 @@ export function calculateNutritionTargets(input: {
 
   return {
     calories,
+    calorieFloorApplied,
     macros: {
       protein: proteinG,
       carbs: carbsG,
@@ -141,7 +160,7 @@ export type GoalTimelineInfo =
   | { kind: "none" }
   | { kind: "gain-muscle"; message: string }
   | { kind: "past-target"; message: string }
-  | { kind: "estimate"; weeks: number; paceLabel: string; disclaimer: string }
+  | { kind: "estimate"; summaryLine: string; disclaimer: string }
 
 /**
  * Dashboard copy for target weight (optional).
@@ -150,7 +169,8 @@ export function getGoalWeightTimeline(
   weightKg: number,
   targetWeightKg: number | undefined,
   goal: Goal,
-  unit: "kg" | "lbs"
+  unit: "kg" | "lbs",
+  weightLossPace?: WeightLossPace
 ): GoalTimelineInfo {
   const disclaimer = "Estimates vary — your body will find its own pace"
 
@@ -161,8 +181,7 @@ export function getGoalWeightTimeline(
   if (goal === "gain-muscle") {
     return {
       kind: "gain-muscle",
-      message:
-        "Weekly weight targets aren’t a great fit for building muscle — focus on training, protein, and steady fuel.",
+      message: "We'll add ~300 kcal to support muscle growth",
     }
   }
 
@@ -174,32 +193,18 @@ export function getGoalWeightTimeline(
     }
   }
 
-  if (goal === "lose-fat") {
-    const paceKg = 0.625
+  if (goal === "lose-fat" || goal === "recomposition") {
+    const pace = resolveWeightLossPace(weightLossPace)
+    const paceKg = WEIGHT_LOSS_PACE_KG_PER_WEEK[pace]
     const weeks = Math.max(1, Math.round(deltaKg / paceKg))
-    const pace =
+    const paceName = WEIGHT_LOSS_PACE_DISPLAY[pace]
+    const weeklyStr =
       unit === "kg"
-        ? `losing ~${paceKg}kg/week`
-        : `losing ~${(paceKg * 2.20462).toFixed(1)}lb/week`
+        ? `~${paceKg}kg/week`
+        : `~${(paceKg * 2.20462).toFixed(1)}lb/week`
     return {
       kind: "estimate",
-      weeks,
-      paceLabel: `At this pace: ${pace}`,
-      disclaimer,
-    }
-  }
-
-  if (goal === "recomposition") {
-    const paceKg = 0.375
-    const weeks = Math.max(1, Math.round(deltaKg / paceKg))
-    const pace =
-      unit === "kg"
-        ? `losing ~${paceKg}kg/week`
-        : `losing ~${(paceKg * 2.20462).toFixed(1)}lb/week`
-    return {
-      kind: "estimate",
-      weeks,
-      paceLabel: `At this pace: ${pace}`,
+      summaryLine: `${paceName} pace · ${weeklyStr} · ~${weeks} weeks to goal`,
       disclaimer,
     }
   }

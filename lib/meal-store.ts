@@ -10,6 +10,8 @@ export type Sex = 'male' | 'female'
 export type RecipeUnitSystem = 'metric' | 'imperial'
 export type Language = 'en' | 'ko'
 
+export type WeightLossPace = 'steady' | 'moderate' | 'aggressive'
+
 export type CuisinePreference =
   | 'western'
   | 'korean'
@@ -24,6 +26,7 @@ export interface UserProfile {
   unitSystem?: RecipeUnitSystem
   language?: Language
   targetWeight?: number
+  weightLossPace?: WeightLossPace
   cuisinePreference?: CuisinePreference[]
   weight: number
   bodyFat: number
@@ -100,8 +103,9 @@ interface MealStore {
     activityLevel: ActivityLevel,
     dietType: DietType,
     sex?: Sex,
-    targetWeightKg?: number | null
-  ) => { calories: number; macros: UserProfile['macros'] }
+    targetWeightKg?: number | null,
+    weightLossPace?: WeightLossPace | null
+  ) => { calories: number; macros: UserProfile['macros']; calorieFloorApplied: boolean }
   generateMealPlan: () => Promise<void>
 }
 
@@ -167,6 +171,11 @@ function ensureCuisinePreference(value: unknown): CuisinePreference[] {
   return value.filter((item): item is CuisinePreference => typeof item === 'string' && CUISINE_IDS.has(item as CuisinePreference))
 }
 
+function ensureWeightLossPace(value: unknown): WeightLossPace | undefined {
+  if (value === 'steady' || value === 'moderate' || value === 'aggressive') return value
+  return undefined
+}
+
 function normalizeUserProfile(raw: unknown): UserProfile | null {
   if (!raw || typeof raw !== 'object') return null
   const profile = raw as Partial<UserProfile> & { bodyFatPercentage?: number }
@@ -182,6 +191,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
       profile.targetWeight !== undefined && profile.targetWeight !== null && Number.isFinite(Number(profile.targetWeight))
         ? toNumber(profile.targetWeight, 0)
         : undefined,
+    weightLossPace: ensureWeightLossPace(profile.weightLossPace),
     cuisinePreference: ensureCuisinePreference(profile.cuisinePreference),
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
@@ -322,7 +332,16 @@ export const useMealStore = create<MealStore>()(
       selectedDay: 0,
       setSelectedDay: (day) => set({ selectedDay: day }),
       
-      calculateMacros: (weightKg, bodyFat, goal, activityLevel, dietType, sex = DEFAULT_SEX, targetWeightKg = null) => {
+      calculateMacros: (
+        weightKg,
+        bodyFat,
+        goal,
+        activityLevel,
+        dietType,
+        sex = DEFAULT_SEX,
+        targetWeightKg = null,
+        weightLossPace = null
+      ) => {
         const calculatedLbm = getLbmKgForNutrition(weightKg, bodyFat)
         const proteinMultiplier = proteinGPerKgLbm(goal, dietType)
         const result = calculateNutritionTargets({
@@ -333,6 +352,7 @@ export const useMealStore = create<MealStore>()(
           dietType,
           sex,
           targetWeightKg: targetWeightKg ?? undefined,
+          weightLossPace: weightLossPace ?? undefined,
         })
         console.log('[meal-store] calculateMacros', {
           weightKg,

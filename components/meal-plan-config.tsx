@@ -28,6 +28,7 @@ export function MealPlanConfig() {
           userProfile.targetWeight != null && Number.isFinite(userProfile.targetWeight)
             ? toKg(userProfile.targetWeight, userProfile.unit)
             : undefined,
+        weightLossPace: userProfile.weightLossPace,
       })
     : null
 
@@ -53,6 +54,7 @@ export function MealPlanConfig() {
           userProfile.targetWeight != null && Number.isFinite(userProfile.targetWeight)
             ? toKg(userProfile.targetWeight, userProfile.unit)
             : undefined,
+        weightLossPace: userProfile.weightLossPace,
       })
       setUserProfile({
         ...userProfile,

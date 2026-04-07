@@ -14,6 +14,7 @@ import {
   type Goal,
   type RecipeUnitSystem,
   type Sex,
+  type WeightLossPace,
 } from "@/lib/meal-store"
 import {
   Scale,
@@ -46,6 +47,40 @@ const dietTypes: { id: DietType; label: string; description: string }[] = [
   { id: "high-protein", label: "High Protein", description: "Extra protein in each day’s mix" },
   { id: "balanced", label: "Balanced", description: "Carbs, protein, and fat in an even split" },
   { id: "intermittent-fasting", label: "Intermittent Fasting", description: "Fewer, larger meals in a set eating window" },
+]
+
+const weightLossPaceOptions: {
+  id: WeightLossPace
+  emoji: string
+  label: string
+  kgPerWeek: number
+  deficitKcal: number
+  hint: string
+}[] = [
+  {
+    id: "steady",
+    emoji: "🐢",
+    label: "Steady",
+    kgPerWeek: 0.5,
+    deficitKcal: 550,
+    hint: "Easier to maintain, minimal muscle loss",
+  },
+  {
+    id: "moderate",
+    emoji: "🚶",
+    label: "Moderate",
+    kgPerWeek: 0.75,
+    deficitKcal: 820,
+    hint: "Balanced pace, good for most people",
+  },
+  {
+    id: "aggressive",
+    emoji: "🏃",
+    label: "Aggressive",
+    kgPerWeek: 1,
+    deficitKcal: 1100,
+    hint: "Faster results, requires more discipline",
+  },
 ]
 
 type IngredientCategory = "protein" | "carbs" | "fats" | "vegetables"
@@ -208,6 +243,7 @@ export function Onboarding() {
   const [selectedDietType, setSelectedDietType] = useState<DietType | null>(null)
   const [targetWeightInput, setTargetWeightInput] = useState("")
   const [targetWeightSkipped, setTargetWeightSkipped] = useState(false)
+  const [weightLossPace, setWeightLossPace] = useState<WeightLossPace>("moderate")
   const [selectedCuisines, setSelectedCuisines] = useState<CuisinePreference[]>([])
   const [ingredientMode, setIngredientMode] = useState<"recommend" | "custom" | null>(null)
   const [selectedBudgetPreset, setSelectedBudgetPreset] = useState<"low" | "medium" | "high" | null>(null)
@@ -274,7 +310,8 @@ export function Onboarding() {
       selectedActivityLevel,
       selectedDietType,
       sex,
-      twArg
+      twArg,
+      selectedGoal === "gain-muscle" ? null : weightLossPace
     )
   }, [
     weight,
@@ -286,6 +323,7 @@ export function Onboarding() {
     sex,
     targetWeightSkipped,
     targetWeightInput,
+    weightLossPace,
   ])
 
   const handleDietTypeSelect = (newDietType: DietType) => {
@@ -420,7 +458,8 @@ export function Onboarding() {
       selectedActivityLevel,
       selectedDietType,
       sex,
-      targetKg != null && Number.isFinite(targetKg) ? targetKg : null
+      targetKg != null && Number.isFinite(targetKg) ? targetKg : null,
+      selectedGoal === "gain-muscle" ? null : weightLossPace
     )
 
     const now = new Date().toISOString()
@@ -441,6 +480,7 @@ export function Onboarding() {
       ...(targetWeightSkipped || !targetWeightInput.trim()
         ? {}
         : { targetWeight: parseFloat(targetWeightInput) }),
+      ...(selectedGoal !== "gain-muscle" ? { weightLossPace } : {}),
       cuisinePreference: selectedCuisines,
       createdAt: now,
       lastUpdatedAt: now,
@@ -871,6 +911,51 @@ export function Onboarding() {
                   className="h-12 text-lg"
                 />
               </div>
+
+              {selectedGoal === "gain-muscle" && (
+                <p className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
+                  We&apos;ll add ~300 kcal to support muscle growth
+                </p>
+              )}
+
+              {(selectedGoal === "lose-fat" || selectedGoal === "recomposition") && (
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-foreground">Weight loss pace</p>
+                  <div className="space-y-2">
+                    {weightLossPaceOptions.map((opt) => {
+                      const weekly =
+                        unit === "kg"
+                          ? `~${opt.kgPerWeek}kg/week`
+                          : `~${(opt.kgPerWeek * 2.20462).toFixed(1)}lb/week`
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setWeightLossPace(opt.id)}
+                          className={`w-full rounded-xl border-2 p-3 text-left text-sm transition-all ${
+                            weightLossPace === opt.id
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          <div className="font-semibold text-foreground">
+                            {opt.emoji} {opt.label} — {weekly} (deficit ~{opt.deficitKcal} kcal/day)
+                          </div>
+                          <div className="mt-1 text-muted-foreground">{opt.hint}</div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {macroPreview?.calorieFloorApplied &&
+                (selectedGoal === "lose-fat" || selectedGoal === "recomposition") && (
+                  <p className="text-sm text-amber-600 dark:text-amber-500">
+                    We&apos;ve adjusted your target to stay above the minimum safe intake.
+                  </p>
+                )}
+
               <div className="flex flex-col gap-3 pt-2">
                 <Button variant="outline" className="h-12 w-full" onClick={moveToPreviousStep}>
                   <ChevronLeft className="mr-1 h-4 w-4" />
