@@ -145,6 +145,29 @@ function applyClaudeResponseNormalizer(days: any[]): any[] {
   }))
 }
 
+const CUISINE_LABELS: Record<string, string> = {
+  western: "Western",
+  korean: "Korean",
+  japanese: "Japanese",
+  chinese: "Chinese",
+  mediterranean: "Mediterranean",
+  "asian-fusion": "Asian Fusion",
+}
+
+function buildCuisinePromptBlock(cuisines: unknown): string {
+  const list = Array.isArray(cuisines) ? cuisines.filter((c): c is string => typeof c === "string") : []
+  if (!list.length) return ""
+  const readable = list.map((id) => CUISINE_LABELS[id] ?? id).filter(Boolean)
+  if (!readable.length) return ""
+  const joined = readable.join(" and ")
+  return `
+
+Cuisine: Generate meals using ingredients typical for ${joined} cuisine. Avoid ingredients that are hard to find or expensive in this cuisine's home region.
+For Korean cuisine: use rice, kimchi, doenjang, gochujang, tofu, pork belly, seafood, sesame oil. Avoid: quinoa, kale, Brussels sprouts.
+For Western cuisine: use chicken breast, beef, pasta, bread, potatoes, broccoli, olive oil.
+`
+}
+
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY
@@ -165,6 +188,7 @@ export async function POST(req: Request) {
       activityLevel: "sedentary" | "light" | "moderate" | "very-active"
       mealsPerDay: 2 | 3 | 4 | 5
       unitSystem?: "metric" | "imperial"
+      cuisinePreference?: string[]
       dailyCalories: number
       macros: { protein: number; carbs: number; fat: number }
       selectedIngredients: string[]
@@ -186,7 +210,7 @@ export async function POST(req: Request) {
       const prompt = `Generate a ${body.mealsPerDay}-meal plan for EACH of these days: ${daysList}.
 User: ${body.dailyCalories}kcal/day, goal: ${goal}, diet: ${body.dietType}
 Allowed ingredients: ${selectedIngredients.join(", ")}
-Use ${body.unitSystem === "metric" ? "Celsius, grams, and ml" : "Fahrenheit, oz, and cups"} for all measurements in recipes.
+Use ${body.unitSystem === "metric" ? "Celsius, grams, and ml" : "Fahrenheit, oz, and cups"} for all measurements in recipes.${buildCuisinePromptBlock(body.cuisinePreference)}
 
 CRITICAL: The total calories for each day MUST be between ${body.dailyCalories - 150} and ${body.dailyCalories + 150} kcal.
 Current target: ${body.dailyCalories} kcal/day

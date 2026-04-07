@@ -24,6 +24,10 @@ export function MealPlanConfig() {
         goal: userProfile.goal,
         dietType: targetDiet,
         sex: userProfile.sex,
+        targetWeightKg:
+          userProfile.targetWeight != null && Number.isFinite(userProfile.targetWeight)
+            ? toKg(userProfile.targetWeight, userProfile.unit)
+            : undefined,
       })
     : null
 
@@ -45,6 +49,10 @@ export function MealPlanConfig() {
         goal: userProfile.goal,
         dietType: userProfile.dietType,
         sex: userProfile.sex,
+        targetWeightKg:
+          userProfile.targetWeight != null && Number.isFinite(userProfile.targetWeight)
+            ? toKg(userProfile.targetWeight, userProfile.unit)
+            : undefined,
       })
       setUserProfile({
         ...userProfile,
@@ -62,7 +70,7 @@ export function MealPlanConfig() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen bg-background p-4 pb-24 md:p-8 md:pb-24">
       <div className="mx-auto max-w-lg">
         <button
           onClick={() => setCurrentStep(0)}

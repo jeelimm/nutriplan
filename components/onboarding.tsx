@@ -5,7 +5,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMealStore, type ActivityLevel, type DietType, type Goal, type RecipeUnitSystem, type Sex } from "@/lib/meal-store"
+import {
+  useMealStore,
+  type ActivityLevel,
+  type CuisinePreference,
+  type DietType,
+  type Goal,
+  type RecipeUnitSystem,
+  type Sex,
+} from "@/lib/meal-store"
 import {
   Scale,
   Target,
@@ -178,7 +186,16 @@ const categoryTabs: { id: IngredientCategory; label: string }[] = [
   { id: "vegetables", label: "Vegetables" },
 ]
 
-const stepOrder = ["body", "activity", "goal", "diet", "ingredient-mode", "ingredients"] as const
+const stepOrder = ["body", "activity", "goal", "target-weight", "cuisine", "diet", "ingredient-mode", "ingredients"] as const
+
+const cuisineOptions: { id: CuisinePreference; title: string; hint: string }[] = [
+  { id: "western", title: "🌍 Western", hint: "bread, pasta, chicken, beef" },
+  { id: "korean", title: "🇰🇷 Korean", hint: "rice, kimchi, tofu, pork, seafood" },
+  { id: "japanese", title: "🇯🇵 Japanese", hint: "rice, fish, miso, tofu, noodles" },
+  { id: "chinese", title: "🇨🇳 Chinese", hint: "rice, noodles, pork, vegetables" },
+  { id: "mediterranean", title: "🫒 Mediterranean", hint: "olive oil, fish, legumes, grains" },
+  { id: "asian-fusion", title: "🌏 Asian Fusion", hint: "mix of Asian ingredients" },
+]
 type OnboardingStep = (typeof stepOrder)[number] | "quick-estimate"
 
 export function Onboarding() {
@@ -196,6 +213,9 @@ export function Onboarding() {
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
   const [selectedActivityLevel, setSelectedActivityLevel] = useState<ActivityLevel | null>(null)
   const [selectedDietType, setSelectedDietType] = useState<DietType | null>(null)
+  const [targetWeightInput, setTargetWeightInput] = useState("")
+  const [targetWeightSkipped, setTargetWeightSkipped] = useState(false)
+  const [selectedCuisines, setSelectedCuisines] = useState<CuisinePreference[]>([])
   const [ingredientMode, setIngredientMode] = useState<"recommend" | "custom" | null>(null)
   const [selectedBudgetPreset, setSelectedBudgetPreset] = useState<"low" | "medium" | "high" | null>(null)
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([])
@@ -233,13 +253,6 @@ export function Onboarding() {
     return "Includes pricier picks"
   }, [selectedCatalogItems])
 
-  const macroPreview = useMemo(() => {
-    if (!weight || !bodyFat || !selectedGoal || !selectedActivityLevel || !selectedDietType) return null
-    const weightKg = unit === "lbs" ? parseFloat(weight) * 0.453592 : parseFloat(weight)
-    if (!Number.isFinite(weightKg)) return null
-    return calculateMacros(weightKg, parseFloat(bodyFat), selectedGoal, selectedActivityLevel, selectedDietType, sex)
-  }, [weight, bodyFat, unit, selectedGoal, selectedActivityLevel, selectedDietType, sex, calculateMacros])
-
   const handleNumericInput = (value: string, setter: (val: string) => void) => {
     const sanitized = value.replace(/[^0-9.]/g, "")
     const parts = sanitized.split(".")
@@ -251,6 +264,29 @@ export function Onboarding() {
     const num = parseFloat(value)
     return unit === "lbs" ? num * 0.453592 : num
   }
+
+  const macroPreview = useMemo(() => {
+    if (!weight || !bodyFat || !selectedGoal || !selectedActivityLevel || !selectedDietType) return null
+    const weightKg = unit === "lbs" ? parseFloat(weight) * 0.453592 : parseFloat(weight)
+    if (!Number.isFinite(weightKg)) return null
+    const tw =
+      !targetWeightSkipped && targetWeightInput.trim()
+        ? getWeightInKg(targetWeightInput)
+        : undefined
+    const twArg = tw != null && Number.isFinite(tw) ? tw : null
+    return calculateMacros(weightKg, parseFloat(bodyFat), selectedGoal, selectedActivityLevel, selectedDietType, sex, twArg)
+  }, [
+    weight,
+    bodyFat,
+    unit,
+    selectedGoal,
+    selectedActivityLevel,
+    selectedDietType,
+    sex,
+    calculateMacros,
+    targetWeightSkipped,
+    targetWeightInput,
+  ])
 
   const quickEstimateMap: Record<Sex, Record<BodyType, { bodyFatRange: [number, number]; muscleRatio: number }>> = {
     male: {
@@ -294,6 +330,21 @@ export function Onboarding() {
   const toggleIngredient = (name: string) => {
     setSelectedIngredients((prev) => (prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]))
   }
+
+  const toggleCuisine = (id: CuisinePreference) => {
+    setSelectedCuisines((prev) => {
+      if (prev.includes(id)) return prev.filter((c) => c !== id)
+      if (prev.length < 2) return [...prev, id]
+      return [prev[1], id]
+    })
+  }
+
+  const targetWeightStepValid =
+    targetWeightSkipped ||
+    (() => {
+      const n = parseFloat(targetWeightInput)
+      return Number.isFinite(n) && n > 0
+    })()
 
   const chooseBudgetPreset = (presetId: "low" | "medium" | "high", presetItems: string[]) => {
     setSelectedBudgetPreset(presetId)
@@ -351,13 +402,19 @@ export function Onboarding() {
       return
     }
 
+    const targetKg =
+      !targetWeightSkipped && targetWeightInput.trim()
+        ? getWeightInKg(targetWeightInput)
+        : undefined
+
     const { calories, macros } = calculateMacros(
       getWeightInKg(weight),
       parseFloat(bodyFat),
       selectedGoal,
       selectedActivityLevel,
       selectedDietType,
-      sex
+      sex,
+      targetKg != null && Number.isFinite(targetKg) ? targetKg : null
     )
 
     const now = new Date().toISOString()
@@ -375,6 +432,10 @@ export function Onboarding() {
       selectedIngredients,
       dailyCalories: calories,
       macros,
+      ...(targetWeightSkipped || !targetWeightInput.trim()
+        ? {}
+        : { targetWeight: parseFloat(targetWeightInput) }),
+      cuisinePreference: selectedCuisines,
       createdAt: now,
       lastUpdatedAt: now,
     })
@@ -769,6 +830,95 @@ export function Onboarding() {
                   onClick={moveToNextStep}
                   disabled={!selectedGoal}
                 >
+                  Continue
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === "target-weight" && (
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl" suppressHydrationWarning>
+                Set your target weight (optional)
+              </CardTitle>
+              <CardDescription suppressHydrationWarning>
+                We&apos;ll estimate how long your plan will take to get you there
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="target-weight">Target weight ({unit})</Label>
+                <Input
+                  id="target-weight"
+                  inputMode="decimal"
+                  placeholder={unit === "kg" ? "e.g. 72" : "e.g. 160"}
+                  value={targetWeightInput}
+                  onChange={(e) => {
+                    setTargetWeightSkipped(false)
+                    handleNumericInput(e.target.value, setTargetWeightInput)
+                  }}
+                  className="h-12 text-lg"
+                />
+              </div>
+              <div className="flex flex-col gap-3 pt-2">
+                <Button variant="outline" className="h-12 w-full" onClick={moveToPreviousStep}>
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  Back
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-12 w-full"
+                  onClick={() => {
+                    setTargetWeightSkipped(true)
+                    setTargetWeightInput("")
+                    moveToNextStep()
+                  }}
+                >
+                  I&apos;ll focus on habits, not numbers
+                </Button>
+                <Button className="h-12 w-full" onClick={moveToNextStep} disabled={!targetWeightStepValid}>
+                  Continue
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {step === "cuisine" && (
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl" suppressHydrationWarning>
+                What kind of food do you usually eat?
+              </CardTitle>
+              <CardDescription suppressHydrationWarning>
+                We&apos;ll suggest ingredients you can actually find and afford
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-center text-xs text-muted-foreground">Pick one or two</p>
+              <div className="space-y-2">
+                {cuisineOptions.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => toggleCuisine(c.id)}
+                    className={`w-full rounded-xl border-2 p-4 text-left transition-all ${
+                      selectedCuisines.includes(c.id) ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="font-semibold text-foreground">{c.title}</div>
+                    <div className="text-sm text-muted-foreground">{c.hint}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" className="h-12 flex-1" onClick={moveToPreviousStep}>
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  Back
+                </Button>
+                <Button className="h-12 flex-1" onClick={moveToNextStep} disabled={selectedCuisines.length < 1}>
                   Continue
                 </Button>
               </div>

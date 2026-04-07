@@ -1,11 +1,5 @@
 import type { ActivityLevel, DietType, Goal, Sex, UserProfile } from "@/lib/meal-store"
 
-type MacroRatios = {
-  protein: number
-  carbs: number
-  fat: number
-}
-
 const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
   sedentary: 1.2,
   light: 1.375,
@@ -20,13 +14,6 @@ const GOAL_CALORIE_ADJUSTMENT: Record<Goal, number> = {
   recomposition: -200,
 }
 
-const DIET_MACRO_RATIOS: Record<DietType, MacroRatios> = {
-  keto: { fat: 0.7, protein: 0.25, carbs: 0.05 },
-  "high-protein": { protein: 0.4, carbs: 0.35, fat: 0.25 },
-  balanced: { protein: 0.3, carbs: 0.4, fat: 0.3 },
-  "intermittent-fasting": { protein: 0.3, carbs: 0.35, fat: 0.35 },
-}
-
 /**
  * Converts pounds to kilograms when needed.
  */
@@ -34,11 +21,43 @@ export function toKg(weight: number, unit: "kg" | "lbs"): number {
   return unit === "lbs" ? weight * 0.453592 : weight
 }
 
+function proteinGPerKgLbm(goal: Goal, dietType: DietType): number {
+  if (goal === "recomposition") return 1.8
+  if (goal === "lose-fat") {
+    if (dietType === "high-protein") return 2.0
+    return 1.6
+  }
+  if (dietType === "high-protein") return 2.2
+  return 1.8
+}
+
+function splitRemainingCarbsFatKcal(
+  dietType: DietType,
+  remainingKcal: number
+): { carbKcal: number; fatKcal: number } {
+  if (remainingKcal <= 0) return { carbKcal: 0, fatKcal: 0 }
+
+  if (dietType === "balanced") {
+    const c = 45 / (45 + 35)
+    return { carbKcal: remainingKcal * c, fatKcal: remainingKcal * (1 - c) }
+  }
+  if (dietType === "high-protein") {
+    const c = 35 / (35 + 30)
+    return { carbKcal: remainingKcal * c, fatKcal: remainingKcal * (1 - c) }
+  }
+  if (dietType === "intermittent-fasting") {
+    const c = 40 / (40 + 30)
+    return { carbKcal: remainingKcal * c, fatKcal: remainingKcal * (1 - c) }
+  }
+  const carbCapKcal = 50 * 4
+  const carbFromRatio = remainingKcal * (5 / (70 + 5))
+  const carbKcal = Math.min(carbCapKcal, carbFromRatio)
+  return { carbKcal, fatKcal: remainingKcal - carbKcal }
+}
+
 /**
- * Assumptions:
- * - Katch-McArdle is used whenever body fat is available/valid.
- * - If body fat is missing/invalid, we fallback to LBM = total body weight to avoid crashes.
- * - Daily calories are never returned below 1200 for safer defaults.
+ * LBM-based protein; remaining calories split by diet (after protein).
+ * Calorie floor: male 1500, female 1200.
  */
 export function calculateNutritionTargets(input: {
   weightKg: number
@@ -47,6 +66,7 @@ export function calculateNutritionTargets(input: {
   goal: Goal
   dietType: DietType
   sex?: Sex
+  targetWeightKg?: number
 }): { calories: number; macros: UserProfile["macros"] } {
   const bodyFat = Number.isFinite(input.bodyFat) ? input.bodyFat : 0
   const safeBodyFat = Math.min(Math.max(bodyFat, 0), 60)
@@ -57,26 +77,120 @@ export function calculateNutritionTargets(input: {
   const bmrMultiplier = sex === "female" ? 0.9 : 1
   const bmr = 370 + 21.6 * lbmForFormula * bmrMultiplier
   const tdee = bmr * ACTIVITY_MULTIPLIERS[input.activityLevel]
-  const adjustedCalories = tdee + GOAL_CALORIE_ADJUSTMENT[input.goal]
-  const calories = Math.round(Math.max(1200, adjustedCalories))
 
-  const baseRatios = DIET_MACRO_RATIOS[input.dietType]
-  const ratios =
-    sex === "female"
-      ? {
-          protein: Math.max(0.2, baseRatios.protein - 0.02),
-          fat: Math.min(0.75, baseRatios.fat + 0.02),
-          carbs: baseRatios.carbs,
-        }
-      : baseRatios
+  let adjustedCalories = tdee + GOAL_CALORIE_ADJUSTMENT[input.goal]
+  const targetKg = input.targetWeightKg
+  if (targetKg != null && Number.isFinite(targetKg)) {
+    const deltaKg = input.weightKg - targetKg
+    if (deltaKg > 0) {
+      if (input.goal === "lose-fat") adjustedCalories = tdee - 550
+      else if (input.goal === "recomposition") adjustedCalories = tdee - 275
+    }
+  }
+
+  const minCalories = sex === "female" ? 1200 : 1500
+  let calories = Math.round(Math.max(minCalories, adjustedCalories))
+
+  const proteinPerKg = proteinGPerKgLbm(input.goal, input.dietType)
+  let proteinG = Math.round(lbmForFormula * proteinPerKg)
+  const maxProteinG = Math.round(lbmForFormula * 2.2)
+  proteinG = Math.min(proteinG, maxProteinG)
+
+  const proteinKcal = proteinG * 4
+  let remainingKcal = calories - proteinKcal
+
+  if (remainingKcal < 200) {
+    calories = Math.round(Math.max(minCalories, proteinKcal + 200))
+    remainingKcal = calories - proteinKcal
+  }
+
+  let { carbKcal, fatKcal } = splitRemainingCarbsFatKcal(input.dietType, remainingKcal)
+  let carbsG = Math.max(0, Math.round(carbKcal / 4))
+  let fatG = Math.max(0, Math.round(fatKcal / 9))
+
+  if (input.dietType === "keto" && carbsG > 50) {
+    carbsG = 50
+    const usedCarbKcal = carbsG * 4
+    fatG = Math.max(0, Math.round((remainingKcal - usedCarbKcal) / 9))
+  }
 
   return {
     calories,
     macros: {
-      protein: Math.round((calories * ratios.protein) / 4),
-      carbs: Math.round((calories * ratios.carbs) / 4),
-      fat: Math.round((calories * ratios.fat) / 9),
+      protein: proteinG,
+      carbs: carbsG,
+      fat: fatG,
       minerals: Math.round(lbmForFormula * 0.05),
     },
   }
+}
+
+export type GoalTimelineInfo =
+  | { kind: "none" }
+  | { kind: "gain-muscle"; message: string }
+  | { kind: "past-target"; message: string }
+  | { kind: "estimate"; weeks: number; paceLabel: string; disclaimer: string }
+
+/**
+ * Dashboard copy for target weight (optional).
+ */
+export function getGoalWeightTimeline(
+  weightKg: number,
+  targetWeightKg: number | undefined,
+  goal: Goal,
+  unit: "kg" | "lbs"
+): GoalTimelineInfo {
+  const disclaimer = "Estimates vary — your body will find its own pace"
+
+  if (targetWeightKg == null || !Number.isFinite(targetWeightKg)) {
+    return { kind: "none" }
+  }
+
+  if (goal === "gain-muscle") {
+    return {
+      kind: "gain-muscle",
+      message:
+        "Weekly weight targets aren’t a great fit for building muscle — focus on training, protein, and steady fuel.",
+    }
+  }
+
+  const deltaKg = weightKg - targetWeightKg
+  if (deltaKg <= 0) {
+    return {
+      kind: "past-target",
+      message: "You’re at or past your target weight on paper.",
+    }
+  }
+
+  if (goal === "lose-fat") {
+    const paceKg = 0.625
+    const weeks = Math.max(1, Math.round(deltaKg / paceKg))
+    const pace =
+      unit === "kg"
+        ? `losing ~${paceKg}kg/week`
+        : `losing ~${(paceKg * 2.20462).toFixed(1)}lb/week`
+    return {
+      kind: "estimate",
+      weeks,
+      paceLabel: `At this pace: ${pace}`,
+      disclaimer,
+    }
+  }
+
+  if (goal === "recomposition") {
+    const paceKg = 0.375
+    const weeks = Math.max(1, Math.round(deltaKg / paceKg))
+    const pace =
+      unit === "kg"
+        ? `losing ~${paceKg}kg/week`
+        : `losing ~${(paceKg * 2.20462).toFixed(1)}lb/week`
+    return {
+      kind: "estimate",
+      weeks,
+      paceLabel: `At this pace: ${pace}`,
+      disclaimer,
+    }
+  }
+
+  return { kind: "none" }
 }

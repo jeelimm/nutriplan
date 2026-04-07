@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,8 @@ import { Spinner } from "@/components/ui/spinner"
 import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
-import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Settings } from "lucide-react"
+import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
+import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock } from "lucide-react"
 
 function MacroProgress({ current, target, label, icon, color }: { 
   current: number
@@ -107,6 +108,16 @@ export function DailyView() {
     }
   }, [isGeneratingMealPlan])
 
+  const goalTimeline = useMemo(() => {
+    if (!userProfile) return { kind: "none" as const }
+    const wKg = toKg(userProfile.weight, userProfile.unit)
+    const tKg =
+      userProfile.targetWeight != null && Number.isFinite(userProfile.targetWeight)
+        ? toKg(userProfile.targetWeight, userProfile.unit)
+        : undefined
+    return getGoalWeightTimeline(wKg, tKg, userProfile.goal, userProfile.unit)
+  }, [userProfile])
+
   const openEditProfileModal = () => {
     if (!userProfile) return
     setProfileName(userProfile.profileName ?? "")
@@ -127,13 +138,20 @@ export function DailyView() {
     const mealsPerDay = userProfile.mealsPerDay
     if (!Number.isFinite(nextWeight) || !Number.isFinite(nextBodyFat) || !Number.isFinite(nextMuscleMass)) return
 
+    const weightKg = unit === "lbs" ? nextWeight * 0.453592 : nextWeight
+    const targetKg =
+      userProfile.targetWeight != null && Number.isFinite(userProfile.targetWeight)
+        ? toKg(userProfile.targetWeight, userProfile.unit)
+        : null
+
     const { calories, macros } = calculateMacros(
-      unit === "lbs" ? nextWeight * 0.453592 : nextWeight,
+      weightKg,
       nextBodyFat,
       goal,
       activityLevel,
       userProfile.dietType,
-      userProfile.sex
+      userProfile.sex,
+      targetKg
     )
     const now = new Date().toISOString()
 
@@ -274,13 +292,6 @@ export function DailyView() {
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <button
-            onClick={() => setCurrentStep(4)}
-            className="mt-3 ml-auto flex rounded-full p-2 hover:bg-secondary"
-            aria-label="Open settings"
-          >
-            <Settings className="h-5 w-5" />
-          </button>
           <Button variant="outline" className="mt-3 h-9 w-full" onClick={openEditProfileModal}>
             Edit profile
           </Button>
@@ -360,6 +371,28 @@ export function DailyView() {
             />
           </CardContent>
         </Card>
+
+        {goalTimeline.kind !== "none" && (
+          <Card className="mb-4 border-0 shadow-lg">
+            <CardContent className="space-y-2 pt-6 text-sm">
+              {goalTimeline.kind === "estimate" && (
+                <>
+                  <p className="font-medium text-foreground">
+                    Estimated time to goal: ~{goalTimeline.weeks} weeks
+                  </p>
+                  <p className="text-muted-foreground">{goalTimeline.paceLabel}</p>
+                  <p className="text-xs text-muted-foreground">{goalTimeline.disclaimer}</p>
+                </>
+              )}
+              {goalTimeline.kind === "gain-muscle" && (
+                <p className="text-muted-foreground">{goalTimeline.message}</p>
+              )}
+              {goalTimeline.kind === "past-target" && (
+                <p className="text-muted-foreground">{goalTimeline.message}</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Meals */}
         <div className="space-y-3">

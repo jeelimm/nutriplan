@@ -10,11 +10,21 @@ export type Sex = 'male' | 'female'
 export type RecipeUnitSystem = 'metric' | 'imperial'
 export type Language = 'en' | 'ko'
 
+export type CuisinePreference =
+  | 'western'
+  | 'korean'
+  | 'japanese'
+  | 'chinese'
+  | 'mediterranean'
+  | 'asian-fusion'
+
 export interface UserProfile {
   profileName?: string
   sex?: Sex
   unitSystem?: RecipeUnitSystem
   language?: Language
+  targetWeight?: number
+  cuisinePreference?: CuisinePreference[]
   weight: number
   bodyFat: number
   muscleMass: number
@@ -89,7 +99,8 @@ interface MealStore {
     goal: Goal,
     activityLevel: ActivityLevel,
     dietType: DietType,
-    sex?: Sex
+    sex?: Sex,
+    targetWeightKg?: number | null
   ) => { calories: number; macros: UserProfile['macros'] }
   generateMealPlan: () => Promise<void>
 }
@@ -133,6 +144,20 @@ const ensureRecipeUnitSystem = (value: unknown): RecipeUnitSystem =>
   value === 'imperial' ? 'imperial' : DEFAULT_RECIPE_UNIT_SYSTEM
 const ensureLanguage = (value: unknown): Language => (value === 'ko' ? 'ko' : DEFAULT_LANGUAGE)
 
+const CUISINE_IDS = new Set<CuisinePreference>([
+  'western',
+  'korean',
+  'japanese',
+  'chinese',
+  'mediterranean',
+  'asian-fusion',
+])
+
+function ensureCuisinePreference(value: unknown): CuisinePreference[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is CuisinePreference => typeof item === 'string' && CUISINE_IDS.has(item as CuisinePreference))
+}
+
 function normalizeUserProfile(raw: unknown): UserProfile | null {
   if (!raw || typeof raw !== 'object') return null
   const profile = raw as Partial<UserProfile> & { bodyFatPercentage?: number }
@@ -144,6 +169,11 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
     sex: ensureSex(profile.sex),
     unitSystem: ensureRecipeUnitSystem(profile.unitSystem),
     language: ensureLanguage(profile.language),
+    targetWeight:
+      profile.targetWeight !== undefined && profile.targetWeight !== null && Number.isFinite(Number(profile.targetWeight))
+        ? toNumber(profile.targetWeight, 0)
+        : undefined,
+    cuisinePreference: ensureCuisinePreference(profile.cuisinePreference),
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
     muscleMass: toNumber(profile.muscleMass, 0),
@@ -283,7 +313,7 @@ export const useMealStore = create<MealStore>()(
       selectedDay: 0,
       setSelectedDay: (day) => set({ selectedDay: day }),
       
-      calculateMacros: (weightKg, bodyFat, goal, activityLevel, dietType, sex = DEFAULT_SEX) =>
+      calculateMacros: (weightKg, bodyFat, goal, activityLevel, dietType, sex = DEFAULT_SEX, targetWeightKg = null) =>
         calculateNutritionTargets({
           weightKg,
           bodyFat,
@@ -291,6 +321,7 @@ export const useMealStore = create<MealStore>()(
           activityLevel,
           dietType,
           sex,
+          targetWeightKg: targetWeightKg ?? undefined,
         }),
       
       generateMealPlan: async () => {
@@ -301,6 +332,7 @@ export const useMealStore = create<MealStore>()(
 
         const payload = {
           unitSystem: userProfile.unitSystem ?? DEFAULT_RECIPE_UNIT_SYSTEM,
+          cuisinePreference: userProfile.cuisinePreference ?? [],
           weight: userProfile.weight,
           bodyFat: userProfile.bodyFat,
           muscleMass: userProfile.muscleMass,

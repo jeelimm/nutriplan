@@ -2,7 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
 import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
+import { toKg } from "@/lib/nutrition"
 import { ChevronLeft, Settings } from "lucide-react"
 
 const activityLevels: { id: ActivityLevel; label: string }[] = [
@@ -22,7 +24,7 @@ const dietTypes: { id: DietType; label: string }[] = [
   { id: "keto", label: "Keto" },
   { id: "high-protein", label: "High Protein" },
   { id: "balanced", label: "Balanced" },
-  { id: "intermittent-fasting", label: "IF" },
+  { id: "intermittent-fasting", label: "Time-restricted" },
 ]
 
 export function SettingsScreen() {
@@ -33,19 +35,47 @@ export function SettingsScreen() {
     setCurrentStep,
     generateMealPlan,
     clearAllData,
+    calculateMacros,
   } = useMealStore()
 
   if (!userProfile) return null
 
-  const updateProfile = (patch: Partial<typeof userProfile>) => {
+  const updatePreferences = (patch: Partial<typeof userProfile>) => {
     setUserProfile({
       ...userProfile,
       ...patch,
+      lastUpdatedAt: new Date().toISOString(),
+    })
+  }
+
+  const updateNutritionTargets = (patch: Partial<typeof userProfile>) => {
+    const next = { ...userProfile, ...patch }
+    const weightKg = toKg(next.weight, next.unit)
+    const targetKg =
+      next.targetWeight != null && Number.isFinite(next.targetWeight)
+        ? toKg(next.targetWeight, next.unit)
+        : null
+    const { calories, macros } = calculateMacros(
+      weightKg,
+      next.bodyFat,
+      next.goal,
+      next.activityLevel,
+      next.dietType,
+      next.sex ?? "male",
+      targetKg
+    )
+    setUserProfile({
+      ...next,
+      dailyCalories: calories,
+      macros,
+      lastUpdatedAt: new Date().toISOString(),
     })
   }
 
   const handleRegenerate = async () => {
-    setMealPlanConfig({ dietType: userProfile.dietType, mealsPerDay: userProfile.mealsPerDay })
+    const profile = useMealStore.getState().userProfile
+    if (!profile) return
+    setMealPlanConfig({ dietType: profile.dietType, mealsPerDay: profile.mealsPerDay })
     await generateMealPlan()
     setCurrentStep(2)
   }
@@ -57,7 +87,7 @@ export function SettingsScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen bg-background p-4 pb-28 md:p-8 md:pb-28">
       <div className="mx-auto max-w-lg space-y-4">
         <button
           onClick={() => setCurrentStep(2)}
@@ -80,54 +110,37 @@ export function SettingsScreen() {
           <CardHeader>
             <CardTitle>Profile</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             <Button variant="outline" className="w-full" onClick={() => setCurrentStep(2)}>
               Edit body stats
             </Button>
-            <div className="grid grid-cols-3 gap-2">
-              {goals.map((item) => (
-                <Button key={item.id} variant={userProfile.goal === item.id ? "default" : "outline"} onClick={() => updateProfile({ goal: item.id })}>
-                  {item.label}
-                </Button>
-              ))}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Goal</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {goals.map((item) => (
+                  <Button
+                    key={item.id}
+                    variant={userProfile.goal === item.id ? "default" : "outline"}
+                    onClick={() => updateNutritionTargets({ goal: item.id })}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {activityLevels.map((item) => (
-                <Button key={item.id} variant={userProfile.activityLevel === item.id ? "default" : "outline"} onClick={() => updateProfile({ activityLevel: item.id })}>
-                  {item.label}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2">
-              <Button variant={userProfile.unitSystem === "metric" ? "default" : "outline"} onClick={() => updateProfile({ unitSystem: "metric" })}>
-                Metric
-              </Button>
-              <Button variant={userProfile.unitSystem === "imperial" ? "default" : "outline"} onClick={() => updateProfile({ unitSystem: "imperial" })}>
-                Imperial
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button variant={userProfile.language !== "ko" ? "default" : "outline"} onClick={() => updateProfile({ language: "en" })}>
-                English
-              </Button>
-              <Button variant={userProfile.language === "ko" ? "default" : "outline"} onClick={() => updateProfile({ language: "ko" })}>
-                한국어
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              {[2, 3, 4, 5].map((count) => (
-                <Button key={count} variant={userProfile.mealsPerDay === count ? "default" : "outline"} onClick={() => updateProfile({ mealsPerDay: count })}>
-                  {count}
-                </Button>
-              ))}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Activity level</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {activityLevels.map((item) => (
+                  <Button
+                    key={item.id}
+                    variant={userProfile.activityLevel === item.id ? "default" : "outline"}
+                    onClick={() => updateNutritionTargets({ activityLevel: item.id })}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -139,7 +152,11 @@ export function SettingsScreen() {
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               {dietTypes.map((item) => (
-                <Button key={item.id} variant={userProfile.dietType === item.id ? "default" : "outline"} onClick={() => updateProfile({ dietType: item.id })}>
+                <Button
+                  key={item.id}
+                  variant={userProfile.dietType === item.id ? "default" : "outline"}
+                  onClick={() => updateNutritionTargets({ dietType: item.id })}
+                >
                   {item.label}
                 </Button>
               ))}
@@ -150,6 +167,56 @@ export function SettingsScreen() {
             <Button className="w-full" onClick={handleRegenerate}>
               Regenerate plan
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle>Preferences</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Measurement system</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={userProfile.unitSystem === "metric" ? "default" : "outline"}
+                  onClick={() => updatePreferences({ unitSystem: "metric" })}
+                >
+                  Metric
+                </Button>
+                <Button
+                  variant={userProfile.unitSystem === "imperial" ? "default" : "outline"}
+                  onClick={() => updatePreferences({ unitSystem: "imperial" })}
+                >
+                  Imperial
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Language</Label>
+              <div className="flex gap-2">
+                <Button variant={userProfile.language !== "ko" ? "default" : "outline"} onClick={() => updatePreferences({ language: "en" })}>
+                  English
+                </Button>
+                <Button variant={userProfile.language === "ko" ? "default" : "outline"} onClick={() => updatePreferences({ language: "ko" })}>
+                  한국어
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Meals per day</Label>
+              <div className="flex gap-2">
+                {[2, 3, 4, 5].map((count) => (
+                  <Button
+                    key={count}
+                    variant={userProfile.mealsPerDay === count ? "default" : "outline"}
+                    onClick={() => updatePreferences({ mealsPerDay: count })}
+                  >
+                    {count}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
 
