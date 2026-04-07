@@ -191,120 +191,71 @@ export async function POST(req: Request) {
 
     const selectedIngredients = Array.isArray(body.selectedIngredients) ? body.selectedIngredients : []
 
-    const goal =
-      body.goal === "lose-fat" || body.goal === "gain-muscle" || body.goal === "recomposition" || body.goal === "lean-recomposition"
-        ? body.goal === "lean-recomposition"
-          ? "recomposition"
-          : body.goal
-        : "recomposition"
+    const dailyCalories = ensureNumber(body.dailyCalories)
+    const targetProtein = ensureNumber(body.macros?.protein)
+    const targetCarbs = ensureNumber(body.macros?.carbs)
+    const targetFat = ensureNumber(body.macros?.fat)
+    const mealsPerDay = body.mealsPerDay
+    const cuisinePreference =
+      formatCuisinePreference(body.cuisinePreference) || body.dietType
+    const language = body.language === "ko" ? "ko" : "en"
 
-    const cuisineLabel = formatCuisinePreference(body.cuisinePreference)
-    const cuisineLine =
-      cuisineLabel.length > 0
-        ? `\nCuisine: ${cuisineLabel}. Use typical ingredients and dish names for this cuisine only.`
-        : ""
-    const languageLine = `\nLanguage: ${
-      body.language === "ko"
-        ? "Korean (한국어) - use Korean meal names and instructions"
-        : "English only - NO Korean characters anywhere"
-    }`
+    function extractJSON(text: string): string {
+      const cleaned = text
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/```\s*$/i, "")
+        .trim()
+      return cleaned
+    }
 
-    const callClaudeForDays = async (requestedDays: string[]) => {
-      const daysList = requestedDays.join(", ")
-      const units = body.unitSystem === "metric" ? "metric (g, ml, °C)" : "imperial (oz, cups, °F)"
-      const perMealKcal = Math.round(body.dailyCalories / body.mealsPerDay)
-      const calLo = body.dailyCalories - 150
-      const calHi = body.dailyCalories + 150
-      const dailyCalories = ensureNumber(body.dailyCalories)
-      const targetProtein = ensureNumber(body.macros?.protein)
-      const targetCarbs = ensureNumber(body.macros?.carbs)
-      const targetFat = ensureNumber(body.macros?.fat)
-      const mealsPerDay = Math.max(1, body.mealsPerDay)
+    const ingredientsSnippet = selectedIngredients.slice(0, 10).join(",")
 
-      const proteinCritical =
-        targetProtein > 0
-          ? `
+    const makePrompt = (days: string[]) =>
+      `${days.join(",")} meal plans. 
+${mealsPerDay} meals/day. 
+${cuisinePreference} cuisine. 
+${language === "ko" ? "Korean" : "English"} only.
+Cals:${dailyCalories} P:${targetProtein}g C:${targetCarbs}g F:${targetFat}g.
+Use only: ${ingredientsSnippet}.
+JSON: {"days":[{"day":"","meals":[{"name":"","type":"","calories":0,"protein":0,"carbs":0,"fat":0,"ingredients":[{"name":"","amount":"","category":""}],"recipe":{"prepTime":0,"cookTime":0,"instructions":[""]}}]}]}`
 
-CRITICAL: Daily protein MUST reach ${targetProtein}g (non-negotiable).
-Each meal: substantial protein—Breakfast ≥${Math.round(targetProtein * 0.25)}g, Lunch ≥${Math.round(targetProtein * 0.35)}g, Dinner ≥${Math.round(targetProtein * 0.35)}g.
-Do NOT reduce protein for calories; adjust carbs and fat instead.
-`
-          : ""
-
-      const targetsBlock = `
-
-TARGETS PER DAY (must hit these):
-- Calories: ${dailyCalories} kcal
-- Protein: ${targetProtein}g
-- Carbs: ${targetCarbs}g
-- Fat: ${targetFat}g
-
-Per meal targets (~${mealsPerDay} meals):
-- Cal: ${Math.round(dailyCalories / mealsPerDay)} kcal
-- Protein: ${Math.round(targetProtein / mealsPerDay)}g
-- Carbs: ${Math.round(targetCarbs / mealsPerDay)}g
-- Fat: ${Math.round(targetFat / mealsPerDay)}g
-
-Use large enough portions to hit these.
-Adjust carbs and fat portions up if needed.
-`
-
-      const prompt = `${body.mealsPerDay} meals/day for: ${daysList}. Target ${body.dailyCalories} kcal/day (${calLo}–${calHi} per day); ~${perMealKcal} kcal/meal. Goal: ${goal}. Diet: ${body.dietType}. Units: ${units}.
-Ingredients (prefer): ${selectedIngredients.join(", ")}.${cuisineLine}${languageLine}${proteinCritical}${targetsBlock}
-
-Return JSON only, shape: {"days":[{"day":"Monday","meals":[{"name":"str","type":"Breakfast|Lunch|Dinner|Snack","calories":N,"protein":N,"carbs":N,"fat":N,"ingredients":[{"name":"str","amount":"str","category":"str"}],"recipe":{"prepTime":N,"cookTime":N,"instructions":["str"]}}]}]} — one days[] entry per: ${daysList}. No foods/item/kcal keys.`
+    const callClaudeForDays = async (dayNames: string[]) => {
+      const prompt = makePrompt(dayNames)
 
       console.log("Prompt chars:", prompt.length)
 
       const response = await Promise.race([
         anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 6000,
+          max_tokens: 4000,
           system: "Output strict JSON only.",
           messages: [{ role: "user", content: prompt }],
         }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Claude timeout")), 40000)
+          setTimeout(() => reject(new Error("Claude timeout")), 35000)
         ),
       ])
 
       const text = response.content?.[0]?.text
-      console.log("[generate-meal-plan] Raw Claude response before parsing:", text)
       if (!text) throw new Error("Claude returned empty content")
-
-      function extractJSON(text: string): string {
-        // Remove markdown code blocks
-        const cleaned = text
-          .replace(/^```json\s*/i, "")
-          .replace(/^```\s*/i, "")
-          .replace(/```\s*$/i, "")
-          .trim()
-        return cleaned
-      }
 
       const jsonText = extractJSON(text)
       const parsed = JSON.parse(jsonText) as { days?: unknown[] }
       if (!Array.isArray(parsed.days) || parsed.days.length === 0) {
-        console.error(
-          "[generate-meal-plan] Chunk missing or empty days array. Raw text:",
-          text
-        )
-        throw new Error(
-          "Claude response chunk has no days: expected a non-empty days array for this request"
-        )
+        console.error("[generate-meal-plan] Chunk missing days array. Raw text:", text)
+        throw new Error("Claude response chunk has no days array")
       }
       return parsed
     }
 
-    const [chunk1, chunk2, chunk3] = await Promise.all([
-      callClaudeForDays(["Monday", "Tuesday"]),
-      callClaudeForDays(["Wednesday", "Thursday", "Friday"]),
-      callClaudeForDays(["Saturday", "Sunday"]),
+    const [chunk1, chunk2] = await Promise.all([
+      callClaudeForDays(["Monday", "Tuesday", "Wednesday"]),
+      callClaudeForDays(["Thursday", "Friday", "Saturday", "Sunday"]),
     ])
     const days = [
       ...(Array.isArray(chunk1.days) ? chunk1.days : []),
       ...(Array.isArray(chunk2.days) ? chunk2.days : []),
-      ...(Array.isArray(chunk3.days) ? chunk3.days : []),
     ]
     const coercedDays = applyClaudeResponseNormalizer(days)
     const normalizedDays = coercedDays.map((day: any) => ({
