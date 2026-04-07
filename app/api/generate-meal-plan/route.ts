@@ -145,6 +145,57 @@ function applyClaudeResponseNormalizer(days: any[]): any[] {
   }))
 }
 
+function adjustMacros(
+  days: any[],
+  targets: { calories: number; protein: number; carbs: number; fat: number }
+) {
+  return days.map((day) => {
+    if (!Array.isArray(day.meals) || day.meals.length === 0) return day
+
+    const totalFat = day.meals.reduce((sum: number, m: any) => sum + (m.fat || 0), 0)
+    const totalCarbs = day.meals.reduce((sum: number, m: any) => sum + (m.carbs || 0), 0)
+
+    const fatRatio = targets.fat > 0 ? totalFat / targets.fat : 1
+    const carbsRatio = targets.carbs > 0 ? totalCarbs / targets.carbs : 1
+
+    if (fatRatio < 0.8 && targets.fat > 0) {
+      const fatDeficit = targets.fat - totalFat
+      const fatPerMeal = Math.round(fatDeficit / day.meals.length)
+      day.meals = day.meals.map((meal: any) => {
+        if (!Array.isArray(meal.ingredients)) meal.ingredients = []
+        const oliveOilCals = fatPerMeal * 9
+        meal.ingredients.push({
+          name: "Olive oil",
+          amount: `${Math.round((fatPerMeal * 1000) / 884)}ml`,
+          category: "Fat",
+        })
+        meal.fat = (meal.fat || 0) + fatPerMeal
+        meal.calories = (meal.calories || 0) + oliveOilCals
+        return meal
+      })
+    }
+
+    if (carbsRatio < 0.8 && targets.carbs > 0) {
+      const carbsDeficit = targets.carbs - totalCarbs
+      const carbsPerMeal = Math.round(carbsDeficit / day.meals.length)
+      day.meals = day.meals.map((meal: any) => {
+        if (!Array.isArray(meal.ingredients)) meal.ingredients = []
+        const riceCals = carbsPerMeal * 4
+        meal.ingredients.push({
+          name: "White rice",
+          amount: `${Math.round((carbsPerMeal * 100) / 28)}g cooked`,
+          category: "Carbs",
+        })
+        meal.carbs = (meal.carbs || 0) + carbsPerMeal
+        meal.calories = (meal.calories || 0) + riceCals
+        return meal
+      })
+    }
+
+    return day
+  })
+}
+
 const CUISINE_STYLE_LABELS: Record<string, string> = {
   western: "Western",
   korean: "Korean",
@@ -258,7 +309,13 @@ JSON: {"days":[{"day":"","meals":[{"name":"","type":"","calories":0,"protein":0,
       ...(Array.isArray(chunk2.days) ? chunk2.days : []),
     ]
     const coercedDays = applyClaudeResponseNormalizer(days)
-    const normalizedDays = coercedDays.map((day: any) => ({
+    const macroAdjustedDays = adjustMacros(coercedDays, {
+      calories: dailyCalories,
+      protein: targetProtein,
+      carbs: targetCarbs,
+      fat: targetFat,
+    })
+    const normalizedDays = macroAdjustedDays.map((day: any) => ({
       ...day,
       meals: Array.isArray(day?.meals)
         ? day.meals.map((meal: any) => {
