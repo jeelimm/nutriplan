@@ -28,9 +28,15 @@ function parseNumericToken(token: string): number | null {
 
 function parseAmount(amount: string): { value: number; unit: string } {
   const normalized = amount.trim().replace(/\s+/g, " ")
-  const parts = normalized.split(" ")
-  const numericValue = parseNumericToken(parts[0])
+  const match = normalized.match(/^(\d+(?:\.\d+)?|\d+\/\d+)\s*(.*)$/)
+  if (!match) {
+    return {
+      value: 1,
+      unit: normalized || "item",
+    }
+  }
 
+  const numericValue = parseNumericToken(match[1])
   if (numericValue === null) {
     return {
       value: 1,
@@ -38,22 +44,31 @@ function parseAmount(amount: string): { value: number; unit: string } {
     }
   }
 
+  const unit = match[2].trim() || "item"
   return {
     value: numericValue,
-    unit: parts.slice(1).join(" ").trim() || "item",
+    unit,
   }
 }
 
 export function combineAmounts(amounts: string[]): string {
-  const totals = amounts.reduce<Record<string, number>>((acc, amount) => {
-    const { value, unit } = parseAmount(amount)
-    acc[unit] = (acc[unit] ?? 0) + value
+  const parsed = amounts.map(parseAmount)
+  const unitCounts = parsed.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.unit] = (acc[entry.unit] ?? 0) + 1
     return acc
   }, {})
 
-  return Object.entries(totals)
-    .map(([unit, total]) => `${Number(total.toFixed(2)).toString()} ${unit}`)
-    .join(", ")
+  const [mostCommonUnit = "item"] = Object.entries(unitCounts).sort((a, b) => b[1] - a[1])[0] ?? []
+  const total = parsed
+    .filter((entry) => entry.unit === mostCommonUnit)
+    .reduce((sum, entry) => sum + entry.value, 0)
+
+  const rounded = Number.isInteger(total) ? total.toString() : Number(total.toFixed(2)).toString()
+  const compactUnits = new Set(["g", "kg", "mg", "ml", "l", "oz", "lb"])
+  if (compactUnits.has(mostCommonUnit.toLowerCase())) {
+    return `${rounded}${mostCommonUnit}`
+  }
+  return `${rounded} ${mostCommonUnit}`
 }
 
 export function buildGroceryCategories(ingredients: Ingredient[]): GroceryCategory[] {

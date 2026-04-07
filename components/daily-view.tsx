@@ -223,6 +223,13 @@ export function DailyView() {
   }
 
   const calorieProgress = (currentDay.totalCalories / userProfile.dailyCalories) * 100
+  const getMealLabel = (index: number, totalMeals: number): string => {
+    if (index === 0) return "Breakfast"
+    if (index === 1) return "Lunch"
+    if (index === 2 || index === totalMeals - 1) return "Dinner"
+    if (index < totalMeals - 1) return "Snack"
+    return "Meal"
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -352,9 +359,7 @@ export function DailyView() {
                 <CardContent className="p-4">
                   <div className="mb-2 flex items-start justify-between">
                     <div>
-                      <div className="text-xs font-medium text-primary">
-                        {idx === 0 ? "Breakfast" : idx === currentDay.meals.length - 1 ? "Dinner" : `Meal ${idx + 1}`}
-                      </div>
+                      <div className="text-xs font-medium text-primary">{getMealLabel(idx, currentDay.meals.length)}</div>
                       <div className="font-semibold text-foreground">{meal.name}</div>
                     </div>
                     <div className="text-right">
@@ -454,7 +459,7 @@ export function DailyView() {
           onClick={() => setCurrentStep(3)}
         >
           <ShoppingCart className="mr-2 h-5 w-5" />
-          Full week shopping list
+          Full weekly shopping list
         </Button>
       </div>
 

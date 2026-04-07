@@ -89,7 +89,7 @@ export function GroceryList() {
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Week shopping list</h1>
+              <h1 className="text-2xl font-bold text-foreground">Weekly shopping list</h1>
               <p className="text-sm text-muted-foreground">
                 {checkedCount} of {totalItems} checked off
               </p>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useMealStore } from "@/lib/meal-store"
 import { calculateNutritionTargets, toKg } from "@/lib/nutrition"
 import { Spinner } from "@/components/ui/spinner"
-import { Beef, Utensils, ChevronLeft, Flame, Wheat, Droplets, Zap } from "lucide-react"
+import { Beef, Utensils, ChevronLeft, Flame, Wheat, Droplets } from "lucide-react"
 
 const mealCounts = [2, 3, 4, 5]
 
@@ -84,7 +84,7 @@ export function MealPlanConfig() {
                   Ballpark from your stats and activity—tweak your profile anytime if life changes
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
                   <Beef className="mx-auto mb-1 h-5 w-5" />
                   <div className="text-lg font-bold">{liveTargets?.macros.protein ?? userProfile.macros.protein}g</div>
@@ -99,11 +99,6 @@ export function MealPlanConfig() {
                   <Droplets className="mx-auto mb-1 h-5 w-5" />
                   <div className="text-lg font-bold">{liveTargets?.macros.fat ?? userProfile.macros.fat}g</div>
                   <div className="text-xs text-primary-foreground/80">Fat</div>
-                </div>
-                <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
-                  <Zap className="mx-auto mb-1 h-5 w-5" />
-                  <div className="text-lg font-bold">{liveTargets?.macros.minerals ?? userProfile.macros.minerals}mg</div>
-                  <div className="text-xs text-primary-foreground/80">Minerals</div>
                 </div>
               </div>
             </CardContent>

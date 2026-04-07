@@ -475,7 +475,7 @@ export function Onboarding() {
                     <div className="font-semibold text-foreground">{level.label}</div>
                     <div className="text-sm text-muted-foreground">{level.description}</div>
                   </div>
-                  <div className="text-sm font-semibold text-primary">x {level.multiplier}</div>
+                  <span className="whitespace-nowrap font-medium text-primary">&times;{level.multiplier}</span>
                 </button>
               ))}
               <div className="flex gap-3 pt-2">
