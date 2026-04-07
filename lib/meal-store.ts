@@ -354,6 +354,7 @@ export const useMealStore = create<MealStore>()(
 
         const payload = {
           unitSystem: userProfile.unitSystem ?? DEFAULT_RECIPE_UNIT_SYSTEM,
+          language: userProfile.language ?? DEFAULT_LANGUAGE,
           cuisinePreference: userProfile.cuisinePreference ?? [],
           weight: userProfile.weight,
           bodyFat: userProfile.bodyFat,

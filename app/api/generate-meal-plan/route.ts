@@ -154,17 +154,10 @@ const CUISINE_STYLE_LABELS: Record<string, string> = {
   "asian-fusion": "Asian fusion",
 }
 
-/** Short cuisine line only — keeps prompts small. */
-function buildCuisineLine(cuisines: unknown): string {
+function formatCuisinePreference(cuisines: unknown): string {
   const list = Array.isArray(cuisines) ? cuisines.filter((c): c is string => typeof c === "string") : []
   if (!list.length) return ""
-  const names = list.map((id) => CUISINE_STYLE_LABELS[id] ?? id).filter(Boolean)
-  if (!names.length) return ""
-  const label = names.join(" and ")
-  if (names.length === 1) {
-    return `\nCuisine style: ${label}. Use locally available ${label} ingredients and dish names.`
-  }
-  return `\nCuisine style: ${label}. Use locally available ingredients and authentic dish names for these styles.`
+  return list.map((id) => CUISINE_STYLE_LABELS[id] ?? id).filter(Boolean).join(", ")
 }
 
 export async function POST(req: Request) {
@@ -187,6 +180,7 @@ export async function POST(req: Request) {
       activityLevel: "sedentary" | "light" | "moderate" | "very-active"
       mealsPerDay: 2 | 3 | 4 | 5
       unitSystem?: "metric" | "imperial"
+      language?: "en" | "ko"
       cuisinePreference?: string[]
       dailyCalories: number
       macros: { protein: number; carbs: number; fat: number }
@@ -203,6 +197,17 @@ export async function POST(req: Request) {
           ? "recomposition"
           : body.goal
         : "recomposition"
+
+    const cuisineLabel = formatCuisinePreference(body.cuisinePreference)
+    const cuisineLine =
+      cuisineLabel.length > 0
+        ? `\nCuisine: ${cuisineLabel}. Use typical ingredients and dish names for this cuisine only.`
+        : ""
+    const languageLine = `\nLanguage: ${
+      body.language === "ko"
+        ? "Korean (한국어) - use Korean meal names and instructions"
+        : "English only - NO Korean characters anywhere"
+    }`
 
     const callClaudeForDays = async (requestedDays: string[]) => {
       const daysList = requestedDays.join(", ")
@@ -245,7 +250,7 @@ Adjust carbs and fat portions up if needed.
 `
 
       const prompt = `${body.mealsPerDay} meals/day for: ${daysList}. Target ${body.dailyCalories} kcal/day (${calLo}–${calHi} per day); ~${perMealKcal} kcal/meal. Goal: ${goal}. Diet: ${body.dietType}. Units: ${units}.
-Ingredients (prefer): ${selectedIngredients.join(", ")}.${buildCuisineLine(body.cuisinePreference)}${proteinCritical}${targetsBlock}
+Ingredients (prefer): ${selectedIngredients.join(", ")}.${cuisineLine}${languageLine}${proteinCritical}${targetsBlock}
 
 Return JSON only, shape: {"days":[{"day":"Monday","meals":[{"name":"str","type":"Breakfast|Lunch|Dinner|Snack","calories":N,"protein":N,"carbs":N,"fat":N,"ingredients":[{"name":"str","amount":"str","category":"str"}],"recipe":{"prepTime":N,"cookTime":N,"instructions":["str"]}}]}]} — one days[] entry per: ${daysList}. No foods/item/kcal keys.`
 
@@ -254,7 +259,7 @@ Return JSON only, shape: {"days":[{"day":"Monday","meals":[{"name":"str","type":
       const response = await Promise.race([
         anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 8000,
+          max_tokens: 6000,
           system: "Output strict JSON only.",
           messages: [{ role: "user", content: prompt }],
         }),
@@ -291,13 +296,15 @@ Return JSON only, shape: {"days":[{"day":"Monday","meals":[{"name":"str","type":
       return parsed
     }
 
-    const [firstChunk, secondChunk] = await Promise.all([
-      callClaudeForDays(["Monday", "Tuesday", "Wednesday"]),
-      callClaudeForDays(["Thursday", "Friday", "Saturday", "Sunday"]),
+    const [chunk1, chunk2, chunk3] = await Promise.all([
+      callClaudeForDays(["Monday", "Tuesday"]),
+      callClaudeForDays(["Wednesday", "Thursday", "Friday"]),
+      callClaudeForDays(["Saturday", "Sunday"]),
     ])
     const days = [
-      ...(Array.isArray(firstChunk.days) ? firstChunk.days : []),
-      ...(Array.isArray(secondChunk.days) ? secondChunk.days : []),
+      ...(Array.isArray(chunk1.days) ? chunk1.days : []),
+      ...(Array.isArray(chunk2.days) ? chunk2.days : []),
+      ...(Array.isArray(chunk3.days) ? chunk3.days : []),
     ]
     const coercedDays = applyClaudeResponseNormalizer(days)
     const normalizedDays = coercedDays.map((day: any) => ({
