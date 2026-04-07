@@ -145,6 +145,64 @@ function applyClaudeResponseNormalizer(days: any[]): any[] {
   }))
 }
 
+const ROTATION_DAY_NAMES = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const
+
+/** Per day: [breakfastIndex, lunchIndex, dinnerIndex] into 3-option pools (0..2). */
+const MEAL_ROTATION: readonly [number, number, number][] = [
+  [0, 0, 0],
+  [1, 1, 1],
+  [2, 2, 2],
+  [0, 1, 2],
+  [1, 2, 0],
+  [2, 0, 1],
+  [0, 1, 2],
+]
+
+function cloneMealForDay(meal: any): any {
+  return JSON.parse(JSON.stringify(meal))
+}
+
+function coercePool(arr: unknown, label: string): any[] {
+  if (!Array.isArray(arr)) {
+    throw new Error(`Claude response missing ${label} array`)
+  }
+  if (arr.length < 3) {
+    throw new Error(`Claude returned fewer than 3 ${label}`)
+  }
+  return arr.slice(0, 3).map(normalizeClaudeMealAlternatives)
+}
+
+function buildWeekDaysFromPools(breakfasts: any[], lunches: any[], dinners: any[]): any[] {
+  return ROTATION_DAY_NAMES.map((dayName, dayIdx) => {
+    const [bi, li, di] = MEAL_ROTATION[dayIdx]
+    const b = cloneMealForDay(breakfasts[bi])
+    const l = cloneMealForDay(lunches[li])
+    const d = cloneMealForDay(dinners[di])
+    b.type = "Breakfast"
+    l.type = "Lunch"
+    d.type = "Dinner"
+    return { day: dayName, meals: [b, l, d] }
+  })
+}
+
+function firstTextFromMessageContent(
+  content: Array<{ type: string; text?: string }> | undefined
+): string | undefined {
+  if (!Array.isArray(content)) return undefined
+  for (const block of content) {
+    if (block.type === "text" && typeof block.text === "string") return block.text
+  }
+  return undefined
+}
+
 function adjustMacros(
   days: any[],
   targets: { calories: number; protein: number; carbs: number; fat: number }
@@ -267,52 +325,70 @@ export async function POST(req: Request) {
 
     const ingredientsSnippet = selectedIngredients.slice(0, 10).join(",")
 
-    const makePrompt = (days: string[]) =>
-      `${days.join(",")} meal plans. 
-${mealsPerDay} meals/day. 
-${cuisinePreference} cuisine. 
+    const perMealCal = Math.round(dailyCalories / mealsPerDay)
+    const perMealP = Math.round(targetProtein / mealsPerDay)
+    const perMealC = Math.round(targetCarbs / mealsPerDay)
+    const perMealF = Math.round(targetFat / mealsPerDay)
+
+    const prompt = `Generate exactly:
+- 3 breakfast options
+- 3 lunch options
+- 3 dinner options
+
+${cuisinePreference} cuisine.
 ${language === "ko" ? "Korean" : "English"} only.
-Cals:${dailyCalories} P:${targetProtein}g C:${targetCarbs}g F:${targetFat}g.
-Use only: ${ingredientsSnippet}.
-JSON: {"days":[{"day":"","meals":[{"name":"","type":"","calories":0,"protein":0,"carbs":0,"fat":0,"ingredients":[{"name":"","amount":"","category":""}],"recipe":{"prepTime":0,"cookTime":0,"instructions":[""]}}]}]}`
+Each meal targets:
+Cal:${perMealCal}
+P:${perMealP}g
+C:${perMealC}g
+F:${perMealF}g
+Use only: ${ingredientsSnippet}
 
-    const callClaudeForDays = async (dayNames: string[]) => {
-      const prompt = makePrompt(dayNames)
+Return JSON:
+{
+  "breakfasts": [meal, meal, meal],
+  "lunches": [meal, meal, meal],
+  "dinners": [meal, meal, meal]
+}
 
-      console.log("Prompt chars:", prompt.length)
+Each meal: {"name":"","type":"","calories":0,
+"protein":0,"carbs":0,"fat":0,
+"ingredients":[{"name":"","amount":"","category":""}],
+"recipe":{"prepTime":0,"cookTime":0,
+"instructions":[""]}}`
 
-      const response = await Promise.race([
-        anthropic.messages.create({
-          model: "claude-haiku-4-5-20251001",
-          max_tokens: 4000,
-          system: "Output strict JSON only.",
-          messages: [{ role: "user", content: prompt }],
-        }),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Claude timeout")), 35000)
-        ),
-      ])
+    console.log("[generate-meal-plan] Prompt chars:", prompt.length)
 
-      const text = response.content?.[0]?.text
-      if (!text) throw new Error("Claude returned empty content")
+    const response = await Promise.race([
+      anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 4000,
+        system: "Output strict JSON only.",
+        messages: [{ role: "user", content: prompt }],
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Claude timeout")), 35000)
+      ),
+    ])
 
-      const jsonText = extractJSON(text)
-      const parsed = JSON.parse(jsonText) as { days?: unknown[] }
-      if (!Array.isArray(parsed.days) || parsed.days.length === 0) {
-        console.error("[generate-meal-plan] Chunk missing days array. Raw text:", text)
-        throw new Error("Claude response chunk has no days array")
-      }
-      return parsed
+    const text = firstTextFromMessageContent(response.content as Array<{ type: string; text?: string }>)
+    if (!text) throw new Error("Claude returned empty content")
+
+    const jsonText = extractJSON(text)
+    const parsed = JSON.parse(jsonText) as {
+      breakfasts?: unknown
+      lunches?: unknown
+      dinners?: unknown
+      breakfast?: unknown
+      lunch?: unknown
+      dinner?: unknown
     }
 
-    const [chunk1, chunk2] = await Promise.all([
-      callClaudeForDays(["Monday", "Tuesday", "Wednesday"]),
-      callClaudeForDays(["Thursday", "Friday", "Saturday", "Sunday"]),
-    ])
-    const days = [
-      ...(Array.isArray(chunk1.days) ? chunk1.days : []),
-      ...(Array.isArray(chunk2.days) ? chunk2.days : []),
-    ]
+    const breakfasts = coercePool(parsed.breakfasts ?? parsed.breakfast, "breakfasts")
+    const lunches = coercePool(parsed.lunches ?? parsed.lunch, "lunches")
+    const dinners = coercePool(parsed.dinners ?? parsed.dinner, "dinners")
+
+    const days = buildWeekDaysFromPools(breakfasts, lunches, dinners)
     const coercedDays = applyClaudeResponseNormalizer(days)
     const macroAdjustedDays = adjustMacros(coercedDays, {
       calories: dailyCalories,
