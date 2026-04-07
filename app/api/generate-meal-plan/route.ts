@@ -163,14 +163,12 @@ function adjustMacros(
       const fatPerMeal = Math.round(fatDeficit / day.meals.length)
       day.meals = day.meals.map((meal: any) => {
         if (!Array.isArray(meal.ingredients)) meal.ingredients = []
-        const oliveOilCals = fatPerMeal * 9
         meal.ingredients.push({
           name: "Olive oil",
           amount: `${Math.round((fatPerMeal * 1000) / 884)}ml`,
           category: "Fat",
         })
         meal.fat = (meal.fat || 0) + fatPerMeal
-        meal.calories = (meal.calories || 0) + oliveOilCals
         return meal
       })
     }
@@ -180,17 +178,24 @@ function adjustMacros(
       const carbsPerMeal = Math.round(carbsDeficit / day.meals.length)
       day.meals = day.meals.map((meal: any) => {
         if (!Array.isArray(meal.ingredients)) meal.ingredients = []
-        const riceCals = carbsPerMeal * 4
         meal.ingredients.push({
           name: "White rice",
           amount: `${Math.round((carbsPerMeal * 100) / 28)}g cooked`,
           category: "Carbs",
         })
         meal.carbs = (meal.carbs || 0) + carbsPerMeal
-        meal.calories = (meal.calories || 0) + riceCals
         return meal
       })
     }
+
+    day.meals = day.meals.map((meal: any) => {
+      const p = Number(meal.protein) || 0
+      const c = Number(meal.carbs) || 0
+      const f = Number(meal.fat) || 0
+      meal.calories = Math.round(p * 4 + c * 4 + f * 9)
+      return meal
+    })
+    day.totalCalories = day.meals.reduce((sum: number, m: any) => sum + (m.calories || 0), 0)
 
     return day
   })
