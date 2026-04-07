@@ -437,9 +437,12 @@ export function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-lg">
-        <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
+    <div className="min-h-screen bg-background p-4 md:p-8" suppressHydrationWarning>
+      <div className="mx-auto max-w-lg" suppressHydrationWarning>
+        <div
+          className="mb-4 flex items-center justify-between text-sm text-muted-foreground"
+          suppressHydrationWarning
+        >
           <span>Step {displayStepIndex + 1} of {totalSteps}</span>
           <span>{Math.round(((displayStepIndex + 1) / totalSteps) * 100)}%</span>
         </div>
