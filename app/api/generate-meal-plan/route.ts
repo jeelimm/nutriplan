@@ -207,12 +207,44 @@ export async function POST(req: Request) {
     const callClaudeForDays = async (requestedDays: string[]) => {
       const daysList = requestedDays.join(", ")
       const units = body.unitSystem === "metric" ? "metric (g, ml, °C)" : "imperial (oz, cups, °F)"
-      const perMeal = Math.round(body.dailyCalories / body.mealsPerDay)
+      const perMealKcal = Math.round(body.dailyCalories / body.mealsPerDay)
       const calLo = body.dailyCalories - 150
       const calHi = body.dailyCalories + 150
+      const targetProtein = ensureNumber(body.macros?.protein)
+      const mealsPerDay = Math.max(1, body.mealsPerDay)
+      const avgProteinPerMeal = targetProtein > 0 ? Math.round(targetProtein / mealsPerDay) : 0
+      const exampleChicken = avgProteinPerMeal > 0 ? Math.round((350 * avgProteinPerMeal) / 80) : 0
+      const exampleTofu = avgProteinPerMeal > 0 ? Math.round((400 * avgProteinPerMeal) / 80) : 0
+      const exampleSalmon = avgProteinPerMeal > 0 ? Math.round((300 * avgProteinPerMeal) / 80) : 0
 
-      const prompt = `${body.mealsPerDay} meals/day for: ${daysList}. Target ${body.dailyCalories} kcal/day (${calLo}–${calHi} per day); ~${perMeal} kcal/meal. Goal: ${goal}. Diet: ${body.dietType}. Units: ${units}.
-Ingredients (prefer): ${selectedIngredients.join(", ")}.${buildCuisineLine(body.cuisinePreference)}
+      const proteinCritical =
+        targetProtein > 0
+          ? `
+
+CRITICAL: Daily protein MUST reach ${targetProtein}g.
+This is non-negotiable.
+
+Each meal must contain a substantial protein source:
+- Breakfast: minimum ${Math.round(targetProtein * 0.25)}g protein
+- Lunch: minimum ${Math.round(targetProtein * 0.35)}g protein
+- Dinner: minimum ${Math.round(targetProtein * 0.35)}g protein
+
+Use larger portions of protein sources to hit these targets.
+Example: if target is ${targetProtein}g protein/day with ${mealsPerDay} meals,
+each meal needs ~${avgProteinPerMeal}g protein.
+For ${avgProteinPerMeal}g protein you need approximately:
+- ${exampleChicken}g chicken breast, OR
+- ${exampleTofu}g tofu, OR
+- ${exampleSalmon}g salmon
+
+Adjust ALL portion sizes until protein target is met.
+Do NOT reduce protein to make calories work —
+adjust carbs and fat instead.
+`
+          : ""
+
+      const prompt = `${body.mealsPerDay} meals/day for: ${daysList}. Target ${body.dailyCalories} kcal/day (${calLo}–${calHi} per day); ~${perMealKcal} kcal/meal. Goal: ${goal}. Diet: ${body.dietType}. Units: ${units}.
+Ingredients (prefer): ${selectedIngredients.join(", ")}.${buildCuisineLine(body.cuisinePreference)}${proteinCritical}
 
 Return JSON only, shape: {"days":[{"day":"Monday","meals":[{"name":"str","type":"Breakfast|Lunch|Dinner|Snack","calories":N,"protein":N,"carbs":N,"fat":N,"ingredients":[{"name":"str","amount":"str","category":"str"}],"recipe":{"prepTime":N,"cookTime":N,"instructions":["str"]}}]}]} — one days[] entry per: ${daysList}. No foods/item/kcal keys.`
 

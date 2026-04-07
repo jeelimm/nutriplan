@@ -34,7 +34,8 @@ const hasAnyText = (value: unknown): boolean => typeof value === "string" && val
 const normalizedCategorySet = new Set(["protein", "carbs", "fat", "vegetables", "other"])
 
 const CALORIE_TOLERANCE_KCAL = 400
-const PROTEIN_MIN_FRACTION = 0.6
+/** Warn only when daily protein falls below this fraction of target (allows “close enough” plans). */
+const PROTEIN_MIN_FRACTION = 0.85
 
 /** Hard-fail only: missing days, missing/empty meals, missing meal name. */
 const ruleCriticalStructure: ValidationRule = ({ plan }, result) => {

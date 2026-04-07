@@ -110,6 +110,11 @@ export function calculateNutritionTargets(input: {
     fatG = Math.max(0, Math.round((remainingKcal - usedCarbKcal) / 9))
   }
 
+  console.log("[nutrition] LBM value used (kg):", lbmForFormula)
+  console.log("[nutrition] Protein multiplier (g protein per kg LBM):", proteinPerKg)
+  console.log("[nutrition] Final protein target (g):", proteinG)
+  console.log("[nutrition] Total calories target:", calories)
+
   return {
     calories,
     macros: {
