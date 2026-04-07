@@ -21,13 +21,32 @@ export function toKg(weight: number, unit: "kg" | "lbs"): number {
   return unit === "lbs" ? weight * 0.453592 : weight
 }
 
-function proteinGPerKgLbm(goal: Goal, dietType: DietType): number {
-  if (goal === "recomposition") return 1.8
+/** LBM (kg) for formulas: weightKg × (1 − bodyFat%), capped body fat 0–60%; fallback to total weight if LBM ≤ 0. */
+export function getLbmKgForNutrition(weightKg: number, bodyFat: number): number {
+  const bf = Number.isFinite(bodyFat) ? bodyFat : 0
+  const safeBodyFat = Math.min(Math.max(bf, 0), 60)
+  const leanBodyMass = weightKg * (1 - safeBodyFat / 100)
+  return leanBodyMass > 0 ? leanBodyMass : weightKg
+}
+
+/** Grams of protein per kg LBM from goal + dietType (before min/max clamp on total protein grams). */
+export function proteinGPerKgLbm(goal: Goal, dietType: DietType): number {
   if (goal === "lose-fat") {
     if (dietType === "high-protein") return 2.0
+    if (dietType === "keto") return 1.4
+    if (dietType === "balanced" || dietType === "intermittent-fasting") return 1.6
     return 1.6
   }
-  if (dietType === "high-protein") return 2.2
+  if (goal === "gain-muscle") {
+    if (dietType === "high-protein") return 2.2
+    if (dietType === "keto") return 1.6
+    if (dietType === "balanced" || dietType === "intermittent-fasting") return 1.8
+    return 1.8
+  }
+  if (goal === "recomposition") {
+    if (dietType === "high-protein") return 2.0
+    return 1.8
+  }
   return 1.8
 }
 
@@ -63,10 +82,7 @@ export function calculateNutritionTargets(input: {
   sex?: Sex
   targetWeightKg?: number
 }): { calories: number; macros: UserProfile["macros"] } {
-  const bodyFat = Number.isFinite(input.bodyFat) ? input.bodyFat : 0
-  const safeBodyFat = Math.min(Math.max(bodyFat, 0), 60)
-  const leanBodyMass = input.weightKg * (1 - safeBodyFat / 100)
-  const lbmForFormula = leanBodyMass > 0 ? leanBodyMass : input.weightKg
+  const lbmForFormula = getLbmKgForNutrition(input.weightKg, input.bodyFat)
 
   const sex = input.sex ?? "male"
   const bmrMultiplier = sex === "female" ? 0.9 : 1
@@ -109,11 +125,6 @@ export function calculateNutritionTargets(input: {
     const usedCarbKcal = carbsG * 4
     fatG = Math.max(0, Math.round((remainingKcal - usedCarbKcal) / 9))
   }
-
-  console.log("[nutrition] LBM value used (kg):", lbmForFormula)
-  console.log("[nutrition] Protein multiplier (g protein per kg LBM):", proteinPerKg)
-  console.log("[nutrition] Final protein target (g):", proteinG)
-  console.log("[nutrition] Total calories target:", calories)
 
   return {
     calories,

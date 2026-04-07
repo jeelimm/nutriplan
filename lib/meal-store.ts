@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { calculateNutritionTargets } from '@/lib/nutrition'
+import { calculateNutritionTargets, getLbmKgForNutrition, proteinGPerKgLbm } from '@/lib/nutrition'
 import { validateMealPlan, type MealPlanValidationResult } from '@/lib/meal-validator'
 
 export type Goal = 'lose-fat' | 'gain-muscle' | 'recomposition'
@@ -322,8 +322,10 @@ export const useMealStore = create<MealStore>()(
       selectedDay: 0,
       setSelectedDay: (day) => set({ selectedDay: day }),
       
-      calculateMacros: (weightKg, bodyFat, goal, activityLevel, dietType, sex = DEFAULT_SEX, targetWeightKg = null) =>
-        calculateNutritionTargets({
+      calculateMacros: (weightKg, bodyFat, goal, activityLevel, dietType, sex = DEFAULT_SEX, targetWeightKg = null) => {
+        const calculatedLbm = getLbmKgForNutrition(weightKg, bodyFat)
+        const proteinMultiplier = proteinGPerKgLbm(goal, dietType)
+        const result = calculateNutritionTargets({
           weightKg,
           bodyFat,
           goal,
@@ -331,7 +333,18 @@ export const useMealStore = create<MealStore>()(
           dietType,
           sex,
           targetWeightKg: targetWeightKg ?? undefined,
-        }),
+        })
+        console.log('[meal-store] calculateMacros', {
+          weightKg,
+          bodyFat,
+          calculatedLbmKg: calculatedLbm,
+          goal,
+          dietType,
+          proteinMultiplierGPerKgLbm: proteinMultiplier,
+          finalProteinGrams: result.macros.protein,
+        })
+        return result
+      },
       
       generateMealPlan: async () => {
         const { mealPlanConfig, userProfile } = get()

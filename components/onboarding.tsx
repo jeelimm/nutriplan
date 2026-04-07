@@ -267,7 +267,15 @@ export function Onboarding() {
         ? getWeightInKg(targetWeightInput)
         : undefined
     const twArg = tw != null && Number.isFinite(tw) ? tw : null
-    return calculateMacros(weightKg, parseFloat(bodyFat), selectedGoal, selectedActivityLevel, selectedDietType, sex, twArg)
+    return useMealStore.getState().calculateMacros(
+      weightKg,
+      parseFloat(bodyFat),
+      selectedGoal,
+      selectedActivityLevel,
+      selectedDietType,
+      sex,
+      twArg
+    )
   }, [
     weight,
     bodyFat,
@@ -276,10 +284,15 @@ export function Onboarding() {
     selectedActivityLevel,
     selectedDietType,
     sex,
-    calculateMacros,
     targetWeightSkipped,
     targetWeightInput,
   ])
+
+  const handleDietTypeSelect = (newDietType: DietType) => {
+    console.log("Diet type changed to:", newDietType)
+    console.log("Recalculating macros...")
+    setSelectedDietType(newDietType)
+  }
 
   const quickEstimateMap: Record<Sex, Record<BodyType, { bodyFatRange: [number, number]; muscleRatio: number }>> = {
     male: {
@@ -938,7 +951,7 @@ export function Onboarding() {
                 <button
                   key={diet.id}
                   type="button"
-                  onClick={() => setSelectedDietType(diet.id)}
+                  onClick={() => handleDietTypeSelect(diet.id)}
                   className={`w-full rounded-xl border-2 p-4 text-left transition-all ${
                     selectedDietType === diet.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
                   }`}
