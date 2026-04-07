@@ -417,7 +417,7 @@ export function Onboarding() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label>Sex</Label>
+                <Label>Gender</Label>
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
@@ -439,29 +439,32 @@ export function Onboarding() {
                   </button>
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setUnit("kg")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                    unit === "kg"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  }`}
-                >
-                  kg
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUnit("lbs")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                    unit === "lbs"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  }`}
-                >
-                  lbs
-                </button>
+              <div className="space-y-2">
+                <Label>Unit</Label>
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setUnit("kg")}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                      unit === "kg"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    kg
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUnit("lbs")}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                      unit === "lbs"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    lbs
+                  </button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="weight">Weight ({unit})</Label>
