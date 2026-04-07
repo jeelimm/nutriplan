@@ -145,44 +145,26 @@ function applyClaudeResponseNormalizer(days: any[]): any[] {
   }))
 }
 
-function buildCuisinePromptBlock(cuisines: unknown): string {
+const CUISINE_STYLE_LABELS: Record<string, string> = {
+  western: "Western",
+  korean: "Korean",
+  japanese: "Japanese",
+  chinese: "Chinese",
+  mediterranean: "Mediterranean",
+  "asian-fusion": "Asian fusion",
+}
+
+/** Short cuisine line only — keeps prompts small. */
+function buildCuisineLine(cuisines: unknown): string {
   const list = Array.isArray(cuisines) ? cuisines.filter((c): c is string => typeof c === "string") : []
   if (!list.length) return ""
-
-  const blocks: string[] = []
-
-  if (list.includes("korean")) {
-    blocks.push(`KOREAN (mandatory when this applies): Generate KOREAN-style meals only.
-Meal names must be Korean dishes (e.g., 제육볶음, 된장국, 계란볶음밥, 닭갈비, 참치김치볶음밥, 두부조림).
-Use ONLY these ingredients where possible: rice, tofu, pork belly, kimchi, doenjang, gochujang, sesame oil, eggs, spinach, bean sprouts, zucchini, mushrooms, chicken, beef, seafood, seaweed.
-Do NOT use: quinoa, kale, Brussels sprouts, pasta, bread, avocado, Greek yogurt.`)
+  const names = list.map((id) => CUISINE_STYLE_LABELS[id] ?? id).filter(Boolean)
+  if (!names.length) return ""
+  const label = names.join(" and ")
+  if (names.length === 1) {
+    return `\nCuisine style: ${label}. Use locally available ${label} ingredients and dish names.`
   }
-  if (list.includes("western")) {
-    blocks.push(`WESTERN: Generate Western-style meals.
-Use: chicken breast, beef, pasta, potatoes, broccoli, eggs, olive oil, bread, oats.`)
-  }
-  if (list.includes("japanese")) {
-    blocks.push(`JAPANESE: Generate Japanese-style meals (e.g., salmon teriyaki, miso soup, onigiri, yakitori, tamago gohan).
-Use: rice, salmon, tofu, miso, eggs, edamame, noodles, soy sauce.`)
-  }
-  if (list.includes("mediterranean")) {
-    blocks.push(`MEDITERRANEAN: Generate Mediterranean-style meals.
-Use: olive oil, fish, legumes, chickpeas, lentils, vegetables, whole grains, feta.`)
-  }
-  if (list.includes("chinese")) {
-    blocks.push(`CHINESE: Generate Chinese-style meals with regional staples (e.g., stir-fries, rice, noodles, soy, ginger, garlic, pork, chicken, leafy greens, tofu). Avoid Western defaults like sandwiches or pasta unless fusion is explicitly required.`)
-  }
-  if (list.includes("asian-fusion")) {
-    blocks.push(`ASIAN FUSION: Combine East/Southeast Asian ingredients authentically (rice, noodles, soy, fish sauce, tofu, aromatics). Do not default to Western plates.`)
-  }
-
-  if (!blocks.length) return ""
-
-  return `
-
-STRICT CUISINE (non-negotiable — every meal must comply; do not substitute Western/American defaults when a listed cuisine forbids it):
-${blocks.join("\n\n")}
-`
+  return `\nCuisine style: ${label}. Use locally available ingredients and authentic dish names for these styles.`
 }
 
 export async function POST(req: Request) {
@@ -224,49 +206,23 @@ export async function POST(req: Request) {
 
     const callClaudeForDays = async (requestedDays: string[]) => {
       const daysList = requestedDays.join(", ")
-      const prompt = `Generate a ${body.mealsPerDay}-meal plan for EACH of these days: ${daysList}.
-User: ${body.dailyCalories}kcal/day, goal: ${goal}, diet: ${body.dietType}
-Allowed ingredients: ${selectedIngredients.join(", ")}
-Use ${body.unitSystem === "metric" ? "Celsius, grams, and ml" : "Fahrenheit, oz, and cups"} for all measurements in recipes.${buildCuisinePromptBlock(body.cuisinePreference)}
+      const units = body.unitSystem === "metric" ? "metric (g, ml, °C)" : "imperial (oz, cups, °F)"
+      const perMeal = Math.round(body.dailyCalories / body.mealsPerDay)
+      const calLo = body.dailyCalories - 150
+      const calHi = body.dailyCalories + 150
 
-CRITICAL: The total calories for each day MUST be between ${body.dailyCalories - 150} and ${body.dailyCalories + 150} kcal.
-Current target: ${body.dailyCalories} kcal/day
-Each meal should be approximately ${Math.round(body.dailyCalories / body.mealsPerDay)} kcal.
-Adjust ALL portion sizes until daily total hits this range. This is non-negotiable.
+      const prompt = `${body.mealsPerDay} meals/day for: ${daysList}. Target ${body.dailyCalories} kcal/day (${calLo}–${calHi} per day); ~${perMeal} kcal/meal. Goal: ${goal}. Diet: ${body.dietType}. Units: ${units}.
+Ingredients (prefer): ${selectedIngredients.join(", ")}.${buildCuisineLine(body.cuisinePreference)}
 
-Return ONLY this exact JSON structure, no variations:
-{
-  "days": [{
-    "day": "Monday",
-    "meals": [{
-      "name": "meal name here",
-      "type": "Breakfast",
-      "calories": 500,
-      "protein": 40,
-      "carbs": 35,
-      "fat": 15,
-      "ingredients": [
-        {"name": "Chicken breast", "amount": "150g", "category": "Protein"}
-      ],
-      "recipe": {
-        "prepTime": 10,
-        "cookTime": 20,
-        "instructions": ["Step 1", "Step 2"]
-      }
-    }]
-  }]
-}
-Include one object in "days" for each day in this list: ${daysList}.
-Do NOT use 'foods', 'item', 'kcal' fields.
-Use ONLY the field names shown above.`
+Return JSON only, shape: {"days":[{"day":"Monday","meals":[{"name":"str","type":"Breakfast|Lunch|Dinner|Snack","calories":N,"protein":N,"carbs":N,"fat":N,"ingredients":[{"name":"str","amount":"str","category":"str"}],"recipe":{"prepTime":N,"cookTime":N,"instructions":["str"]}}]}]} — one days[] entry per: ${daysList}. No foods/item/kcal keys.`
 
-      console.log("[generate-meal-plan] Prompt sent to Claude:", prompt)
+      console.log("Prompt length:", prompt.length)
 
       const response = await Promise.race([
         anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 10000,
-          system: "Output strict JSON only. When the user message includes STRICT CUISINE, follow it for every meal and meal name — do not ignore it.",
+          max_tokens: 8000,
+          system: "Output strict JSON only.",
           messages: [{ role: "user", content: prompt }],
         }),
         new Promise<never>((_, reject) =>
