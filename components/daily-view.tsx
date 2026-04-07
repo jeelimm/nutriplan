@@ -62,6 +62,7 @@ export function DailyView() {
     setSelectedDay,
     setCurrentStep,
     setUserProfile,
+    setUnitSystem,
     calculateMacros,
     setMealPlanConfig,
     generateMealPlan,
@@ -403,6 +404,29 @@ export function DailyView() {
                   {/* Expandable Recipe Section */}
                   {isExpanded && (
                     <div className="mt-4 space-y-4 border-t border-border pt-4">
+                      <div className="flex items-center justify-between rounded-lg bg-secondary p-2">
+                        <span className="text-xs font-medium text-muted-foreground">Metric / Imperial</span>
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setUnitSystem("metric")}
+                            className={`rounded-md px-2 py-1 text-xs font-medium ${
+                              recipeUnitSystem === "metric" ? "bg-primary text-primary-foreground" : "bg-background text-foreground"
+                            }`}
+                          >
+                            Metric
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setUnitSystem("imperial")}
+                            className={`rounded-md px-2 py-1 text-xs font-medium ${
+                              recipeUnitSystem === "imperial" ? "bg-primary text-primary-foreground" : "bg-background text-foreground"
+                            }`}
+                          >
+                            Imperial
+                          </button>
+                        </div>
+                      </div>
                       {/* Prep + Cook Time */}
                       <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1">

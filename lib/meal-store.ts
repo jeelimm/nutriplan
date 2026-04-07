@@ -71,6 +71,7 @@ interface MealStore {
   setCurrentStep: (step: number) => void
   userProfile: UserProfile | null
   setUserProfile: (profile: UserProfile) => void
+  setUnitSystem: (unitSystem: RecipeUnitSystem) => void
   mealPlanConfig: MealPlanConfig | null
   setMealPlanConfig: (config: MealPlanConfig) => void
   weekPlan: DayPlan[]
@@ -245,6 +246,17 @@ export const useMealStore = create<MealStore>()(
             ...profile,
             lastUpdatedAt: new Date().toISOString(),
           }),
+        }),
+      setUnitSystem: (unitSystem) =>
+        set((state) => {
+          if (!state.userProfile) return state
+          return {
+            userProfile: normalizeUserProfile({
+              ...state.userProfile,
+              unitSystem,
+              lastUpdatedAt: new Date().toISOString(),
+            }),
+          }
         }),
       mealPlanConfig: null,
       setMealPlanConfig: (config) => set({ mealPlanConfig: config }),
