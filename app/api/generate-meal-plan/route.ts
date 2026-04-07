@@ -210,7 +210,10 @@ export async function POST(req: Request) {
       const perMealKcal = Math.round(body.dailyCalories / body.mealsPerDay)
       const calLo = body.dailyCalories - 150
       const calHi = body.dailyCalories + 150
+      const dailyCalories = ensureNumber(body.dailyCalories)
       const targetProtein = ensureNumber(body.macros?.protein)
+      const targetCarbs = ensureNumber(body.macros?.carbs)
+      const targetFat = ensureNumber(body.macros?.fat)
       const mealsPerDay = Math.max(1, body.mealsPerDay)
       const avgProteinPerMeal = targetProtein > 0 ? Math.round(targetProtein / mealsPerDay) : 0
       const exampleChicken = avgProteinPerMeal > 0 ? Math.round((350 * avgProteinPerMeal) / 80) : 0
@@ -243,8 +246,36 @@ adjust carbs and fat instead.
 `
           : ""
 
+      const calorieCritical = `
+
+CRITICAL CALORIE REQUIREMENTS:
+- Daily calorie target: ${dailyCalories} kcal
+- Daily protein target: ${targetProtein}g (already set - do not reduce)
+- Daily carbs target: ${targetCarbs}g
+- Daily fat target: ${targetFat}g
+
+Each meal must hit these approximate targets:
+- Calories per meal: ~${Math.round(dailyCalories / mealsPerDay)} kcal
+- Carbs per meal: ~${Math.round(targetCarbs / mealsPerDay)}g
+- Fat per meal: ~${Math.round(targetFat / mealsPerDay)}g
+
+To hit carb targets, use LARGER portions:
+- Rice: 200-300g cooked per meal
+- Oats: 100-150g dry per meal
+- Sweet potato: 250-350g per meal
+
+To hit fat targets, add fat sources to every meal:
+- Olive oil: 1-2 tbsp per meal
+- Nuts: 30-50g per meal
+- Avocado: 100g per meal
+
+Do NOT reduce portion sizes to fit calorie targets down.
+INCREASE portions of carbs and fats until
+daily total reaches ${dailyCalories} kcal.
+`
+
       const prompt = `${body.mealsPerDay} meals/day for: ${daysList}. Target ${body.dailyCalories} kcal/day (${calLo}–${calHi} per day); ~${perMealKcal} kcal/meal. Goal: ${goal}. Diet: ${body.dietType}. Units: ${units}.
-Ingredients (prefer): ${selectedIngredients.join(", ")}.${buildCuisineLine(body.cuisinePreference)}${proteinCritical}
+Ingredients (prefer): ${selectedIngredients.join(", ")}.${buildCuisineLine(body.cuisinePreference)}${proteinCritical}${calorieCritical}
 
 Return JSON only, shape: {"days":[{"day":"Monday","meals":[{"name":"str","type":"Breakfast|Lunch|Dinner|Snack","calories":N,"protein":N,"carbs":N,"fat":N,"ingredients":[{"name":"str","amount":"str","category":"str"}],"recipe":{"prepTime":N,"cookTime":N,"instructions":["str"]}}]}]} — one days[] entry per: ${daysList}. No foods/item/kcal keys.`
 
