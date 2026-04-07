@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { useMealStore, type ActivityLevel, type DietType, type Goal } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
+import { convertRecipeText } from "@/lib/recipe-units"
 import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock } from "lucide-react"
 
 function MacroProgress({ current, target, label, icon, color }: { 
@@ -210,8 +211,15 @@ export function DailyView() {
   if (!weekPlan.length) return null
 
   const currentDay = weekPlan[selectedDay]
+  const recipeUnitSystem = userProfile.unitSystem ?? "metric"
+  const convertedIngredients = currentDay.meals.flatMap((meal) =>
+    meal.ingredients.map((ingredient) => ({
+      ...ingredient,
+      amount: convertRecipeText(ingredient.amount, recipeUnitSystem),
+    }))
+  )
 
-  const groceryCategories = buildGroceryCategories(currentDay.meals.flatMap((meal) => meal.ingredients))
+  const groceryCategories = buildGroceryCategories(convertedIngredients)
 
   const categoryLabels: Record<string, string> = {
     protein: "Proteins",
@@ -416,7 +424,7 @@ export function DailyView() {
                             <li key={i} className="flex items-center gap-2 text-sm">
                               <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                               <span className="text-foreground">{ingredient.name}</span>
-                              <span className="text-muted-foreground">- {ingredient.amount}</span>
+                              <span className="text-muted-foreground">- {convertRecipeText(ingredient.amount, recipeUnitSystem)}</span>
                             </li>
                           ))}
                         </ul>
@@ -431,7 +439,7 @@ export function DailyView() {
                               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
                                 {i + 1}
                               </span>
-                              <span className="text-muted-foreground">{step}</span>
+                              <span className="text-muted-foreground">{convertRecipeText(step, recipeUnitSystem)}</span>
                             </li>
                           ))}
                         </ol>

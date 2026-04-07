@@ -7,10 +7,12 @@ export type Goal = 'lose-fat' | 'gain-muscle' | 'recomposition'
 export type DietType = 'keto' | 'high-protein' | 'balanced' | 'intermittent-fasting'
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active'
 export type Sex = 'male' | 'female'
+export type RecipeUnitSystem = 'metric' | 'imperial'
 
 export interface UserProfile {
   profileName?: string
   sex?: Sex
+  unitSystem?: RecipeUnitSystem
   weight: number
   bodyFat: number
   muscleMass: number
@@ -94,6 +96,7 @@ const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'moderate'
 const DEFAULT_DIET_TYPE: DietType = 'balanced'
 const DEFAULT_MEALS_PER_DAY = 3
 const DEFAULT_SEX: Sex = 'male'
+const DEFAULT_RECIPE_UNIT_SYSTEM: RecipeUnitSystem = 'metric'
 
 const toNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value)
@@ -121,6 +124,8 @@ const ensureActivityLevel = (value: unknown): ActivityLevel =>
 
 const ensureUnit = (value: unknown): 'kg' | 'lbs' => (value === 'lbs' ? 'lbs' : 'kg')
 const ensureSex = (value: unknown): Sex => (value === 'female' ? 'female' : DEFAULT_SEX)
+const ensureRecipeUnitSystem = (value: unknown): RecipeUnitSystem =>
+  value === 'imperial' ? 'imperial' : DEFAULT_RECIPE_UNIT_SYSTEM
 
 function normalizeUserProfile(raw: unknown): UserProfile | null {
   if (!raw || typeof raw !== 'object') return null
@@ -131,6 +136,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
   return {
     profileName: typeof profile.profileName === 'string' ? profile.profileName : '',
     sex: ensureSex(profile.sex),
+    unitSystem: ensureRecipeUnitSystem(profile.unitSystem),
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
     muscleMass: toNumber(profile.muscleMass, 0),
@@ -266,6 +272,7 @@ export const useMealStore = create<MealStore>()(
         try {
 
         const payload = {
+          unitSystem: userProfile.unitSystem ?? DEFAULT_RECIPE_UNIT_SYSTEM,
           weight: userProfile.weight,
           bodyFat: userProfile.bodyFat,
           muscleMass: userProfile.muscleMass,

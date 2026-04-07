@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMealStore, type ActivityLevel, type DietType, type Goal, type Sex } from "@/lib/meal-store"
+import { useMealStore, type ActivityLevel, type DietType, type Goal, type RecipeUnitSystem, type Sex } from "@/lib/meal-store"
 import {
   Scale,
   Target,
@@ -185,6 +185,7 @@ export function Onboarding() {
   const { setUserProfile, setCurrentStep, calculateMacros } = useMealStore()
   const [step, setStep] = useState<OnboardingStep>("body")
   const [sex, setSex] = useState<Sex>("male")
+  const [unitSystem, setUnitSystem] = useState<RecipeUnitSystem>("metric")
   const [unit, setUnit] = useState<"kg" | "lbs">("kg")
   const [weight, setWeight] = useState("")
   const [bodyFat, setBodyFat] = useState("")
@@ -362,6 +363,7 @@ export function Onboarding() {
     const now = new Date().toISOString()
     setUserProfile({
       sex,
+      unitSystem,
       weight: parseFloat(weight),
       bodyFat: parseFloat(bodyFat),
       muscleMass: parseFloat(muscleMass),
@@ -463,6 +465,33 @@ export function Onboarding() {
                     }`}
                   >
                     lbs
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Recipe units</Label>
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setUnitSystem("metric")}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                      unitSystem === "metric"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    Metric (°C, g, ml)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUnitSystem("imperial")}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                      unitSystem === "imperial"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    Imperial (°F, oz, cup)
                   </button>
                 </div>
               </div>

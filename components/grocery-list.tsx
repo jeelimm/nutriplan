@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useMealStore } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
+import { convertRecipeText } from "@/lib/recipe-units"
 import { ChevronLeft, ShoppingCart, Copy, Check, Beef, Carrot, Wheat, Milk, Droplets, Apple, Sparkles } from "lucide-react"
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -38,14 +39,22 @@ const categoryColors: Record<string, string> = {
 }
 
 export function GroceryList() {
-  const { weekPlan, setCurrentStep } = useMealStore()
+  const { weekPlan, setCurrentStep, userProfile } = useMealStore()
   const [copied, setCopied] = useState(false)
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
 
   if (!weekPlan.length) return null
 
+  const recipeUnitSystem = userProfile?.unitSystem ?? "metric"
   const groceryCategories = buildGroceryCategories(
-    weekPlan.flatMap((day) => day.meals.flatMap((meal) => meal.ingredients))
+    weekPlan.flatMap((day) =>
+      day.meals.flatMap((meal) =>
+        meal.ingredients.map((ingredient) => ({
+          ...ingredient,
+          amount: convertRecipeText(ingredient.amount, recipeUnitSystem),
+        }))
+      )
+    )
   )
 
   // Sort categories by item count

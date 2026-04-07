@@ -164,6 +164,7 @@ export async function POST(req: Request) {
       dietType: "keto" | "high-protein" | "balanced" | "intermittent-fasting"
       activityLevel: "sedentary" | "light" | "moderate" | "very-active"
       mealsPerDay: 2 | 3 | 4 | 5
+      unitSystem?: "metric" | "imperial"
       dailyCalories: number
       macros: { protein: number; carbs: number; fat: number }
       selectedIngredients: string[]
@@ -185,6 +186,7 @@ export async function POST(req: Request) {
       const prompt = `Generate a ${body.mealsPerDay}-meal plan for EACH of these days: ${daysList}.
 User: ${body.dailyCalories}kcal/day, goal: ${goal}, diet: ${body.dietType}
 Allowed ingredients: ${selectedIngredients.join(", ")}
+Use ${body.unitSystem === "metric" ? "Celsius, grams, and ml" : "Fahrenheit, oz, and cups"} for all measurements in recipes.
 
 CRITICAL: The total calories for each day MUST be between ${body.dailyCalories - 150} and ${body.dailyCalories + 150} kcal.
 Current target: ${body.dailyCalories} kcal/day
