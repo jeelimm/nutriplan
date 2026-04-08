@@ -806,7 +806,12 @@ export function Onboarding() {
                   className="h-12 text-lg"
                 />
               </div>
-              <Button type="button" variant="outline" className="h-11 w-full sm:h-10" onClick={() => setStep("quick-estimate")}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-11 w-full rounded-[8px] justify-start px-0 text-gray-500 underline underline-offset-2 hover:text-gray-800"
+                onClick={() => setStep("quick-estimate")}
+              >
                 Don&apos;t have InBody data? Use quick estimate instead
               </Button>
               <Button
