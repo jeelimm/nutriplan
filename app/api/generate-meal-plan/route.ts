@@ -330,6 +330,17 @@ export async function POST(req: Request) {
     const perMealC = Math.round(targetCarbs / mealsPerDay)
     const perMealF = Math.round(targetFat / mealsPerDay)
 
+    const isKoreanCuisine = /(^|,\s*)korean(\s*,|$)/i.test(cuisinePreference)
+    const koreanStrictRule = isKoreanCuisine
+      ? `
+STRICT RULE: Cuisine is ${cuisinePreference}.
+For Korean: ONLY use these meal types:
+볶음밥, 된장국, 제육볶음, 닭갈비, 계란말이, 두부조림, 참치김치볶음밥, 비빔밥, 삼겹살, 미역국, 콩나물무침, 고등어구이
+NEVER suggest: Salmon Quinoa Bowl, Greek Yogurt Parfait, Mediterranean dishes, or any Western meal names.
+ALL meal names must be Korean dishes.
+`
+      : ""
+
     const prompt = `Generate exactly:
 - 3 breakfast options
 - 3 lunch options
@@ -337,6 +348,7 @@ export async function POST(req: Request) {
 
 ${cuisinePreference} cuisine.
 ${language === "ko" ? "Korean" : "English"} only.
+${koreanStrictRule}
 Each meal targets:
 Cal:${perMealCal}
 P:${perMealP}g

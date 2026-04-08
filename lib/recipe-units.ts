@@ -20,7 +20,13 @@ function toImperial(text: string): string {
   return text
     .replace(/(\d+(?:\.\d+)?)\s*°?\s*c\b/gi, (_, n) => `${format((Number(n) * 9) / 5 + 32, 0)}°F`)
     .replace(/(\d+(?:\.\d+)?)\s*kg\b/gi, (_, n) => `${format(Number(n) / 0.453)} lb`)
-    .replace(/(\d+(?:\.\d+)?)\s*g\b/gi, (_, n) => `${format(Number(n) / 28.35)} oz`)
+    .replace(/(\d+(?:\.\d+)?)\s*g\b/gi, (full, n, offset: number, source: string) => {
+      const prev = source.slice(Math.max(0, offset - 24), offset).toLowerCase()
+      if (/(protein|carbs?|fat|macros?)\s*[:=]?\s*$/.test(prev) || /\b[pcf]\s*$/.test(prev)) {
+        return full
+      }
+      return `${format(Number(n) / 28.35)} oz`
+    })
     .replace(/(\d+(?:\.\d+)?)\s*ml\b/gi, (_, n) => `${format(Number(n) / 240)} cup`)
 }
 

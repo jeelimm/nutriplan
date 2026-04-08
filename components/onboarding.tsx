@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -225,6 +225,17 @@ const categoryTabs: { id: IngredientCategory; label: string }[] = [
 const stepOrder = ["body", "activity", "goal", "target-weight", "cuisine", "diet", "ingredient-mode", "ingredients"] as const
 
 type OnboardingStep = (typeof stepOrder)[number] | "quick-estimate"
+const ONBOARDING_DRAFT_KEY = "nutriplan-onboarding-draft-v1"
+
+const round1 = (n: number): string => String(Number(n.toFixed(1)))
+
+function convertWeightValue(value: string, fromUnit: "kg" | "lbs", toUnit: "kg" | "lbs"): string {
+  if (fromUnit === toUnit || !value.trim()) return value
+  const n = Number(value)
+  if (!Number.isFinite(n)) return value
+  const converted = fromUnit === "kg" ? n * 2.20462 : n * 0.453592
+  return round1(converted)
+}
 
 export function Onboarding() {
   const { setUserProfile, setCurrentStep, calculateMacros } = useMealStore()
@@ -252,9 +263,141 @@ export function Onboarding() {
   const [activeCategory, setActiveCategory] = useState<IngredientCategory>("protein")
   const [fetchingIngredient, setFetchingIngredient] = useState(false)
 
+  const setUnitWithConversion = (nextUnit: "kg" | "lbs") => {
+    setUnit((prevUnit) => {
+      if (prevUnit === nextUnit) return prevUnit
+      setWeight((prev) => convertWeightValue(prev, prevUnit, nextUnit))
+      setMuscleMass((prev) => convertWeightValue(prev, prevUnit, nextUnit))
+      setTargetWeightInput((prev) => convertWeightValue(prev, prevUnit, nextUnit))
+      return nextUnit
+    })
+  }
+
   const currentStepIndex = stepOrder.indexOf(step as (typeof stepOrder)[number])
   const displayStepIndex = currentStepIndex === -1 ? 0 : currentStepIndex
   const totalSteps = stepOrder.length
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(ONBOARDING_DRAFT_KEY)
+      if (!raw) return
+      const draft = JSON.parse(raw) as Partial<{
+        step: OnboardingStep
+        sex: Sex
+        unitSystem: RecipeUnitSystem
+        unit: "kg" | "lbs"
+        weight: string
+        bodyFat: string
+        muscleMass: string
+        quickHeight: string
+        quickAge: string
+        quickBodyType: BodyType | null
+        selectedGoal: Goal | null
+        selectedActivityLevel: ActivityLevel | null
+        selectedDietType: DietType | null
+        targetWeightInput: string
+        targetWeightSkipped: boolean
+        weightLossPace: WeightLossPace
+        selectedCuisines: CuisinePreference[]
+        ingredientMode: "recommend" | "custom" | null
+        selectedBudgetPreset: "low" | "medium" | "high" | null
+        selectedIngredients: string[]
+        search: string
+        activeCategory: IngredientCategory
+      }>
+      if (draft.step) setStep(draft.step)
+      if (draft.sex === "male" || draft.sex === "female") setSex(draft.sex)
+      if (draft.unitSystem === "metric" || draft.unitSystem === "imperial") setUnitSystem(draft.unitSystem)
+      if (draft.unit === "kg" || draft.unit === "lbs") setUnit(draft.unit)
+      if (typeof draft.weight === "string") setWeight(draft.weight)
+      if (typeof draft.bodyFat === "string") setBodyFat(draft.bodyFat)
+      if (typeof draft.muscleMass === "string") setMuscleMass(draft.muscleMass)
+      if (typeof draft.quickHeight === "string") setQuickHeight(draft.quickHeight)
+      if (typeof draft.quickAge === "string") setQuickAge(draft.quickAge)
+      if (draft.quickBodyType === "lean" || draft.quickBodyType === "average" || draft.quickBodyType === "athletic" || draft.quickBodyType === "heavy-set") {
+        setQuickBodyType(draft.quickBodyType)
+      }
+      if (draft.selectedGoal === "lose-fat" || draft.selectedGoal === "gain-muscle" || draft.selectedGoal === "recomposition") {
+        setSelectedGoal(draft.selectedGoal)
+      }
+      if (draft.selectedActivityLevel === "sedentary" || draft.selectedActivityLevel === "light" || draft.selectedActivityLevel === "moderate" || draft.selectedActivityLevel === "very-active") {
+        setSelectedActivityLevel(draft.selectedActivityLevel)
+      }
+      if (draft.selectedDietType === "keto" || draft.selectedDietType === "high-protein" || draft.selectedDietType === "balanced" || draft.selectedDietType === "intermittent-fasting") {
+        setSelectedDietType(draft.selectedDietType)
+      }
+      if (typeof draft.targetWeightInput === "string") setTargetWeightInput(draft.targetWeightInput)
+      if (typeof draft.targetWeightSkipped === "boolean") setTargetWeightSkipped(draft.targetWeightSkipped)
+      if (draft.weightLossPace === "steady" || draft.weightLossPace === "moderate" || draft.weightLossPace === "aggressive") {
+        setWeightLossPace(draft.weightLossPace)
+      }
+      if (Array.isArray(draft.selectedCuisines)) setSelectedCuisines(draft.selectedCuisines.filter(Boolean) as CuisinePreference[])
+      if (draft.ingredientMode === "recommend" || draft.ingredientMode === "custom" || draft.ingredientMode === null) {
+        setIngredientMode(draft.ingredientMode)
+      }
+      if (draft.selectedBudgetPreset === "low" || draft.selectedBudgetPreset === "medium" || draft.selectedBudgetPreset === "high" || draft.selectedBudgetPreset === null) {
+        setSelectedBudgetPreset(draft.selectedBudgetPreset)
+      }
+      if (Array.isArray(draft.selectedIngredients)) setSelectedIngredients(draft.selectedIngredients.filter((x): x is string => typeof x === "string"))
+      if (typeof draft.search === "string") setSearch(draft.search)
+      if (draft.activeCategory === "protein" || draft.activeCategory === "carbs" || draft.activeCategory === "fats" || draft.activeCategory === "vegetables") {
+        setActiveCategory(draft.activeCategory)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    try {
+      const draft = {
+        step,
+        sex,
+        unitSystem,
+        unit,
+        weight,
+        bodyFat,
+        muscleMass,
+        quickHeight,
+        quickAge,
+        quickBodyType,
+        selectedGoal,
+        selectedActivityLevel,
+        selectedDietType,
+        targetWeightInput,
+        targetWeightSkipped,
+        weightLossPace,
+        selectedCuisines,
+        ingredientMode,
+        selectedBudgetPreset,
+        selectedIngredients,
+        search,
+        activeCategory,
+      }
+      window.localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify(draft))
+    } catch {}
+  }, [
+    step,
+    sex,
+    unitSystem,
+    unit,
+    weight,
+    bodyFat,
+    muscleMass,
+    quickHeight,
+    quickAge,
+    quickBodyType,
+    selectedGoal,
+    selectedActivityLevel,
+    selectedDietType,
+    targetWeightInput,
+    targetWeightSkipped,
+    weightLossPace,
+    selectedCuisines,
+    ingredientMode,
+    selectedBudgetPreset,
+    selectedIngredients,
+    search,
+    activeCategory,
+  ])
 
   const selectedCatalogItems = useMemo(
     () => ingredientCatalog.filter((item) => selectedIngredients.includes(item.name)),
@@ -487,6 +630,9 @@ export function Onboarding() {
     })
 
     setCurrentStep(1)
+    try {
+      window.localStorage.removeItem(ONBOARDING_DRAFT_KEY)
+    } catch {}
   }
 
   return (
@@ -556,7 +702,7 @@ export function Onboarding() {
                 <div className="flex items-center justify-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setUnit("kg")}
+                    onClick={() => setUnitWithConversion("kg")}
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                       unit === "kg"
                         ? "bg-primary text-primary-foreground"
@@ -567,7 +713,7 @@ export function Onboarding() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setUnit("lbs")}
+                    onClick={() => setUnitWithConversion("lbs")}
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                       unit === "lbs"
                         ? "bg-primary text-primary-foreground"
@@ -693,7 +839,7 @@ export function Onboarding() {
               <div className="flex items-center justify-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setUnit("kg")}
+                  onClick={() => setUnitWithConversion("kg")}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                     unit === "kg"
                       ? "bg-primary text-primary-foreground"
@@ -704,7 +850,7 @@ export function Onboarding() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setUnit("lbs")}
+                  onClick={() => setUnitWithConversion("lbs")}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                     unit === "lbs"
                       ? "bg-primary text-primary-foreground"

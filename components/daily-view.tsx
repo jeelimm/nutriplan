@@ -89,6 +89,23 @@ export function DailyView() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
 
+  const convertWeightValue = (value: string, fromUnit: "kg" | "lbs", toUnit: "kg" | "lbs"): string => {
+    if (fromUnit === toUnit || !value.trim()) return value
+    const n = Number(value)
+    if (!Number.isFinite(n)) return value
+    const converted = fromUnit === "kg" ? n * 2.20462 : n * 0.453592
+    return String(Number(converted.toFixed(1)))
+  }
+
+  const setEditUnitWithConversion = (nextUnit: "kg" | "lbs") => {
+    setUnit((prevUnit) => {
+      if (prevUnit === nextUnit) return prevUnit
+      setWeight((prev) => convertWeightValue(prev, prevUnit, nextUnit))
+      setMuscleMass((prev) => convertWeightValue(prev, prevUnit, nextUnit))
+      return nextUnit
+    })
+  }
+
   const loadingMessages = [
     "Lining up meals for your week…",
     "Working with your calories and macros…",
@@ -620,14 +637,14 @@ export function DailyView() {
                 <div className="mb-2 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => setUnit("kg")}
+                    onClick={() => setEditUnitWithConversion("kg")}
                     className={`min-h-11 min-w-[44px] flex-1 rounded-lg px-3 py-2 text-sm sm:flex-none ${unit === "kg" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
                   >
                     kg
                   </button>
                   <button
                     type="button"
-                    onClick={() => setUnit("lbs")}
+                    onClick={() => setEditUnitWithConversion("lbs")}
                     className={`min-h-11 min-w-[44px] flex-1 rounded-lg px-3 py-2 text-sm sm:flex-none ${unit === "lbs" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
                   >
                     lbs
