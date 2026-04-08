@@ -413,6 +413,7 @@ export function Onboarding() {
   )
 
   const isIngredientSelectionValid = ingredientCounts.protein >= 2 && ingredientCounts.carbs >= 1 && ingredientCounts.fats >= 1
+  const ingredientMinimumMessage = "Select at least 2 proteins, 1 carb, and 1 fat to continue"
 
   const sustainabilityLabel = useMemo(() => {
     if (!selectedCatalogItems.length) return "Pick ingredients to see a cost mix"
@@ -1413,6 +1414,22 @@ export function Onboarding() {
                   So far: Protein {ingredientCounts.protein}, Carbs {ingredientCounts.carbs}, Fats {ingredientCounts.fats}
                 </div>
               </div>
+              <div className="rounded-xl border border-border p-3 text-sm">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <span className={ingredientCounts.protein >= 2 ? "text-green-600 dark:text-green-500" : "text-amber-600 dark:text-amber-500"}>
+                    Proteins: {ingredientCounts.protein} {ingredientCounts.protein >= 2 ? "✓" : "⚠️"}
+                  </span>
+                  <span className={ingredientCounts.carbs >= 1 ? "text-green-600 dark:text-green-500" : "text-amber-600 dark:text-amber-500"}>
+                    Carbs: {ingredientCounts.carbs} {ingredientCounts.carbs >= 1 ? "✓" : "⚠️"}
+                  </span>
+                  <span className={ingredientCounts.fats >= 1 ? "text-green-600 dark:text-green-500" : "text-amber-600 dark:text-amber-500"}>
+                    Fats: {ingredientCounts.fats} {ingredientCounts.fats >= 1 ? "✓" : "⚠️"}
+                  </span>
+                </div>
+              </div>
+              {!isIngredientSelectionValid && (
+                <p className="text-sm text-amber-600 dark:text-amber-500">{ingredientMinimumMessage}</p>
+              )}
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>

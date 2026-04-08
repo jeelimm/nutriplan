@@ -75,6 +75,7 @@ export function DailyView() {
     generateMealPlan,
   } = useMealStore()
   const [showGroceryList, setShowGroceryList] = useState(false)
+  const [dailyListCopied, setDailyListCopied] = useState(false)
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set())
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showRegenerateConfirmModal, setShowRegenerateConfirmModal] = useState(false)
@@ -307,6 +308,80 @@ export function DailyView() {
     if (index === 2 || index === totalMeals - 1) return "Dinner"
     if (index < totalMeals - 1) return "Snack"
     return "Meal"
+  }
+
+  const handleCopyDailyList = async () => {
+    const listText = groceryCategories
+      .map(({ category, items }) => {
+        const label = categoryLabels[category] || category
+        const lines = items.map((item) => `  - ${item.name}: ${item.amounts}`).join("\n")
+        return `${label}:\n${lines}`
+      })
+      .join("\n\n")
+    await navigator.clipboard.writeText(listText)
+    setDailyListCopied(true)
+    window.setTimeout(() => setDailyListCopied(false), 2000)
+  }
+
+  if (showGroceryList) {
+    return (
+      <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background pb-24">
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="mx-auto max-w-lg min-w-0 px-4 py-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setShowGroceryList(false)}
+                className="flex min-h-11 items-center gap-1 rounded-md py-2 text-left text-sm text-muted-foreground hover:text-foreground"
+              >
+                <ChevronLeft className="h-4 w-4 shrink-0" />
+                <span>Back to meal plan</span>
+              </button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyDailyList}
+                className="h-11 min-h-[44px] gap-2"
+              >
+                {dailyListCopied ? "Copied" : "Copy list"}
+              </Button>
+            </div>
+            <h1 className="break-words text-xl font-bold text-foreground sm:text-2xl">
+              Shopping list · {currentDay.day}
+            </h1>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-lg min-w-0 px-4">
+          <div className="space-y-4">
+            {groceryCategories.map(({ category, items }) => (
+              <Card key={category} className="border-0 shadow-md">
+                <CardHeader className="px-4 pb-2 pt-6 sm:px-6">
+                  <CardTitle className="text-base">
+                    {categoryLabels[category] || category}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pb-6 pt-0 sm:px-6">
+                  <div className="space-y-1">
+                    {items.map((item) => (
+                      <div
+                        key={item.name}
+                        className="flex min-h-[44px] w-full min-w-0 flex-col gap-1 rounded-lg bg-secondary p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
+                      >
+                        <span className="min-w-0 break-words text-foreground">{item.name}</span>
+                        <span className="shrink-0 break-words text-sm text-muted-foreground sm:max-w-[45%] sm:text-right">
+                          {item.amounts}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -566,56 +641,6 @@ export function DailyView() {
         </Button>
       </div>
 
-      {/* Grocery List Modal */}
-      {showGroceryList && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 backdrop-blur-sm md:items-center">
-          <div className="max-h-[85vh] w-full max-w-lg min-w-0 overflow-y-auto overflow-x-hidden rounded-t-3xl bg-card p-4 shadow-2xl sm:p-6 md:rounded-3xl">
-            <div className="mb-4 flex min-w-0 items-start justify-between gap-3">
-              <h2 className="min-w-0 flex-1 break-words text-lg font-bold text-foreground sm:text-xl">
-                Shopping list · {currentDay.day}
-              </h2>
-              <button
-                type="button"
-                onClick={() => setShowGroceryList(false)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-secondary"
-                aria-label="Close shopping list"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {groceryCategories.map(({ category, items }) => (
-                <div key={category}>
-                  <h3 className="mb-2 break-words text-sm font-semibold uppercase tracking-wide text-primary">
-                    {categoryLabels[category] || category}
-                  </h3>
-                  <div className="space-y-1">
-                    {items.map((item) => (
-                      <div
-                        key={item.name}
-                        className="flex flex-col gap-1 rounded-lg bg-secondary p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
-                      >
-                        <span className="min-w-0 break-words text-foreground">{item.name}</span>
-                        <span className="shrink-0 break-words text-sm text-muted-foreground sm:max-w-[45%] sm:text-right">
-                          {item.amounts}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              className="mt-6 h-12 min-h-[44px] w-full"
-              onClick={() => setShowGroceryList(false)}
-            >
-              Close
-            </Button>
-          </div>
-        </div>
-      )}
 
       {showEditProfileModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 backdrop-blur-sm md:items-center">
