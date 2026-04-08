@@ -14,7 +14,7 @@ export default function MealPlanApp() {
   const showSettingsFab = userProfile && currentStep !== 0 && currentStep !== 4
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen w-full max-w-[100vw] overflow-x-hidden">
       <div className={currentStep === 0 ? "block" : "hidden"}>
         <Onboarding />
       </div>

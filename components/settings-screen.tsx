@@ -95,40 +95,42 @@ export function SettingsScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-28 md:p-8 md:pb-28">
-      <div className="mx-auto max-w-lg space-y-4">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background p-4 pb-28 md:p-8 md:pb-28">
+      <div className="mx-auto max-w-lg min-w-0 space-y-4">
         <button
+          type="button"
           onClick={() => setCurrentStep(2)}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="flex min-h-11 w-full max-w-full items-center gap-1 rounded-md py-2 text-left text-sm text-muted-foreground hover:text-foreground sm:w-auto"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Back to dashboard
+          <ChevronLeft className="h-4 w-4 shrink-0" />
+          <span className="break-words">Back to dashboard</span>
         </button>
 
         <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-primary" />
-              Settings
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="flex min-w-0 items-center gap-2">
+              <Settings className="h-5 w-5 shrink-0 text-primary" />
+              <span className="break-words">Settings</span>
             </CardTitle>
           </CardHeader>
         </Card>
 
         <Card className="border-0 shadow-lg">
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <CardTitle>Profile</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full" onClick={() => setCurrentStep(2)}>
+          <CardContent className="space-y-4 px-4 sm:px-6">
+            <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={() => setCurrentStep(2)}>
               Edit body stats
             </Button>
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Goal</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {goals.map((item) => (
                   <Button
                     key={item.id}
                     variant={userProfile.goal === item.id ? "default" : "outline"}
+                    className="h-12 min-h-[44px] w-full break-words px-2 text-center text-sm leading-tight"
                     onClick={() => updateNutritionTargets({ goal: item.id })}
                   >
                     {item.label}
@@ -138,11 +140,12 @@ export function SettingsScreen() {
             </div>
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Activity level</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {activityLevels.map((item) => (
                   <Button
                     key={item.id}
                     variant={userProfile.activityLevel === item.id ? "default" : "outline"}
+                    className="h-12 min-h-[44px] w-full justify-center text-sm"
                     onClick={() => updateNutritionTargets({ activityLevel: item.id })}
                   >
                     {item.label}
@@ -171,12 +174,12 @@ export function SettingsScreen() {
                           prev.length < 2 ? [...prev, c.id] : [prev[1], c.id]
                         updatePreferences({ cuisinePreference: next })
                       }}
-                      className={`rounded-xl border-2 p-3 text-left text-sm transition-colors ${
+                      className={`min-h-[44px] rounded-xl border-2 p-3 text-left text-sm transition-colors ${
                         selected ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <div className="font-medium text-foreground">{c.title}</div>
-                      <div className="text-xs text-muted-foreground">{c.hint}</div>
+                      <div className="break-words font-medium text-foreground">{c.title}</div>
+                      <div className="break-words text-xs text-muted-foreground">{c.hint}</div>
                     </button>
                   )
                 })}
@@ -186,46 +189,49 @@ export function SettingsScreen() {
         </Card>
 
         <Card className="border-0 shadow-lg">
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <CardTitle>Meal Plan</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
+          <CardContent className="space-y-3 px-4 sm:px-6">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {dietTypes.map((item) => (
                 <Button
                   key={item.id}
                   variant={userProfile.dietType === item.id ? "default" : "outline"}
+                  className="h-12 min-h-[44px] w-full text-sm"
                   onClick={() => updateNutritionTargets({ dietType: item.id })}
                 >
                   {item.label}
                 </Button>
               ))}
             </div>
-            <Button variant="outline" className="w-full" onClick={() => setCurrentStep(0)}>
+            <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={() => setCurrentStep(0)}>
               Update ingredients
             </Button>
-            <Button className="w-full" onClick={handleRegenerate}>
+            <Button className="h-12 min-h-[44px] w-full" onClick={handleRegenerate}>
               Regenerate plan
             </Button>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg">
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <CardTitle>Preferences</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-4 sm:px-6">
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Measurement system</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant={userProfile.unitSystem === "metric" ? "default" : "outline"}
+                  className="h-12 min-h-[44px] min-w-[44px] flex-1 sm:flex-none"
                   onClick={() => updatePreferences({ unitSystem: "metric" })}
                 >
                   Metric
                 </Button>
                 <Button
                   variant={userProfile.unitSystem === "imperial" ? "default" : "outline"}
+                  className="h-12 min-h-[44px] min-w-[44px] flex-1 sm:flex-none"
                   onClick={() => updatePreferences({ unitSystem: "imperial" })}
                 >
                   Imperial
@@ -234,22 +240,31 @@ export function SettingsScreen() {
             </div>
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Language</Label>
-              <div className="flex gap-2">
-                <Button variant={userProfile.language !== "ko" ? "default" : "outline"} onClick={() => updatePreferences({ language: "en" })}>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={userProfile.language !== "ko" ? "default" : "outline"}
+                  className="h-12 min-h-[44px] min-w-[44px] flex-1 sm:flex-none"
+                  onClick={() => updatePreferences({ language: "en" })}
+                >
                   English
                 </Button>
-                <Button variant={userProfile.language === "ko" ? "default" : "outline"} onClick={() => updatePreferences({ language: "ko" })}>
+                <Button
+                  variant={userProfile.language === "ko" ? "default" : "outline"}
+                  className="h-12 min-h-[44px] min-w-[44px] flex-1 sm:flex-none"
+                  onClick={() => updatePreferences({ language: "ko" })}
+                >
                   한국어
                 </Button>
               </div>
             </div>
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Meals per day</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {[2, 3, 4, 5].map((count) => (
                   <Button
                     key={count}
                     variant={userProfile.mealsPerDay === count ? "default" : "outline"}
+                    className="h-12 min-h-[44px] min-w-[44px] flex-1 sm:flex-none"
                     onClick={() => updatePreferences({ mealsPerDay: count })}
                   >
                     {count}
@@ -261,12 +276,12 @@ export function SettingsScreen() {
         </Card>
 
         <Card className="border-0 shadow-lg">
-          <CardHeader>
+          <CardHeader className="px-4 sm:px-6">
             <CardTitle>Data</CardTitle>
             <CardDescription>App version: v0.1.0</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button variant="destructive" className="w-full" onClick={handleClearAll}>
+          <CardContent className="px-4 sm:px-6">
+            <Button variant="destructive" className="h-12 min-h-[44px] w-full" onClick={handleClearAll}>
               Clear all data
             </Button>
           </CardContent>

@@ -84,21 +84,22 @@ export function GroceryList() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background pb-24">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto max-w-lg px-4 py-4">
+        <div className="mx-auto max-w-lg min-w-0 px-4 py-4">
           <button
+            type="button"
             onClick={() => setCurrentStep(2)}
-            className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            className="mb-3 flex min-h-11 w-full max-w-full items-center gap-1 rounded-md py-2 text-left text-sm text-muted-foreground hover:text-foreground sm:w-auto"
           >
-            <ChevronLeft className="h-4 w-4" />
-            Back to your meal plan
+            <ChevronLeft className="h-4 w-4 shrink-0" />
+            <span className="break-words">Back to your meal plan</span>
           </button>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Weekly shopping list</h1>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="break-words text-xl font-bold text-foreground sm:text-2xl">Weekly shopping list</h1>
               <p className="text-sm text-muted-foreground">
                 {checkedCount} of {totalItems} checked off
               </p>
@@ -107,7 +108,7 @@ export function GroceryList() {
               variant="outline"
               size="sm"
               onClick={handleCopy}
-              className="gap-2"
+              className="h-11 min-h-[44px] w-full gap-2 sm:w-auto sm:shrink-0"
             >
               {copied ? (
                 <>
@@ -133,17 +134,17 @@ export function GroceryList() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-lg px-4">
+      <div className="mx-auto max-w-lg min-w-0 px-4">
         {/* Summary Card */}
         <Card className="mb-4 border-0 bg-primary text-primary-foreground shadow-lg">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/20">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-foreground/20">
                 <ShoppingCart className="h-6 w-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="font-semibold">Everything for the week</div>
-                <div className="text-sm text-primary-foreground/80">
+                <div className="break-words text-sm text-primary-foreground/80">
                   {totalItems} lines to grab, sorted into {groceryCategories.length} groups
                 </div>
               </div>
@@ -155,18 +156,18 @@ export function GroceryList() {
         <div className="space-y-4">
           {groceryCategories.map(({ category, items }) => (
             <Card key={category} className="border-0 shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${categoryColors[category] || 'bg-secondary text-secondary-foreground'}`}>
+              <CardHeader className="px-4 pb-2 pt-6 sm:px-6">
+                <CardTitle className="flex min-w-0 flex-wrap items-center gap-2 text-base">
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${categoryColors[category] || 'bg-secondary text-secondary-foreground'}`}>
                     {categoryIcons[category] || <ShoppingCart className="h-4 w-4" />}
                   </span>
-                  {categoryLabels[category] || category}
-                  <span className="ml-auto text-sm font-normal text-muted-foreground">
+                  <span className="min-w-0 flex-1 break-words">{categoryLabels[category] || category}</span>
+                  <span className="w-full shrink-0 text-sm font-normal text-muted-foreground sm:ml-auto sm:w-auto sm:text-right">
                     {items.length} items
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="px-4 pb-6 pt-0 sm:px-6">
                 <div className="space-y-1">
                   {items.map((item) => {
                     const itemKey = `${category}-${item.name}`
@@ -175,26 +176,29 @@ export function GroceryList() {
                     return (
                       <button
                         key={item.name}
+                        type="button"
                         onClick={() => toggleItem(itemKey)}
-                        className={`flex w-full items-center gap-3 rounded-lg p-3 text-left transition-all ${
+                        className={`flex min-h-[44px] w-full min-w-0 flex-col gap-2 rounded-lg p-3 text-left transition-all sm:flex-row sm:items-center sm:gap-3 ${
                           isChecked ? 'bg-primary/5' : 'bg-secondary hover:bg-secondary/80'
                         }`}
                       >
-                        <div
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                            isChecked
-                              ? 'border-primary bg-primary'
-                              : 'border-border'
-                          }`}
-                        >
-                          {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                        <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
+                          <div
+                            className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all sm:mt-0 ${
+                              isChecked
+                                ? 'border-primary bg-primary'
+                                : 'border-border'
+                            }`}
+                          >
+                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
+                          </div>
+                          <span className={`min-w-0 flex-1 break-words text-left ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                            {item.name}
+                          </span>
                         </div>
-                        <div className={`flex-1 ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                          {item.name}
-                        </div>
-                        <div className={`text-sm ${isChecked ? 'text-muted-foreground/50' : 'text-muted-foreground'}`}>
+                        <span className={`break-words pl-9 text-sm sm:max-w-[45%] sm:flex-none sm:pl-0 sm:text-right ${isChecked ? 'text-muted-foreground/50' : 'text-muted-foreground'}`}>
                           {item.amounts}
-                        </div>
+                        </span>
                       </button>
                     )
                   })}
@@ -207,7 +211,7 @@ export function GroceryList() {
         {/* Export Button */}
         <div className="mt-6 space-y-3">
           <Button
-            className="h-12 w-full"
+            className="h-12 min-h-[44px] w-full"
             onClick={handleCopy}
           >
             {copied ? (

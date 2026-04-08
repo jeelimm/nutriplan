@@ -72,46 +72,52 @@ export function MealPlanConfig() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-24 md:p-8 md:pb-24">
-      <div className="mx-auto max-w-lg">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background p-4 pb-24 md:p-8 md:pb-24">
+      <div className="mx-auto max-w-lg min-w-0">
         <button
           type="button"
           onClick={() => setCurrentStep(0)}
-          className="mb-4 flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          className="mb-4 flex min-h-11 w-full max-w-full items-center gap-1 rounded-md py-2 text-left text-muted-foreground hover:text-foreground sm:w-auto"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 shrink-0" />
           Back
         </button>
 
         {/* Calculated Results */}
         {userProfile && (
           <Card className="mb-6 border-0 bg-primary text-primary-foreground shadow-lg">
-            <CardHeader className="pb-2">
+            <CardHeader className="px-4 pb-2 pt-6 sm:px-6">
               <CardTitle className="text-lg">Your daily targets</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 sm:px-6">
               <div className="mb-4 text-center">
-                <div className="text-4xl font-bold">{userProfile.dailyCalories}</div>
+                <div className="break-words text-3xl font-bold tabular-nums sm:text-4xl">{userProfile.dailyCalories}</div>
                 <div className="text-primary-foreground/80">calories per day</div>
                 <div className="mt-1 text-xs text-primary-foreground/80">
                   Ballpark from your stats and activity—tweak your profile anytime if life changes
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
-                  <Beef className="mx-auto mb-1 h-5 w-5" />
-                  <div className="text-lg font-bold">{liveTargets?.macros.protein ?? userProfile.macros.protein}g</div>
-                  <div className="text-xs text-primary-foreground/80">Protein</div>
+              <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
+                <div className="min-w-0 rounded-lg bg-primary-foreground/10 p-2 text-center sm:p-3">
+                  <Beef className="mx-auto mb-1 h-4 w-4 sm:h-5 sm:w-5" />
+                  <div className="break-words text-sm font-bold tabular-nums sm:text-lg">
+                    {liveTargets?.macros.protein ?? userProfile.macros.protein}g
+                  </div>
+                  <div className="text-[10px] text-primary-foreground/80 sm:text-xs">Protein</div>
                 </div>
-                <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
-                  <Wheat className="mx-auto mb-1 h-5 w-5" />
-                  <div className="text-lg font-bold">{liveTargets?.macros.carbs ?? userProfile.macros.carbs}g</div>
-                  <div className="text-xs text-primary-foreground/80">Carbs</div>
+                <div className="min-w-0 rounded-lg bg-primary-foreground/10 p-2 text-center sm:p-3">
+                  <Wheat className="mx-auto mb-1 h-4 w-4 sm:h-5 sm:w-5" />
+                  <div className="break-words text-sm font-bold tabular-nums sm:text-lg">
+                    {liveTargets?.macros.carbs ?? userProfile.macros.carbs}g
+                  </div>
+                  <div className="text-[10px] text-primary-foreground/80 sm:text-xs">Carbs</div>
                 </div>
-                <div className="rounded-lg bg-primary-foreground/10 p-3 text-center">
-                  <Droplets className="mx-auto mb-1 h-5 w-5" />
-                  <div className="text-lg font-bold">{liveTargets?.macros.fat ?? userProfile.macros.fat}g</div>
-                  <div className="text-xs text-primary-foreground/80">Fat</div>
+                <div className="min-w-0 rounded-lg bg-primary-foreground/10 p-2 text-center sm:p-3">
+                  <Droplets className="mx-auto mb-1 h-4 w-4 sm:h-5 sm:w-5" />
+                  <div className="break-words text-sm font-bold tabular-nums sm:text-lg">
+                    {liveTargets?.macros.fat ?? userProfile.macros.fat}g
+                  </div>
+                  <div className="text-[10px] text-primary-foreground/80 sm:text-xs">Fat</div>
                 </div>
               </div>
             </CardContent>
@@ -120,36 +126,37 @@ export function MealPlanConfig() {
 
         {/* Meals Per Day */}
         <Card className="mb-6 border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Utensils className="h-5 w-5 text-primary" />
-              Meals per day
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="flex min-w-0 items-center gap-2 text-xl">
+              <Utensils className="h-5 w-5 shrink-0 text-primary" />
+              <span className="break-words">Meals per day</span>
             </CardTitle>
             <CardDescription>
               What fits your routine? Smaller meals or a few bigger ones both work.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex gap-3">
+          <CardContent className="px-4 sm:px-6">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
               {mealCounts.map((count) => (
                 <button
                   key={count}
+                  type="button"
                   onClick={() => setMealsPerDay(count)}
-                  className={`flex h-16 flex-1 flex-col items-center justify-center rounded-xl border-2 transition-all ${
+                  className={`flex min-h-[44px] flex-col items-center justify-center rounded-xl border-2 py-3 transition-all ${
                     mealsPerDay === count
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <span className="text-2xl font-bold">{count}</span>
+                  <span className="text-xl font-bold sm:text-2xl">{count}</span>
                   <span className="text-xs">meals</span>
                 </button>
               ))}
             </div>
             {userProfile && (
-              <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-secondary p-3">
-                <Flame className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">
+              <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-secondary p-4">
+                <Flame className="h-4 w-4 shrink-0 text-primary" />
+                <span className="break-words text-center text-sm text-muted-foreground">
                   Roughly {Math.round(userProfile.dailyCalories / mealsPerDay)} calories per meal on average
                 </span>
               </div>
@@ -158,7 +165,7 @@ export function MealPlanConfig() {
         </Card>
 
         <Button
-          className="h-14 w-full text-lg font-semibold"
+          className="h-14 min-h-[48px] w-full text-lg font-semibold"
           onClick={handleComplete}
           disabled={!userProfile || isGenerating}
         >

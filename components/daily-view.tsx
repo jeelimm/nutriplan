@@ -29,13 +29,13 @@ function MacroProgress({ current, target, label, icon, color }: {
   const percentage = Math.min((current / target) * 100, 100)
   
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center gap-1.5">
-          {icon}
-          <span className="text-muted-foreground">{label}</span>
+    <div className="min-w-0 space-y-1">
+      <div className="flex min-w-0 items-center justify-between gap-2 text-xs sm:text-sm">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="shrink-0">{icon}</span>
+          <span className="truncate text-muted-foreground">{label}</span>
         </div>
-        <span className="font-medium">{current}g / {target}g</span>
+        <span className="shrink-0 whitespace-nowrap font-medium tabular-nums">{current}g / {target}g</span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
         <div
@@ -213,8 +213,8 @@ export function DailyView() {
 
   if (isGeneratingMealPlan && !weekPlan.length) {
     return (
-      <div className="min-h-screen bg-background p-4 md:p-8">
-        <div className="mx-auto flex max-w-lg flex-col items-center justify-center rounded-3xl border border-border bg-card p-10 text-center shadow-lg">
+      <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background p-4 md:p-8">
+        <div className="mx-auto flex max-w-lg flex-col items-center justify-center rounded-3xl border border-border bg-card p-6 text-center shadow-lg sm:p-10">
           <Spinner className="mb-4 size-8 text-primary" />
           <h2 className="text-xl font-semibold text-foreground">{loadingMessages[loadingMessageIndex]}</h2>
           <p className="mt-2 text-sm text-muted-foreground">Usually under a minute</p>
@@ -230,7 +230,7 @@ export function DailyView() {
 
   if (!weekPlan.length && !mealPlanValidation.isValid) {
     return (
-      <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background p-4 md:p-8">
         <div className="mx-auto max-w-lg">
           <Card className="border-0 shadow-lg">
             <CardHeader>
@@ -240,7 +240,7 @@ export function DailyView() {
               <p className="text-sm text-muted-foreground">
                 {mealPlanValidation.errors[0] ?? "Something didn’t line up with your settings. Try generating again—you won’t lose your profile."}
               </p>
-              <Button className="w-full" onClick={generateMealPlan}>
+              <Button className="h-12 min-h-[44px] w-full" onClick={generateMealPlan}>
                 Try again
               </Button>
             </CardContent>
@@ -283,40 +283,45 @@ export function DailyView() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background pb-24">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto max-w-lg px-4 py-4">
+        <div className="mx-auto max-w-lg min-w-0 px-4 py-4">
           <button
+            type="button"
             onClick={() => setCurrentStep(1)}
-            className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            className="mb-3 flex min-h-11 w-full max-w-full items-center gap-1 rounded-md py-2 text-left text-sm text-muted-foreground hover:text-foreground sm:w-auto"
           >
-            <ChevronLeft className="h-4 w-4" />
-            Back to plan setup
+            <ChevronLeft className="h-4 w-4 shrink-0" />
+            <span className="break-words">Back to plan setup</span>
           </button>
 
           {/* Day Selector */}
-          <div className="flex items-center justify-between">
+          <div className="flex min-w-0 items-center justify-between gap-1">
             <button
+              type="button"
               onClick={() => setSelectedDay(Math.max(0, selectedDay - 1))}
               disabled={selectedDay === 0}
-              className="rounded-full p-2 hover:bg-secondary disabled:opacity-50"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-secondary disabled:opacity-50"
+              aria-label="Previous day"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-foreground">{currentDay.day}</div>
-              <div className="text-sm text-muted-foreground">Day {selectedDay + 1} of 7</div>
+            <div className="min-w-0 flex-1 px-1 text-center">
+              <div className="break-words text-xl font-bold leading-tight text-foreground sm:text-2xl">{currentDay.day}</div>
+              <div className="text-xs text-muted-foreground sm:text-sm">Day {selectedDay + 1} of 7</div>
             </div>
             <button
+              type="button"
               onClick={() => setSelectedDay(Math.min(6, selectedDay + 1))}
               disabled={selectedDay === 6}
-              className="rounded-full p-2 hover:bg-secondary disabled:opacity-50"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-secondary disabled:opacity-50"
+              aria-label="Next day"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <Button variant="outline" className="mt-3 h-9 w-full" onClick={openEditProfileModal}>
+          <Button variant="outline" className="mt-3 h-11 min-h-[44px] w-full" onClick={openEditProfileModal}>
             Edit profile
           </Button>
 
@@ -335,27 +340,27 @@ export function DailyView() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-lg px-4">
+      <div className="mx-auto max-w-lg min-w-0 px-4">
         {mealPlanValidation.warnings.length > 0 && (
-          <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          <div className="mb-4 break-words rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
             {mealPlanValidation.warnings[0]}
           </div>
         )}
         {/* Daily Progress Card */}
         <Card className="mb-4 border-0 shadow-lg">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Flame className="h-5 w-5 text-primary" />
-                Today vs your targets
+          <CardHeader className="px-4 pb-2 pt-6 sm:px-6">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <CardTitle className="flex min-w-0 items-center gap-2 text-base leading-snug sm:text-lg">
+                <Flame className="h-5 w-5 shrink-0 text-primary" />
+                <span className="break-words">Today vs your targets</span>
               </CardTitle>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-foreground">{currentDay.totalCalories}</div>
+              <div className="shrink-0 text-left sm:text-right">
+                <div className="text-xl font-bold tabular-nums text-foreground sm:text-2xl">{currentDay.totalCalories}</div>
                 <div className="text-xs text-muted-foreground">of {userProfile.dailyCalories} cal</div>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 px-4 pb-6 sm:px-6">
             {/* Calorie Bar */}
             <div className="relative h-4 w-full overflow-hidden rounded-full bg-secondary">
               <div
@@ -398,10 +403,10 @@ export function DailyView() {
 
         {goalTimeline.kind !== "none" && (
           <Card className="mb-4 border-0 shadow-lg">
-            <CardContent className="space-y-2 pt-6 text-sm">
+            <CardContent className="space-y-2 p-4 pt-6 text-sm sm:p-6">
               {goalTimeline.kind === "estimate" && (
                 <>
-                  <p className="font-medium text-foreground">{goalTimeline.summaryLine}</p>
+                  <p className="break-words font-medium text-foreground">{goalTimeline.summaryLine}</p>
                   <p className="text-xs text-muted-foreground">{goalTimeline.disclaimer}</p>
                 </>
               )}
@@ -426,36 +431,37 @@ export function DailyView() {
             const isExpanded = expandedMeals.has(meal.id)
             return (
               <Card key={meal.id} className="border-0 shadow-md">
-                <CardContent className="p-4">
-                  <div className="mb-2 flex items-start justify-between">
-                    <div>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="mb-2 flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <div className="text-xs font-medium text-primary">{getMealLabel(idx, currentDay.meals.length)}</div>
-                      <div className="font-semibold text-foreground">{meal.name}</div>
+                      <div className="break-words font-semibold text-foreground">{meal.name}</div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-foreground">{meal.calories}</div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-lg font-bold tabular-nums text-foreground">{meal.calories}</div>
                       <div className="text-xs text-muted-foreground">cal</div>
                     </div>
                   </div>
-                  <div className="flex gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-full bg-chart-1" />
-                      <span className="text-muted-foreground">{meal.protein}g protein</span>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                    <div className="flex min-w-0 items-center gap-1">
+                      <div className="h-2 w-2 shrink-0 rounded-full bg-chart-1" />
+                      <span className="break-words text-muted-foreground">{meal.protein}g protein</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-full bg-chart-3" />
-                      <span className="text-muted-foreground">{meal.carbs}g carbs</span>
+                    <div className="flex min-w-0 items-center gap-1">
+                      <div className="h-2 w-2 shrink-0 rounded-full bg-chart-3" />
+                      <span className="break-words text-muted-foreground">{meal.carbs}g carbs</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-full bg-chart-2" />
-                      <span className="text-muted-foreground">{meal.fat}g fat</span>
+                    <div className="flex min-w-0 items-center gap-1">
+                      <div className="h-2 w-2 shrink-0 rounded-full bg-chart-2" />
+                      <span className="break-words text-muted-foreground">{meal.fat}g fat</span>
                     </div>
                   </div>
 
                   {/* View Recipe Button */}
                   <button
+                    type="button"
                     onClick={() => toggleMealExpanded(meal.id)}
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-secondary py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary/80"
+                    className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-secondary py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary/80"
                   >
                     Recipe & details
                     <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
@@ -465,14 +471,14 @@ export function DailyView() {
                   {isExpanded && (
                     <div className="mt-4 space-y-4 border-t border-border pt-4">
                       {/* Prep + Cook Time */}
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1">
-                          <Clock className="h-4 w-4 text-primary" />
-                          <span className="text-foreground">
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5">
+                          <Clock className="h-4 w-4 shrink-0 text-primary" />
+                          <span className="break-words text-foreground">
                             <span className="font-medium">Total:</span> {(meal.prepTime || 0) + (meal.cookTime || 0)} min
                           </span>
                         </div>
-                        <span className="text-muted-foreground">
+                        <span className="break-words text-muted-foreground">
                           Prep: {meal.prepTime || 0} min | Cook: {meal.cookTime || 0} min
                         </span>
                       </div>
@@ -482,10 +488,10 @@ export function DailyView() {
                         <h4 className="mb-2 text-sm font-semibold text-foreground">Ingredients</h4>
                         <ul className="space-y-1.5">
                           {meal.ingredients.map((ingredient, i) => (
-                            <li key={i} className="flex items-center gap-2 text-sm">
-                              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                              <span className="text-foreground">{ingredient.name}</span>
-                              <span className="text-muted-foreground">- {convertRecipeText(ingredient.amount, recipeUnitSystem)}</span>
+                            <li key={i} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
+                              <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                              <span className="min-w-0 flex-1 break-words text-foreground">{ingredient.name}</span>
+                              <span className="break-words text-muted-foreground">— {convertRecipeText(ingredient.amount, recipeUnitSystem)}</span>
                             </li>
                           ))}
                         </ul>
@@ -500,7 +506,7 @@ export function DailyView() {
                               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
                                 {i + 1}
                               </span>
-                              <span className="text-muted-foreground">{convertRecipeText(step, recipeUnitSystem)}</span>
+                              <span className="min-w-0 flex-1 break-words text-muted-foreground">{convertRecipeText(step, recipeUnitSystem)}</span>
                             </li>
                           ))}
                         </ol>
@@ -516,7 +522,7 @@ export function DailyView() {
         {/* Grocery List Button */}
         <Button
           variant="outline"
-          className="mt-6 h-12 w-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+          className="mt-6 h-12 min-h-[44px] w-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
           onClick={() => setShowGroceryList(true)}
         >
           <ShoppingCart className="mr-2 h-5 w-5" />
@@ -525,7 +531,7 @@ export function DailyView() {
 
         {/* Weekly Grocery List Link */}
         <Button
-          className="mt-3 h-12 w-full"
+          className="mt-3 h-12 min-h-[44px] w-full"
           onClick={() => setCurrentStep(3)}
         >
           <ShoppingCart className="mr-2 h-5 w-5" />
@@ -535,13 +541,17 @@ export function DailyView() {
 
       {/* Grocery List Modal */}
       {showGroceryList && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm md:items-center">
-          <div className="max-h-[85vh] w-full max-w-lg overflow-auto rounded-t-3xl bg-card p-6 shadow-2xl md:rounded-3xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-foreground">Shopping list · {currentDay.day}</h2>
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 backdrop-blur-sm md:items-center">
+          <div className="max-h-[85vh] w-full max-w-lg min-w-0 overflow-y-auto overflow-x-hidden rounded-t-3xl bg-card p-4 shadow-2xl sm:p-6 md:rounded-3xl">
+            <div className="mb-4 flex min-w-0 items-start justify-between gap-3">
+              <h2 className="min-w-0 flex-1 break-words text-lg font-bold text-foreground sm:text-xl">
+                Shopping list · {currentDay.day}
+              </h2>
               <button
+                type="button"
                 onClick={() => setShowGroceryList(false)}
-                className="rounded-full p-2 hover:bg-secondary"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-secondary"
+                aria-label="Close shopping list"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -550,17 +560,19 @@ export function DailyView() {
             <div className="space-y-4">
               {groceryCategories.map(({ category, items }) => (
                 <div key={category}>
-                  <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-primary">
+                  <h3 className="mb-2 break-words text-sm font-semibold uppercase tracking-wide text-primary">
                     {categoryLabels[category] || category}
                   </h3>
                   <div className="space-y-1">
                     {items.map((item) => (
                       <div
                         key={item.name}
-                        className="flex items-center justify-between rounded-lg bg-secondary p-3"
+                        className="flex flex-col gap-1 rounded-lg bg-secondary p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
                       >
-                        <span className="text-foreground">{item.name}</span>
-                        <span className="text-sm text-muted-foreground">{item.amounts}</span>
+                        <span className="min-w-0 break-words text-foreground">{item.name}</span>
+                        <span className="shrink-0 break-words text-sm text-muted-foreground sm:max-w-[45%] sm:text-right">
+                          {item.amounts}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -569,7 +581,7 @@ export function DailyView() {
             </div>
 
             <Button
-              className="mt-6 h-12 w-full"
+              className="mt-6 h-12 min-h-[44px] w-full"
               onClick={() => setShowGroceryList(false)}
             >
               Close
@@ -579,14 +591,15 @@ export function DailyView() {
       )}
 
       {showEditProfileModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm md:items-center">
-          <div className="w-full max-w-lg rounded-t-3xl bg-card p-6 shadow-2xl md:rounded-3xl">
-            <h2 className="mb-4 text-xl font-bold text-foreground">Update your profile</h2>
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 backdrop-blur-sm md:items-center">
+          <div className="max-h-[90vh] w-full max-w-lg min-w-0 overflow-y-auto overflow-x-hidden rounded-t-3xl bg-card p-4 shadow-2xl sm:p-6 md:rounded-3xl">
+            <h2 className="mb-4 break-words text-xl font-bold text-foreground">Update your profile</h2>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="profileName">Profile Name</Label>
                 <Input
                   id="profileName"
+                  className="w-full min-w-0"
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                   placeholder="e.g. Joe"
@@ -594,32 +607,32 @@ export function DailyView() {
               </div>
               <div className="space-y-2">
                 <Label>Weight</Label>
-                <div className="mb-2 flex gap-2">
+                <div className="mb-2 flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => setUnit("kg")}
-                    className={`rounded-lg px-3 py-2 text-sm ${unit === "kg" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
+                    className={`min-h-11 min-w-[44px] flex-1 rounded-lg px-3 py-2 text-sm sm:flex-none ${unit === "kg" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
                   >
                     kg
                   </button>
                   <button
                     type="button"
                     onClick={() => setUnit("lbs")}
-                    className={`rounded-lg px-3 py-2 text-sm ${unit === "lbs" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
+                    className={`min-h-11 min-w-[44px] flex-1 rounded-lg px-3 py-2 text-sm sm:flex-none ${unit === "lbs" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
                   >
                     lbs
                   </button>
                 </div>
-                <Input value={weight} onChange={(e) => setWeight(e.target.value)} type="number" inputMode="decimal" />
+                <Input className="w-full min-w-0" value={weight} onChange={(e) => setWeight(e.target.value)} type="number" inputMode="decimal" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Body Fat %</Label>
-                  <Input value={bodyFat} onChange={(e) => setBodyFat(e.target.value)} type="number" inputMode="decimal" />
+                  <Input className="w-full min-w-0" value={bodyFat} onChange={(e) => setBodyFat(e.target.value)} type="number" inputMode="decimal" />
                 </div>
                 <div className="space-y-2">
                   <Label>Muscle Mass</Label>
-                  <Input value={muscleMass} onChange={(e) => setMuscleMass(e.target.value)} type="number" inputMode="decimal" />
+                  <Input className="w-full min-w-0" value={muscleMass} onChange={(e) => setMuscleMass(e.target.value)} type="number" inputMode="decimal" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -630,7 +643,7 @@ export function DailyView() {
                       key={level.id}
                       type="button"
                       onClick={() => setActivityLevel(level.id)}
-                      className={`w-full rounded-xl border-2 p-3 text-left ${
+                      className={`min-h-[44px] w-full rounded-xl border-2 p-3 text-left ${
                         activityLevel === level.id ? "border-primary bg-primary/10" : "border-border"
                       }`}
                     >
@@ -648,7 +661,7 @@ export function DailyView() {
                       key={item.id}
                       type="button"
                       onClick={() => setGoal(item.id)}
-                      className={`w-full rounded-xl border-2 p-3 text-left ${
+                      className={`min-h-[44px] w-full rounded-xl border-2 p-3 text-left ${
                         goal === item.id ? "border-primary bg-primary/10" : "border-border"
                       }`}
                     >
@@ -667,7 +680,7 @@ export function DailyView() {
                       key={c.id}
                       type="button"
                       onClick={() => toggleEditCuisine(c.id)}
-                      className={`rounded-xl border-2 p-3 text-left text-sm ${
+                      className={`min-h-[44px] rounded-xl border-2 p-3 text-left text-sm ${
                         editCuisines.includes(c.id) ? "border-primary bg-primary/10" : "border-border"
                       }`}
                     >
@@ -678,11 +691,11 @@ export function DailyView() {
                 </div>
               </div>
             </div>
-            <div className="mt-6 flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={() => setShowEditProfileModal(false)}>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+              <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={() => setShowEditProfileModal(false)}>
                 Cancel
               </Button>
-              <Button className="flex-1" onClick={handleSaveProfile} disabled={editCuisines.length < 1}>
+              <Button className="h-12 min-h-[44px] flex-1" onClick={handleSaveProfile} disabled={editCuisines.length < 1}>
                 Save
               </Button>
             </div>
@@ -691,21 +704,21 @@ export function DailyView() {
       )}
 
       {showRegenerateConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/20 backdrop-blur-sm md:items-center">
-          <div className="w-full max-w-md rounded-t-3xl bg-card p-6 shadow-2xl md:rounded-3xl">
-            <h3 className="text-lg font-semibold text-foreground">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 backdrop-blur-sm md:items-center">
+          <div className="w-full max-w-md min-w-0 rounded-t-3xl bg-card p-4 shadow-2xl sm:p-6 md:rounded-3xl">
+            <h3 className="break-words text-lg font-semibold text-foreground">
               Profile saved. Want a fresh 7-day plan with these numbers?
             </h3>
-            <div className="mt-5 flex gap-3">
+            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="h-12 min-h-[44px] flex-1"
                 onClick={() => setShowRegenerateConfirmModal(false)}
               >
                 Not now
               </Button>
               <Button
-                className="flex-1"
+                className="h-12 min-h-[44px] flex-1"
                 onClick={() => {
                   if (userProfile) {
                     setMealPlanConfig({ dietType: userProfile.dietType as DietType, mealsPerDay: userProfile.mealsPerDay })

@@ -490,8 +490,8 @@ export function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8" suppressHydrationWarning>
-      <div className="mx-auto max-w-lg" suppressHydrationWarning>
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background p-4 md:p-8" suppressHydrationWarning>
+      <div className="mx-auto max-w-lg min-w-0" suppressHydrationWarning>
         <div
           className="mb-4 flex items-center justify-between text-sm text-muted-foreground"
           suppressHydrationWarning
@@ -773,12 +773,12 @@ export function Onboarding() {
               <div className="rounded-lg bg-secondary p-3 text-xs text-muted-foreground">
                 These are estimates — update anytime with real InBody data for better accuracy
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" className="h-12 flex-1" onClick={() => setStep("body")}>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={() => setStep("body")}>
                   Back
                 </Button>
                 <Button
-                  className="h-12 flex-1"
+                  className="h-12 min-h-[44px] flex-1"
                   onClick={applyQuickEstimate}
                   disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
                 >
@@ -817,12 +817,12 @@ export function Onboarding() {
                   <span className="whitespace-nowrap font-medium text-primary">&times;{level.multiplier}</span>
                 </button>
               ))}
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" className="h-12 flex-1" onClick={moveToPreviousStep}>
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
                   <ChevronLeft className="mr-1 h-4 w-4" />
                   Back
                 </Button>
-                <Button className="h-12 flex-1" onClick={moveToNextStep} disabled={!selectedActivityLevel}>
+                <Button className="h-12 min-h-[44px] flex-1" onClick={moveToNextStep} disabled={!selectedActivityLevel}>
                   Continue
                 </Button>
               </div>
@@ -866,16 +866,16 @@ export function Onboarding() {
                 </button>
               ))}
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col gap-3 pt-4 sm:flex-row">
                 <Button
                   variant="outline"
-                  className="h-12 flex-1"
+                  className="h-12 min-h-[44px] flex-1"
                   onClick={moveToPreviousStep}
                 >
                   Back
                 </Button>
                 <Button
-                  className="h-12 flex-1 text-lg font-semibold"
+                  className="h-12 min-h-[44px] flex-1 text-lg font-semibold"
                   onClick={moveToNextStep}
                   disabled={!selectedGoal}
                 >
@@ -932,16 +932,16 @@ export function Onboarding() {
                           key={opt.id}
                           type="button"
                           onClick={() => setWeightLossPace(opt.id)}
-                          className={`w-full rounded-xl border-2 p-3 text-left text-sm transition-all ${
+                          className={`min-h-[44px] w-full rounded-xl border-2 p-3 text-left text-sm transition-all ${
                             weightLossPace === opt.id
                               ? "border-primary bg-primary/10"
                               : "border-border hover:border-primary/50"
                           }`}
                         >
-                          <div className="font-semibold text-foreground">
+                          <div className="break-words font-semibold text-foreground">
                             {opt.emoji} {opt.label} — {weekly} (deficit ~{opt.deficitKcal} kcal/day)
                           </div>
-                          <div className="mt-1 text-muted-foreground">{opt.hint}</div>
+                          <div className="mt-1 break-words text-muted-foreground">{opt.hint}</div>
                         </button>
                       )
                     })}
@@ -957,13 +957,13 @@ export function Onboarding() {
                 )}
 
               <div className="flex flex-col gap-3 pt-2">
-                <Button variant="outline" className="h-12 w-full" onClick={moveToPreviousStep}>
+                <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={moveToPreviousStep}>
                   <ChevronLeft className="mr-1 h-4 w-4" />
                   Back
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-12 w-full"
+                  className="h-12 min-h-[44px] w-full whitespace-normal break-words py-3 leading-snug"
                   onClick={() => {
                     setTargetWeightSkipped(true)
                     setTargetWeightInput("")
@@ -972,7 +972,7 @@ export function Onboarding() {
                 >
                   I&apos;ll focus on habits, not numbers
                 </Button>
-                <Button className="h-12 w-full" onClick={moveToNextStep} disabled={!targetWeightStepValid}>
+                <Button className="h-12 min-h-[44px] w-full" onClick={moveToNextStep} disabled={!targetWeightStepValid}>
                   Continue
                 </Button>
               </div>
@@ -998,21 +998,21 @@ export function Onboarding() {
                     key={c.id}
                     type="button"
                     onClick={() => toggleCuisine(c.id)}
-                    className={`w-full rounded-xl border-2 p-4 text-left transition-all ${
+                    className={`min-h-[44px] w-full rounded-xl border-2 p-4 text-left transition-all ${
                       selectedCuisines.includes(c.id) ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
                     }`}
                   >
-                    <div className="font-semibold text-foreground">{c.title}</div>
-                    <div className="text-sm text-muted-foreground">{c.hint}</div>
+                    <div className="break-words font-semibold text-foreground">{c.title}</div>
+                    <div className="break-words text-sm text-muted-foreground">{c.hint}</div>
                   </button>
                 ))}
               </div>
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" className="h-12 flex-1" onClick={moveToPreviousStep}>
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
                   <ChevronLeft className="mr-1 h-4 w-4" />
                   Back
                 </Button>
-                <Button className="h-12 flex-1" onClick={moveToNextStep} disabled={selectedCuisines.length < 1}>
+                <Button className="h-12 min-h-[44px] flex-1" onClick={moveToNextStep} disabled={selectedCuisines.length < 1}>
                   Continue
                 </Button>
               </div>
@@ -1058,11 +1058,11 @@ export function Onboarding() {
                   </div>
                 </div>
               )}
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" className="h-12 flex-1" onClick={moveToPreviousStep}>
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
                   Back
                 </Button>
-                <Button className="h-12 flex-1" onClick={moveToNextStep} disabled={!selectedDietType}>
+                <Button className="h-12 min-h-[44px] flex-1" onClick={moveToNextStep} disabled={!selectedDietType}>
                   Continue
                 </Button>
               </div>
@@ -1112,11 +1112,11 @@ export function Onboarding() {
                   Browse by protein, carbs, fats, and vegetables
                 </div>
               </button>
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" className="h-12 flex-1" onClick={moveToPreviousStep}>
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
                   Back
                 </Button>
-                <Button className="h-12 flex-1" onClick={moveToNextStep} disabled={!ingredientMode}>
+                <Button className="h-12 min-h-[44px] flex-1" onClick={moveToNextStep} disabled={!ingredientMode}>
                   Continue
                 </Button>
               </div>
@@ -1185,7 +1185,7 @@ export function Onboarding() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full"
+                        className="h-auto min-h-11 w-full whitespace-normal break-words py-3 leading-snug"
                         onClick={fetchIngredientViaClaude}
                         disabled={fetchingIngredient}
                         suppressHydrationWarning
@@ -1195,13 +1195,13 @@ export function Onboarding() {
                     </div>
                   )}
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {categoryTabs.map((tab) => (
                       <button
                         key={tab.id}
                         type="button"
                         onClick={() => setActiveCategory(tab.id)}
-                        className={`rounded-lg px-3 py-2 text-sm ${
+                        className={`min-h-11 rounded-lg px-3 py-2 text-sm ${
                           activeCategory === tab.id ? "bg-primary text-primary-foreground" : "bg-secondary"
                         }`}
                       >
@@ -1220,15 +1220,15 @@ export function Onboarding() {
                             key={item.name}
                             type="button"
                             onClick={() => toggleIngredient(item.name)}
-                            className={`w-full rounded-xl border p-3 text-left ${
+                            className={`min-h-[44px] w-full rounded-xl border p-3 text-left ${
                               selected ? "border-primary bg-primary/10" : "border-border"
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="font-medium">{item.name}</div>
-                              <span className="rounded-md bg-secondary px-2 py-1 text-xs">{item.cost}</span>
+                            <div className="flex min-w-0 items-start justify-between gap-2">
+                              <div className="min-w-0 break-words font-medium">{item.name}</div>
+                              <span className="shrink-0 rounded-md bg-secondary px-2 py-1 text-xs">{item.cost}</span>
                             </div>
-                            <div className="mt-1 text-xs text-muted-foreground">
+                            <div className="mt-1 break-words text-xs text-muted-foreground">
                               {item.calories} kcal | P {item.protein} / C {item.carbs} / F {item.fat} per 100g
                             </div>
                           </button>
@@ -1247,12 +1247,12 @@ export function Onboarding() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button variant="outline" className="h-12 flex-1" onClick={moveToPreviousStep}>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
                   Back
                 </Button>
                 <Button
-                  className="h-12 flex-1"
+                  className="h-auto min-h-[44px] flex-1 whitespace-normal break-words py-3 leading-snug"
                   onClick={handleComplete}
                   disabled={!isIngredientSelectionValid}
                   suppressHydrationWarning
