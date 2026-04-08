@@ -671,19 +671,19 @@ export function Onboarding() {
           />
         </div>
 
-        <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
-            <Activity className="h-8 w-8 text-primary-foreground" />
+        <div className="mb-4 text-center sm:mb-8">
+          <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary sm:mb-4 sm:h-16 sm:w-16">
+            <Activity className="h-6 w-6 text-primary-foreground sm:h-8 sm:w-8" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">NutriPlan</h1>
-          <p className="mt-2 text-muted-foreground" suppressHydrationWarning>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">NutriPlan</h1>
+          <p className="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base" suppressHydrationWarning>
             A plan you can actually follow—adjust when life gets in the way
           </p>
         </div>
 
         {step === "body" && (
           <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
+            <CardHeader className="px-4 pb-2 pt-4 text-center sm:px-6 sm:pb-3 sm:pt-6">
               <CardTitle className="flex items-center justify-center gap-2 text-xl" suppressHydrationWarning>
                 <Scale className="h-5 w-5 text-primary" />
                 Your body stats
@@ -692,7 +692,7 @@ export function Onboarding() {
                 Add weight, body fat, and muscle mass from a scan or your best estimate—we&apos;ll set daily targets from there
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-3 px-4 pb-4 sm:space-y-6 sm:px-6 sm:pb-6">
               <div className="space-y-2">
                 <Label>Gender</Label>
                 <div className="flex justify-center gap-2">
@@ -806,11 +806,11 @@ export function Onboarding() {
                   className="h-12 text-lg"
                 />
               </div>
-              <Button type="button" variant="outline" className="w-full" onClick={() => setStep("quick-estimate")}>
+              <Button type="button" variant="outline" className="h-11 w-full sm:h-10" onClick={() => setStep("quick-estimate")}>
                 Don&apos;t have InBody data? Use quick estimate instead
               </Button>
               <Button
-                className="h-12 w-full text-lg font-semibold"
+                className="h-11 w-full text-base font-semibold sm:h-12 sm:text-lg"
                 onClick={moveToNextStep}
                 disabled={!weight || !bodyFat || !muscleMass}
               >
@@ -1295,6 +1295,14 @@ export function Onboarding() {
         {step === "ingredients" && (
           <Card className="border-0 shadow-lg">
             <CardHeader className="text-center">
+              <button
+                type="button"
+                onClick={moveToPreviousStep}
+                className="mb-1 inline-flex items-center gap-1 self-start text-sm text-muted-foreground hover:text-foreground"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back
+              </button>
               <CardTitle className="text-xl" suppressHydrationWarning>
                 Choose ingredients
               </CardTitle>
@@ -1302,22 +1310,22 @@ export function Onboarding() {
                 For a workable plan: at least 2 proteins, 1 carb, and 1 fat (vegetables are a nice add-on)
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pb-24">
               {ingredientMode === "recommend" && (
-                <div className="space-y-3">
+                <div className="max-h-[40vh] space-y-2 overflow-y-auto pr-1 sm:max-h-[44vh] sm:space-y-3">
                   {budgetPresets.map((preset) => (
                     <button
                       key={preset.id}
                       type="button"
                       onClick={() => chooseBudgetPreset(preset.id, preset.items)}
-                      className={`w-full rounded-xl border p-4 text-left transition-all ${
+                      className={`w-full rounded-xl border p-3 text-left transition-all ${
                         selectedBudgetPreset === preset.id
                           ? "border-green-600 bg-green-50 dark:bg-green-950/30"
                           : "border-border hover:border-primary"
                       }`}
                     >
-                      <div className="font-semibold" suppressHydrationWarning>{preset.label}</div>
-                      <div className="text-sm text-muted-foreground" suppressHydrationWarning>{preset.weeklyCost}</div>
+                      <div className="text-sm font-semibold" suppressHydrationWarning>{preset.label}</div>
+                      <div className="text-xs text-muted-foreground" suppressHydrationWarning>{preset.weeklyCost}</div>
                       <div className="mt-2 text-xs text-muted-foreground" suppressHydrationWarning>{preset.items.join(", ")}</div>
                     </button>
                   ))}
@@ -1378,7 +1386,7 @@ export function Onboarding() {
                     ))}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="max-h-[40vh] space-y-2 overflow-y-auto pr-1 sm:max-h-[44vh]">
                     {ingredientCatalog
                       .filter((item) => item.category === activeCategory)
                       .map((item) => {
@@ -1431,12 +1439,9 @@ export function Onboarding() {
                 <p className="text-sm text-amber-600 dark:text-amber-500">{ingredientMinimumMessage}</p>
               )}
 
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
-                  Back
-                </Button>
+              <div className="sticky bottom-0 z-10 -mx-6 border-t bg-card px-6 pt-3">
                 <Button
-                  className="h-auto min-h-[44px] flex-1 whitespace-normal break-words py-3 leading-snug"
+                  className="h-auto min-h-[44px] w-full whitespace-normal break-words py-3 leading-snug"
                   onClick={handleComplete}
                   disabled={!isIngredientSelectionValid}
                   suppressHydrationWarning

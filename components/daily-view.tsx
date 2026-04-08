@@ -505,11 +505,11 @@ export function DailyView() {
 
         {goalTimeline.kind !== "none" && (
           <Card className="mb-4 border-0 shadow-lg">
-            <CardContent className="space-y-2 p-4 pt-6 text-sm sm:p-6">
+            <CardContent className="space-y-1 p-3 text-center text-sm">
               {goalTimeline.kind === "estimate" && (
                 <>
                   <p className="break-words font-medium text-foreground">{goalTimeline.summaryLine}</p>
-                  <p className="text-xs text-muted-foreground">{goalTimeline.disclaimer}</p>
+                  <p className="text-[11px] text-muted-foreground">{goalTimeline.disclaimer}</p>
                 </>
               )}
               {goalTimeline.kind === "gain-muscle" && (
