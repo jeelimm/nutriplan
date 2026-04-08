@@ -657,20 +657,6 @@ export function Onboarding() {
   return (
     <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background p-4 md:p-8" suppressHydrationWarning>
       <div className="mx-auto max-w-lg min-w-0" suppressHydrationWarning>
-        <div
-          className="mb-4 flex items-center justify-between text-sm text-muted-foreground"
-          suppressHydrationWarning
-        >
-          <span>Step {displayStepIndex + 1} of {totalSteps}</span>
-          <span>{Math.round(((displayStepIndex + 1) / totalSteps) * 100)}%</span>
-        </div>
-        <div className="mb-6 h-2 w-full rounded-full bg-secondary">
-          <div
-            className="h-2 rounded-full bg-primary transition-all"
-            style={{ width: `${((displayStepIndex + 1) / totalSteps) * 100}%` }}
-          />
-        </div>
-
         <div className="mb-4 text-center sm:mb-8">
           <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary sm:mb-4 sm:h-16 sm:w-16">
             <Activity className="h-6 w-6 text-primary-foreground sm:h-8 sm:w-8" />
