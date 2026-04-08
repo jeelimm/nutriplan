@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -44,6 +45,8 @@ export function SettingsScreen() {
     clearAllData,
     calculateMacros,
   } = useMealStore()
+  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [regenerateError, setRegenerateError] = useState("")
 
   if (!userProfile) return null
 
@@ -81,11 +84,27 @@ export function SettingsScreen() {
   }
 
   const handleRegenerate = async () => {
+    if (isRegenerating) return
     const profile = useMealStore.getState().userProfile
     if (!profile) return
-    setMealPlanConfig({ dietType: profile.dietType, mealsPerDay: profile.mealsPerDay })
-    await generateMealPlan()
-    setCurrentStep(2)
+    setIsRegenerating(true)
+    setRegenerateError("")
+    try {
+      setMealPlanConfig({ dietType: profile.dietType, mealsPerDay: profile.mealsPerDay })
+      await generateMealPlan()
+      const latest = useMealStore.getState()
+      if (latest.mealPlanValidation.isValid && latest.weekPlan.length > 0) {
+        setCurrentStep(2)
+        return
+      }
+      setRegenerateError(
+        latest.mealPlanValidation.errors[0] ?? "Couldn’t regenerate a meal plan right now. Please try again."
+      )
+    } catch {
+      setRegenerateError("Couldn’t regenerate a meal plan right now. Please try again.")
+    } finally {
+      setIsRegenerating(false)
+    }
   }
 
   const handleClearAll = () => {
@@ -208,9 +227,10 @@ export function SettingsScreen() {
             <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={() => setCurrentStep(0)}>
               Update ingredients
             </Button>
-            <Button className="h-12 min-h-[44px] w-full" onClick={handleRegenerate}>
-              Regenerate plan
+            <Button className="h-12 min-h-[44px] w-full" onClick={handleRegenerate} disabled={isRegenerating}>
+              {isRegenerating ? "Regenerating..." : "Regenerate plan"}
             </Button>
+            {regenerateError && <p className="text-sm text-destructive">{regenerateError}</p>}
           </CardContent>
         </Card>
 

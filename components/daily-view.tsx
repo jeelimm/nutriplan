@@ -88,6 +88,8 @@ export function DailyView() {
   const [editCuisines, setEditCuisines] = useState<CuisinePreference[]>([])
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
+  const [isRegeneratingFromProfile, setIsRegeneratingFromProfile] = useState(false)
+  const [regenerateProfileError, setRegenerateProfileError] = useState("")
 
   const loadingMessages = [
     "Lining up meals for your week…",
@@ -193,8 +195,32 @@ export function DailyView() {
       macros,
       lastUpdatedAt: now,
     })
+    setRegenerateProfileError("")
     setShowEditProfileModal(false)
     setShowRegenerateConfirmModal(true)
+  }
+
+  const handleRegenerateFromProfile = async () => {
+    if (!userProfile || isRegeneratingFromProfile) return
+    setIsRegeneratingFromProfile(true)
+    setRegenerateProfileError("")
+    try {
+      setMealPlanConfig({ dietType: userProfile.dietType as DietType, mealsPerDay: userProfile.mealsPerDay })
+      await generateMealPlan()
+      const latest = useMealStore.getState()
+      if (latest.mealPlanValidation.isValid && latest.weekPlan.length > 0) {
+        setCurrentStep(2)
+        setShowRegenerateConfirmModal(false)
+        return
+      }
+      setRegenerateProfileError(
+        latest.mealPlanValidation.errors[0] ?? "Couldn’t regenerate a meal plan right now. Please try again."
+      )
+    } catch {
+      setRegenerateProfileError("Couldn’t regenerate a meal plan right now. Please try again.")
+    } finally {
+      setIsRegeneratingFromProfile(false)
+    }
   }
 
   const toggleMealExpanded = (mealId: string) => {
@@ -707,27 +733,29 @@ export function DailyView() {
         <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 backdrop-blur-sm md:items-center">
           <div className="w-full max-w-md min-w-0 rounded-t-3xl bg-card p-4 shadow-2xl sm:p-6 md:rounded-3xl">
             <h3 className="break-words text-lg font-semibold text-foreground">
-              Profile saved. Want a fresh 7-day plan with these numbers?
+              Your profile has been updated. Regenerate meal plan with new settings?
             </h3>
+            {regenerateProfileError && (
+              <p className="mt-3 text-sm text-destructive">{regenerateProfileError}</p>
+            )}
             <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row">
               <Button
                 variant="outline"
                 className="h-12 min-h-[44px] flex-1"
-                onClick={() => setShowRegenerateConfirmModal(false)}
+                onClick={() => {
+                  setRegenerateProfileError("")
+                  setShowRegenerateConfirmModal(false)
+                }}
+                disabled={isRegeneratingFromProfile}
               >
-                Not now
+                No
               </Button>
               <Button
                 className="h-12 min-h-[44px] flex-1"
-                onClick={() => {
-                  if (userProfile) {
-                    setMealPlanConfig({ dietType: userProfile.dietType as DietType, mealsPerDay: userProfile.mealsPerDay })
-                    generateMealPlan()
-                  }
-                  setShowRegenerateConfirmModal(false)
-                }}
+                onClick={handleRegenerateFromProfile}
+                disabled={isRegeneratingFromProfile}
               >
-                Regenerate plan
+                {isRegeneratingFromProfile ? "Regenerating..." : "Yes"}
               </Button>
             </div>
           </div>
