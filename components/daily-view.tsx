@@ -88,8 +88,6 @@ export function DailyView() {
   const [editCuisines, setEditCuisines] = useState<CuisinePreference[]>([])
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
-  const [isRegeneratingFromProfile, setIsRegeneratingFromProfile] = useState(false)
-  const [regenerateProfileError, setRegenerateProfileError] = useState("")
 
   const loadingMessages = [
     "Lining up meals for your week…",
@@ -195,32 +193,18 @@ export function DailyView() {
       macros,
       lastUpdatedAt: now,
     })
-    setRegenerateProfileError("")
     setShowEditProfileModal(false)
     setShowRegenerateConfirmModal(true)
   }
 
   const handleRegenerateFromProfile = async () => {
-    if (!userProfile || isRegeneratingFromProfile) return
-    setIsRegeneratingFromProfile(true)
-    setRegenerateProfileError("")
+    if (!userProfile || isGeneratingMealPlan) return
+    setShowRegenerateConfirmModal(false)
+    setCurrentStep(2)
     try {
       setMealPlanConfig({ dietType: userProfile.dietType as DietType, mealsPerDay: userProfile.mealsPerDay })
       await generateMealPlan()
-      const latest = useMealStore.getState()
-      if (latest.mealPlanValidation.isValid && latest.weekPlan.length > 0) {
-        setCurrentStep(2)
-        setShowRegenerateConfirmModal(false)
-        return
-      }
-      setRegenerateProfileError(
-        latest.mealPlanValidation.errors[0] ?? "Couldn’t regenerate a meal plan right now. Please try again."
-      )
-    } catch {
-      setRegenerateProfileError("Couldn’t regenerate a meal plan right now. Please try again.")
-    } finally {
-      setIsRegeneratingFromProfile(false)
-    }
+    } catch {}
   }
 
   const toggleMealExpanded = (mealId: string) => {
@@ -237,7 +221,7 @@ export function DailyView() {
 
   if (!userProfile) return null
 
-  if (isGeneratingMealPlan && !weekPlan.length) {
+  if (isGeneratingMealPlan) {
     return (
       <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background p-4 md:p-8">
         <div className="mx-auto flex max-w-lg flex-col items-center justify-center rounded-3xl border border-border bg-card p-6 text-center shadow-lg sm:p-10">
@@ -735,27 +719,21 @@ export function DailyView() {
             <h3 className="break-words text-lg font-semibold text-foreground">
               Your profile has been updated. Regenerate meal plan with new settings?
             </h3>
-            {regenerateProfileError && (
-              <p className="mt-3 text-sm text-destructive">{regenerateProfileError}</p>
-            )}
             <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row">
               <Button
                 variant="outline"
                 className="h-12 min-h-[44px] flex-1"
-                onClick={() => {
-                  setRegenerateProfileError("")
-                  setShowRegenerateConfirmModal(false)
-                }}
-                disabled={isRegeneratingFromProfile}
+                onClick={() => setShowRegenerateConfirmModal(false)}
+                disabled={isGeneratingMealPlan}
               >
                 No
               </Button>
               <Button
                 className="h-12 min-h-[44px] flex-1"
                 onClick={handleRegenerateFromProfile}
-                disabled={isRegeneratingFromProfile}
+                disabled={isGeneratingMealPlan}
               >
-                {isRegeneratingFromProfile ? "Regenerating..." : "Yes"}
+                {isGeneratingMealPlan ? "Regenerating..." : "Yes"}
               </Button>
             </div>
           </div>
