@@ -529,9 +529,27 @@ export function Onboarding() {
   const targetWeightStepValid =
     targetWeightSkipped ||
     (() => {
-      const n = parseFloat(targetWeightInput)
-      return Number.isFinite(n) && n > 0
+      const target = parseFloat(targetWeightInput)
+      if (!Number.isFinite(target) || target <= 0) return false
+      const current = parseFloat(weight)
+      if (!Number.isFinite(current) || current <= 0 || !selectedGoal) return true
+      if (selectedGoal === "lose-fat") return target < current
+      if (selectedGoal === "gain-muscle") return target > current
+      return true
     })()
+
+  const targetWeightGoalWarning = (() => {
+    const target = parseFloat(targetWeightInput)
+    const current = parseFloat(weight)
+    if (!Number.isFinite(target) || !Number.isFinite(current) || !selectedGoal) return null
+    if (selectedGoal === "lose-fat" && target >= current) {
+      return `Your target weight should be lower than your current weight (${current}${unit}) for a Lose Fat goal.`
+    }
+    if (selectedGoal === "gain-muscle" && target <= current) {
+      return "Your target weight should be higher than your current weight for a Gain Muscle goal."
+    }
+    return null
+  })()
 
   const chooseBudgetPreset = (presetId: "low" | "medium" | "high", presetItems: string[]) => {
     setSelectedBudgetPreset(presetId)
@@ -1057,6 +1075,9 @@ export function Onboarding() {
                   className="h-12 text-lg"
                 />
               </div>
+              {targetWeightGoalWarning && (
+                <p className="text-sm text-amber-600 dark:text-amber-500">{targetWeightGoalWarning}</p>
+              )}
 
               {selectedGoal === "gain-muscle" && (
                 <p className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
