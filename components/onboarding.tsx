@@ -19,7 +19,6 @@ import {
   type WeightLossPace,
 } from "@/lib/meal-store"
 import {
-  Scale,
   TrendingUp,
   Dumbbell,
   RefreshCw,
@@ -1081,7 +1080,7 @@ export function Onboarding() {
   }
 
   return (
-    <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "activity" || step === "goal" || step === "target-weight" || step === "cuisine" || step === "diet" || step === "ingredient-mode" || step === "ingredients" ? "bg-[#f5f1ea]" : "bg-background")} suppressHydrationWarning>
+    <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "quick-estimate" || step === "activity" || step === "goal" || step === "target-weight" || step === "cuisine" || step === "diet" || step === "ingredient-mode" || step === "ingredients" ? "bg-[#f5f1ea]" : "bg-background")} suppressHydrationWarning>
       <div className="page-column" suppressHydrationWarning>
         {step === "body" && (
           <OnboardingMainCard>
@@ -1240,97 +1239,116 @@ export function Onboarding() {
         )}
 
         {step === "quick-estimate" && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-xl">
-                <Scale className="h-5 w-5 text-primary" />
-                Quick body estimate
+          <OnboardingMainCard>
+            <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
+              <OnboardingStepChip>Step 1 of 8</OnboardingStepChip>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+                Use a quick estimate
               </CardTitle>
-              <CardDescription>
-                No InBody scan needed — just a few basics and we&apos;ll estimate the rest
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+                No InBody scan needed. Share a few basics and we&apos;ll estimate body fat and muscle mass so you can keep moving.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Sex</Label>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSex("male")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                      sex === "male" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    }`}
-                  >
-                    Male
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSex("female")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                      sex === "female" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    }`}
-                  >
-                    Female
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Measurement system</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setMeasurementSystem("metric")}
-                    className={optionButtonClass(unitSystem === "metric")}
-                  >
-                    Metric
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMeasurementSystem("imperial")}
-                    className={optionButtonClass(unitSystem === "imperial")}
-                  >
-                    Imperial
-                  </button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="quickWeight">Weight ({unit})</Label>
-                  <Input
-                    id="quickWeight"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder={unit === "kg" ? "e.g., 80" : "e.g., 175"}
-                    value={weight}
-                    onChange={(e) => handleNumericInput(e.target.value, setWeight)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="quickHeight">Height ({unit === "kg" ? "cm" : "in"})</Label>
-                  <Input
-                    id="quickHeight"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder={unit === "kg" ? "e.g., 175" : "e.g., 69"}
-                    value={quickHeight}
-                    onChange={(e) => handleNumericInput(e.target.value, setQuickHeight)}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="quickAge">Age</Label>
-                <Input
-                  id="quickAge"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="e.g., 30"
-                  value={quickAge}
-                  onChange={(e) => handleNumericInput(e.target.value, setQuickAge)}
+            <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
+              <div className={onboardingUi.sectionSurface}>
+                <OnboardingSectionHeadingRow
+                  title="Basic details"
+                  description="Use your best estimate here. You can replace it later with scan data."
                 />
+
+                <div className="mt-3.5 grid gap-4 border-t border-[#eadfce] pt-3">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2.5">
+                      <Label>Sex</Label>
+                      <OnboardingSegmentedGroup>
+                        <button
+                          type="button"
+                          onClick={() => setSex("male")}
+                          className={optionButtonClass(sex === "male")}
+                          aria-pressed={sex === "male"}
+                        >
+                          Male
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSex("female")}
+                          className={optionButtonClass(sex === "female")}
+                          aria-pressed={sex === "female"}
+                        >
+                          Female
+                        </button>
+                      </OnboardingSegmentedGroup>
+                    </div>
+                    <div className="space-y-2.5">
+                      <Label>Measurement system</Label>
+                      <OnboardingSegmentedGroup>
+                        <button
+                          type="button"
+                          onClick={() => setMeasurementSystem("metric")}
+                          className={optionButtonClass(unitSystem === "metric")}
+                          aria-pressed={unitSystem === "metric"}
+                        >
+                          Metric
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMeasurementSystem("imperial")}
+                          className={optionButtonClass(unitSystem === "imperial")}
+                          aria-pressed={unitSystem === "imperial"}
+                        >
+                          Imperial
+                        </button>
+                      </OnboardingSegmentedGroup>
+                      <OnboardingFieldNote>This switches both your estimate inputs and recipe measurements.</OnboardingFieldNote>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="quickWeight">Weight ({unit})</Label>
+                      <OnboardingBoundedInput
+                        id="quickWeight"
+                        type="text"
+                        inputMode="decimal"
+                        placeholder={unit === "kg" ? "e.g., 80" : "e.g., 175"}
+                        value={weight}
+                        onChange={(e) => handleNumericInput(e.target.value, setWeight)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="quickHeight">Height ({unit === "kg" ? "cm" : "in"})</Label>
+                      <OnboardingBoundedInput
+                        id="quickHeight"
+                        type="text"
+                        inputMode="decimal"
+                        placeholder={unit === "kg" ? "e.g., 175" : "e.g., 69"}
+                        value={quickHeight}
+                        onChange={(e) => handleNumericInput(e.target.value, setQuickHeight)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="quickAge">Age</Label>
+                    <OnboardingBoundedInput
+                      id="quickAge"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="e.g., 30"
+                      value={quickAge}
+                      onChange={(e) => handleNumericInput(e.target.value, setQuickAge)}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Body type</Label>
-                <div className="grid grid-cols-1 gap-2">
+
+              <div className={onboardingUi.sectionSurface}>
+                <OnboardingSectionHeadingRow
+                  title="Body type"
+                  description="Pick the closest match. It doesn&apos;t need to be perfect."
+                />
+
+                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-3">
                   {([
                     { id: "lean", label: "Lean", description: "Naturally slim, low body fat" },
                     { id: "average", label: "Average", description: "Typical build, some body fat" },
@@ -1341,31 +1359,56 @@ export function Onboarding() {
                       key={item.id}
                       type="button"
                       onClick={() => setQuickBodyType(item.id)}
-                      className={`rounded-lg border p-3 text-left ${quickBodyType === item.id ? "border-primary bg-primary/10" : "border-border"}`}
+                      aria-pressed={quickBodyType === item.id}
+                      className={dietOptionButtonClass(quickBodyType === item.id)}
                     >
-                      <div className="font-medium">{item.label}</div>
-                      <div className="text-xs text-muted-foreground">{item.description}</div>
+                      <div
+                        className={cn(
+                          "text-[15px] font-semibold leading-5 transition-colors",
+                          quickBodyType === item.id ? "text-[#243128]" : "text-[#28312b]"
+                        )}
+                      >
+                        {item.label}
+                      </div>
+                      <div
+                        className={cn(
+                          "mt-0.5 text-sm leading-5 transition-colors",
+                          quickBodyType === item.id ? "text-[#4f5e56]" : "text-[#5e665f]"
+                        )}
+                      >
+                        {item.description}
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="rounded-lg bg-secondary p-3 text-xs text-muted-foreground">
-                These are estimates — update anytime with real InBody data for better accuracy
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={() => setStep("body")}>
-                  Back
-                </Button>
-                <Button
-                  className="h-12 min-h-[44px] flex-1"
+
+              <OnboardingFieldNote>
+                These are just starting estimates. You can update everything later with real InBody data for better accuracy.
+              </OnboardingFieldNote>
+
+              <div className="space-y-2.5 pt-0.5">
+                <OnboardingSecondaryActionRow
+                  onClick={() => setStep("body")}
+                  iconPosition="start"
+                  className="justify-start"
+                >
+                  Back to body stats
+                </OnboardingSecondaryActionRow>
+                <OnboardingPrimaryCta
+                  className={cn(
+                    weight && quickHeight && quickAge && quickBodyType
+                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
+                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                  )}
                   onClick={applyQuickEstimate}
                   disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
                 >
                   Apply estimate &amp; continue
-                </Button>
+                </OnboardingPrimaryCta>
               </div>
             </CardContent>
-          </Card>
+          </OnboardingMainCard>
         )}
 
         {step === "activity" && (
