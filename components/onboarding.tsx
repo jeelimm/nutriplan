@@ -910,6 +910,86 @@ export function Onboarding() {
         : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
     )
 
+  const cuisineOptionButtonClass = (active: boolean) =>
+    cn(
+      "group flex w-full items-start justify-between gap-2.5 rounded-[20px] border px-4 py-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      active
+        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] hover:bg-[#f2f6ee]"
+        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_12px_22px_-26px_rgba(40,49,43,0.28)]"
+    )
+
+  const cuisineSelectionBadgeClass = (active: boolean) =>
+    cn(
+      "inline-flex shrink-0 items-center justify-center border transition-[background-color,border-color,color,box-shadow] duration-150",
+      active
+        ? "min-w-10 rounded-full border-[#5f7654] bg-[#5f7654] px-2.5 py-1 text-[11px] font-semibold tracking-[0.04em] text-[#fffaf4] shadow-[0_10px_20px_-18px_rgba(40,70,47,0.48)]"
+        : "h-8 w-8 rounded-full border-[#d9ccb9] bg-[#fcf6ee] text-[15px] font-semibold text-[#7a5b41]"
+    )
+
+  const dietOptionButtonClass = (active: boolean) =>
+    cn(
+      "group w-full rounded-[20px] border px-4 py-3.25 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      active
+        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] hover:bg-[#f2f6ee]"
+        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_12px_24px_-26px_rgba(40,49,43,0.3)]"
+    )
+
+  const ingredientPresetButtonClass = (active: boolean) =>
+    cn(
+      "group w-full rounded-[20px] border px-4 py-3.25 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      active
+        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] hover:bg-[#f2f6ee]"
+        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_12px_24px_-26px_rgba(40,49,43,0.3)]"
+    )
+
+  const ingredientCategoryTabClass = (active: boolean) =>
+    cn(
+      "min-h-11 rounded-[16px] border px-3.5 py-2 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea]",
+      active
+        ? "border-[#5f7654] bg-[#5f7654] text-[#fffaf4] shadow-[0_10px_18px_-16px_rgba(40,70,47,0.5)]"
+        : "border-[#d8ccb9] bg-[#fffdf9] text-[#5e665f] hover:border-[#c3b198] hover:bg-[#fffaf4]"
+    )
+
+  const ingredientCatalogButtonClass = (active: boolean) =>
+    cn(
+      "w-full rounded-[20px] border px-4 py-2.75 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      active
+        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_14px_24px_-24px_rgba(40,70,47,0.44)]"
+        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_6px_14px_-28px_rgba(40,49,43,0.2)] hover:border-[#c3b198] hover:bg-[#fffaf4]"
+    )
+
+  const ingredientRequirementPillClass = (met: boolean) =>
+    cn(
+      "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium",
+      met
+        ? "border-[#d8e4d1] bg-[#eef4e8] text-[#526847]"
+        : "border-[#ead2c1] bg-[#fdf1e8] text-[#8b5a47]"
+    )
+
+  const ingredientPresetStatusBadgeClass = (active: boolean) =>
+    cn(
+      "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.06em]",
+      active
+        ? "border-[#cfe0c9] bg-[#edf3e8] text-[#526847]"
+        : "border-[#d9ccb9] bg-[#f7efe5] text-[#7a5b41]"
+    )
+
+  const ingredientPriceBadgeClass = (cost: CostTier, selected: boolean) =>
+    cn(
+      "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.06em] transition-[border-color,background-color,color,box-shadow] duration-150",
+      cost === "$"
+        ? selected
+          ? "border-[#cad8c3] bg-[#eef4e8] text-[#526847]"
+          : "border-[#dbe6d5] bg-[#f4f8f1] text-[#617055]"
+        : cost === "$$"
+          ? selected
+            ? "border-[#ddd0bf] bg-[#f8efe4] text-[#7a5b41]"
+            : "border-[#e6dacb] bg-[#fbf4ec] text-[#816650]"
+          : selected
+            ? "border-[#decab8] bg-[#f5ebe1] text-[#8b5f45]"
+            : "border-[#eadfd2] bg-[#fbf6f0] text-[#8f7056]"
+    )
+
   const getBodyFieldError = (field: BodyField): string | null => {
     const rawValue =
       field === "weight" ? weight
@@ -1001,7 +1081,7 @@ export function Onboarding() {
   }
 
   return (
-    <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "activity" || step === "goal" || step === "target-weight" ? "bg-[#f5f1ea]" : "bg-background")} suppressHydrationWarning>
+    <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "activity" || step === "goal" || step === "target-weight" || step === "cuisine" || step === "diet" || step === "ingredient-mode" || step === "ingredients" ? "bg-[#f5f1ea]" : "bg-background")} suppressHydrationWarning>
       <div className="page-column" suppressHydrationWarning>
         {step === "body" && (
           <OnboardingMainCard>
@@ -1593,308 +1673,564 @@ export function Onboarding() {
         )}
 
         {step === "cuisine" && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="text-xl" suppressHydrationWarning>
+          <OnboardingMainCard>
+            <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
+              <OnboardingStepChip>Step 5 of 8</OnboardingStepChip>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
                 What kind of food do you usually eat?
               </CardTitle>
-              <CardDescription suppressHydrationWarning>
-                We&apos;ll suggest ingredients you can actually find and afford
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+                Pick one or two cuisines that feel closest to your real week. We&apos;ll lean toward foods you can actually find, afford, and want to keep eating.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-center text-xs text-muted-foreground">Pick one or two</p>
-              <div className="space-y-2">
-                {CUISINE_OPTIONS.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => toggleCuisine(c.id)}
-                    className={`min-h-[44px] w-full rounded-xl border-2 p-4 text-left transition-all ${
-                      selectedCuisines.includes(c.id) ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <div className="break-words font-semibold text-foreground">{c.title}</div>
-                    <div className="break-words text-sm text-muted-foreground">{c.hint}</div>
-                  </button>
-                ))}
+            <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
+              <div className={onboardingUi.sectionSurface}>
+                <OnboardingSectionHeadingRow
+                  title="Cuisine preferences"
+                  description="Choose one or two styles so the plan feels familiar from the start."
+                />
+
+                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-2.5">
+                  {CUISINE_OPTIONS.map((c) => {
+                    const isActive = selectedCuisines.includes(c.id)
+                    const selectedCuisineIndex = selectedCuisines.indexOf(c.id)
+
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => toggleCuisine(c.id)}
+                        aria-pressed={isActive}
+                        className={cuisineOptionButtonClass(isActive)}
+                      >
+                        <div className="min-w-0">
+                          <div
+                            className={cn(
+                              "break-words text-[15px] font-semibold leading-5 transition-colors",
+                              isActive ? "text-[#243128]" : "text-[#28312b]"
+                            )}
+                          >
+                            {c.title}
+                          </div>
+                          <div
+                            className={cn(
+                              "mt-0.5 break-words text-sm leading-5 transition-colors",
+                              isActive ? "text-[#4f5e56]" : "text-[#5e665f]"
+                            )}
+                          >
+                            {c.hint}
+                          </div>
+                        </div>
+                        <span className={cuisineSelectionBadgeClass(isActive)}>
+                          {isActive ? `${selectedCuisineIndex + 1}/2` : "+"}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
-                  <ChevronLeft className="mr-1 h-4 w-4" />
-                  Back
-                </Button>
-                <Button className="h-12 min-h-[44px] flex-1" onClick={moveToNextStep} disabled={selectedCuisines.length < 1}>
-                  Continue
-                </Button>
+
+              <OnboardingFieldNote>
+                {selectedCuisines.length === 0
+                  ? "Pick at least one. You can choose up to two cuisines."
+                  : selectedCuisines.length === 1
+                    ? "You can add one more cuisine if your meals usually mix styles."
+                    : "Two cuisines selected. We’ll balance your plan across both styles."}
+              </OnboardingFieldNote>
+
+              <div className="space-y-2.5 pt-0.5">
+                <OnboardingSecondaryActionRow
+                  onClick={moveToPreviousStep}
+                  iconPosition="start"
+                  className="justify-start"
+                >
+                  Back to target weight
+                </OnboardingSecondaryActionRow>
+                <OnboardingPrimaryCta
+                  className={cn(
+                    selectedCuisines.length >= 1
+                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
+                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                  )}
+                  onClick={moveToNextStep}
+                  disabled={selectedCuisines.length < 1}
+                >
+                  {selectedCuisines.length > 1 ? "Continue with these cuisines" : "Continue with this cuisine"}
+                </OnboardingPrimaryCta>
               </div>
             </CardContent>
-          </Card>
+          </OnboardingMainCard>
         )}
 
         {step === "diet" && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-xl" suppressHydrationWarning>
-                <Salad className="h-5 w-5 text-primary" />
+          <OnboardingMainCard>
+            <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
+              <OnboardingStepChip>Step 6 of 8</OnboardingStepChip>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
                 How do you like to eat?
               </CardTitle>
-              <CardDescription suppressHydrationWarning>
-                Keep it simple: tap a style and see a rough calorie and macro preview below
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+                Keep it simple: choose the style that sounds easiest to stick with, and we&apos;ll show a rough macro starting point below.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {dietTypes.map((diet) => (
-                <button
-                  key={diet.id}
-                  type="button"
-                  onClick={() => handleDietTypeSelect(diet.id)}
-                  className={`w-full rounded-xl border-2 p-4 text-left transition-all ${
-                    selectedDietType === diet.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div className="font-semibold text-foreground">{diet.label}</div>
-                  <div className="text-sm text-muted-foreground">{diet.description}</div>
-                </button>
-              ))}
+            <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
+              <div className={onboardingUi.sectionSurface}>
+                <OnboardingSectionHeadingRow
+                  title="Diet style"
+                  description="Pick the style that feels most realistic for your day-to-day meals."
+                />
+
+                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-3">
+                  {dietTypes.map((diet) => {
+                    const isActive = selectedDietType === diet.id
+
+                    return (
+                      <button
+                        key={diet.id}
+                        type="button"
+                        onClick={() => handleDietTypeSelect(diet.id)}
+                        aria-pressed={isActive}
+                        className={dietOptionButtonClass(isActive)}
+                      >
+                          <div
+                            className={cn(
+                              "text-[15px] font-semibold leading-5 transition-colors",
+                              isActive ? "text-[#243128]" : "text-[#28312b]"
+                            )}
+                          >
+                            {diet.label}
+                          </div>
+                          <div
+                            className={cn(
+                              "mt-0.5 text-sm leading-5 transition-colors",
+                              isActive ? "text-[#4f5e56]" : "text-[#5e665f]"
+                            )}
+                          >
+                            {diet.description}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <OnboardingFieldNote>
+                Choose the style that sounds easiest to repeat in real life. You can adjust it later if your plan feels too restrictive.
+              </OnboardingFieldNote>
+
               {macroPreview && (
-                <div className="rounded-xl bg-secondary p-4">
-                  <div className="text-sm font-medium text-foreground" suppressHydrationWarning>
-                    Rough preview
-                  </div>
-                  <div className="mt-2 grid grid-cols-4 gap-2 text-center text-xs">
-                    <div><div className="font-bold">{macroPreview.calories}</div><div className="text-muted-foreground">kcal</div></div>
-                    <div><div className="font-bold">{macroPreview.macros.protein}g</div><div className="text-muted-foreground">Protein</div></div>
-                    <div><div className="font-bold">{macroPreview.macros.carbs}g</div><div className="text-muted-foreground">Carbs</div></div>
-                    <div><div className="font-bold">{macroPreview.macros.fat}g</div><div className="text-muted-foreground">Fat</div></div>
+                <div className={onboardingUi.sectionSurface}>
+                  <OnboardingSectionHeadingRow
+                    title="Rough preview"
+                    description="A starting point based on your body stats, activity, goal, and diet style."
+                  />
+
+                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#eadfce] pt-3 sm:grid-cols-4">
+                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">kcal</div>
+                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b]">{macroPreview.calories}</div>
+                    </div>
+                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Protein</div>
+                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b]">{macroPreview.macros.protein}g</div>
+                    </div>
+                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Carbs</div>
+                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b]">{macroPreview.macros.carbs}g</div>
+                    </div>
+                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Fat</div>
+                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b]">{macroPreview.macros.fat}g</div>
+                    </div>
                   </div>
                 </div>
               )}
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
-                  Back
-                </Button>
-                <Button className="h-12 min-h-[44px] flex-1" onClick={moveToNextStep} disabled={!selectedDietType}>
-                  Continue
-                </Button>
+
+              <div className="space-y-2.5 pt-0.5">
+                <OnboardingSecondaryActionRow
+                  onClick={moveToPreviousStep}
+                  iconPosition="start"
+                  className="justify-start"
+                >
+                  Back to cuisines
+                </OnboardingSecondaryActionRow>
+                <OnboardingPrimaryCta
+                  className={cn(
+                    selectedDietType
+                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
+                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                  )}
+                  onClick={moveToNextStep}
+                  disabled={!selectedDietType}
+                >
+                  Continue with this style
+                </OnboardingPrimaryCta>
               </div>
             </CardContent>
-          </Card>
+          </OnboardingMainCard>
         )}
 
         {step === "ingredient-mode" && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="text-xl" suppressHydrationWarning>
+          <OnboardingMainCard>
+            <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
+              <OnboardingStepChip>Step 7 of 8</OnboardingStepChip>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
                 Build your food list
               </CardTitle>
-              <CardDescription suppressHydrationWarning>
-                Use a starter list by budget, or choose ingredients yourself—both are fine
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+                Use a starter list by budget, or choose ingredients yourself. Both paths work, so pick the one that feels easiest to start with.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-                <button
-                type="button"
-                onClick={() => setIngredientMode("recommend")}
-                className={`w-full rounded-xl border-2 p-4 text-left ${
-                  ingredientMode === "recommend" ? "border-primary bg-primary/10" : "border-border"
-                }`}
-              >
-                <div className="font-semibold" suppressHydrationWarning>
-                  Suggest a list for me
+            <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
+              <div className={onboardingUi.sectionSurface}>
+                <OnboardingSectionHeadingRow
+                  title="Ingredient setup"
+                  description="Choose how you want to build the ingredient list for your first plan."
+                />
+
+                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setIngredientMode("recommend")}
+                    aria-pressed={ingredientMode === "recommend"}
+                    className={dietOptionButtonClass(ingredientMode === "recommend")}
+                  >
+                    <div
+                      className={cn(
+                        "text-[15px] font-semibold leading-5 transition-colors",
+                        ingredientMode === "recommend" ? "text-[#243128]" : "text-[#28312b]"
+                      )}
+                      suppressHydrationWarning
+                    >
+                      Suggest a list for me
+                    </div>
+                    <div
+                      className={cn(
+                        "mt-0.5 text-sm leading-5 transition-colors",
+                        ingredientMode === "recommend" ? "text-[#4f5e56]" : "text-[#5e665f]"
+                      )}
+                      suppressHydrationWarning
+                    >
+                      Start from a budget-friendly, balanced, or wider-cost preset
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIngredientMode("custom")
+                      setSelectedBudgetPreset(null)
+                    }}
+                    aria-pressed={ingredientMode === "custom"}
+                    className={dietOptionButtonClass(ingredientMode === "custom")}
+                  >
+                    <div
+                      className={cn(
+                        "text-[15px] font-semibold leading-5 transition-colors",
+                        ingredientMode === "custom" ? "text-[#243128]" : "text-[#28312b]"
+                      )}
+                      suppressHydrationWarning
+                    >
+                      I&apos;ll pick my own
+                    </div>
+                    <div
+                      className={cn(
+                        "mt-0.5 text-sm leading-5 transition-colors",
+                        ingredientMode === "custom" ? "text-[#4f5e56]" : "text-[#5e665f]"
+                      )}
+                      suppressHydrationWarning
+                    >
+                      Browse by protein, carbs, fats, and vegetables
+                    </div>
+                  </button>
                 </div>
-                <div className="text-sm text-muted-foreground" suppressHydrationWarning>
-                  Start from a budget-friendly, balanced, or wider-cost preset
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIngredientMode("custom")
-                  setSelectedBudgetPreset(null)
-                }}
-                className={`w-full rounded-xl border-2 p-4 text-left ${
-                  ingredientMode === "custom" ? "border-primary bg-primary/10" : "border-border"
-                }`}
-              >
-                <div className="font-semibold" suppressHydrationWarning>
-                  I&apos;ll pick my own
-                </div>
-                <div className="text-sm text-muted-foreground" suppressHydrationWarning>
-                  Browse by protein, carbs, fats, and vegetables
-                </div>
-              </button>
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={moveToPreviousStep}>
-                  Back
-                </Button>
-                <Button className="h-12 min-h-[44px] flex-1" onClick={moveToNextStep} disabled={!ingredientMode}>
-                  Continue
-                </Button>
+              </div>
+
+              <OnboardingFieldNote>
+                {ingredientMode === "recommend"
+                  ? "Good for a faster start. You’ll choose a preset on the next step."
+                  : ingredientMode === "custom"
+                    ? "Good if you already know what you like to buy and cook."
+                    : "You can start simple with a preset or build the list yourself. Both lead to the same plan generator."}
+              </OnboardingFieldNote>
+
+              <div className="space-y-2.5 pt-0.5">
+                <OnboardingSecondaryActionRow
+                  onClick={moveToPreviousStep}
+                  iconPosition="start"
+                  className="justify-start"
+                >
+                  Back to diet style
+                </OnboardingSecondaryActionRow>
+                <OnboardingPrimaryCta
+                  className={cn(
+                    ingredientMode
+                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
+                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                  )}
+                  onClick={moveToNextStep}
+                  disabled={!ingredientMode}
+                >
+                  {ingredientMode === "recommend"
+                    ? "Continue with a starter list"
+                    : ingredientMode === "custom"
+                      ? "Continue with custom ingredients"
+                      : "Continue with this setup"}
+                </OnboardingPrimaryCta>
               </div>
             </CardContent>
-          </Card>
+          </OnboardingMainCard>
         )}
 
         {step === "ingredients" && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
-              <button
-                type="button"
-                onClick={moveToPreviousStep}
-                className="mb-1 inline-flex items-center gap-1 self-start text-sm text-muted-foreground hover:text-foreground"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Back
-              </button>
-              <CardTitle className="text-xl" suppressHydrationWarning>
+          <OnboardingMainCard>
+            <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
+              <OnboardingStepChip>Step 8 of 8</OnboardingStepChip>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
                 Choose ingredients
               </CardTitle>
-              <CardDescription suppressHydrationWarning>
-                For a workable plan: at least 2 proteins, 1 carb, and 1 fat (vegetables are a nice add-on)
+              <CardDescription className="mt-1.5 max-w-xl pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+                Build a list that feels realistic to shop for and repeat. For a workable plan, aim for at least 2 proteins, 1 carb, and 1 fat. Vegetables are a nice add-on.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 pb-24">
+            <CardContent className="space-y-4.5 px-5 pb-24 sm:px-7 sm:pb-8">
+              <OnboardingSecondaryActionRow
+                onClick={moveToPreviousStep}
+                iconPosition="start"
+                className="justify-start"
+              >
+                Back to ingredient setup
+              </OnboardingSecondaryActionRow>
+
               {ingredientMode === "recommend" && (
-                <div className="max-h-[40vh] space-y-2 overflow-y-auto pr-1 sm:max-h-[44vh] sm:space-y-3">
-                  {budgetPresets.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => chooseBudgetPreset(preset.id, preset.items)}
-                      className={`w-full rounded-xl border p-3 text-left transition-all ${
-                        selectedBudgetPreset === preset.id
-                          ? "border-green-600 bg-green-50 dark:bg-green-950/30"
-                          : "border-border hover:border-primary"
-                      }`}
-                    >
-                      <div className="text-sm font-semibold" suppressHydrationWarning>{preset.label}</div>
-                      <div className="text-xs text-muted-foreground" suppressHydrationWarning>{preset.weeklyCost}</div>
-                      <div className="mt-2 text-xs text-muted-foreground" suppressHydrationWarning>{preset.items.join(", ")}</div>
-                    </button>
-                  ))}
+                <div className={onboardingUi.sectionSurface}>
+                  <OnboardingSectionHeadingRow
+                    title="Starter presets"
+                    description="Choose the budget range that feels most realistic for your week."
+                  />
+
+                  <div className="mt-3.5 max-h-[40vh] space-y-1.5 overflow-y-auto border-t border-[#eadfce] pt-3 pr-1 sm:max-h-[44vh]">
+                    {budgetPresets.map((preset) => {
+                      const isActive = selectedBudgetPreset === preset.id
+
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => chooseBudgetPreset(preset.id, preset.items)}
+                          aria-pressed={isActive}
+                          className={ingredientPresetButtonClass(isActive)}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div
+                                className={cn(
+                                  "break-words text-[15px] font-semibold leading-5 transition-colors",
+                                  isActive ? "text-[#243128]" : "text-[#28312b]"
+                                )}
+                                suppressHydrationWarning
+                              >
+                                {preset.label}
+                              </div>
+                              <div
+                                className={cn(
+                                  "mt-0.5 text-sm leading-5 transition-colors",
+                                  isActive ? "text-[#4f5e56]" : "text-[#5e665f]"
+                                )}
+                                suppressHydrationWarning
+                              >
+                                {preset.weeklyCost}
+                              </div>
+                            </div>
+                            <span className={ingredientPresetStatusBadgeClass(isActive)}>{isActive ? "Selected" : "Preset"}</span>
+                          </div>
+                          <div className="mt-1.5 text-xs leading-5 text-[#7a8079]" suppressHydrationWarning>
+                            {preset.items.join(", ")}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 
               {ingredientMode === "custom" && (
                 <>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search ingredients..."
-                      className="pl-9"
+                  <div className={onboardingUi.sectionSurface}>
+                    <OnboardingSectionHeadingRow
+                      title="Find ingredients"
+                      description="Search for something specific first, or browse by category below."
                     />
-                  </div>
-                  {search.trim() && (
-                    <div className="space-y-2 rounded-xl border border-border p-2">
-                      {ingredientCatalog
-                        .filter((item) => item.name.toLowerCase().includes(search.toLowerCase()))
-                        .slice(0, 6)
-                        .map((item) => (
-                          <button
-                            key={item.name}
+
+                    <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a8079]" />
+                        <OnboardingBoundedInput
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          placeholder="Search ingredients..."
+                          className="pl-10"
+                        />
+                      </div>
+
+                      {search.trim() && (
+                        <div className="space-y-2 rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] p-2.5 shadow-[0_8px_18px_-28px_rgba(40,49,43,0.2)]">
+                          {ingredientCatalog
+                            .filter((item) => item.name.toLowerCase().includes(search.toLowerCase()))
+                            .slice(0, 6)
+                            .map((item) => (
+                              <button
+                                key={item.name}
+                                type="button"
+                                onClick={() => addIngredientFromSearch(item.name)}
+                                className="flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left text-sm text-[#28312b] transition-colors hover:bg-[#f7efe5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
+                              >
+                                <span className="min-w-0 break-words">{item.name}</span>
+                                <span className="shrink-0 text-[11px] font-medium text-[#7a8079]">Tap to add</span>
+                              </button>
+                            ))}
+                          <Button
                             type="button"
-                            onClick={() => addIngredientFromSearch(item.name)}
-                            className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-secondary"
+                            variant="outline"
+                            className="min-h-11 w-full justify-start rounded-[18px] border-[#d8ccb9] bg-[#fff7ee] px-3.5 py-2.5 text-sm font-medium text-[#5e665f] hover:bg-[#f8efe4] hover:text-[#28312b]"
+                            onClick={fetchIngredientViaClaude}
+                            disabled={fetchingIngredient}
+                            >
+                            <Search className="mr-2 h-4 w-4 shrink-0 text-[#7a5b41]" />
+                            {fetchingIngredient ? "Looking that up…" : "Can’t find it? Look up with AI"}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={onboardingUi.sectionSurface}>
+                    <OnboardingSectionHeadingRow
+                      title="Browse by category"
+                      description="Tap ingredients to add or remove them from your list."
+                    />
+
+                    <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] pt-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        {categoryTabs.map((tab) => (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setActiveCategory(tab.id)}
+                            aria-pressed={activeCategory === tab.id}
+                            className={ingredientCategoryTabClass(activeCategory === tab.id)}
                           >
-                            {item.name}
+                            {tab.label}
                           </button>
                         ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-auto min-h-11 w-full whitespace-normal break-words py-3 leading-snug"
-                        onClick={fetchIngredientViaClaude}
-                        disabled={fetchingIngredient}
-                        suppressHydrationWarning
-                      >
-                        {fetchingIngredient ? "Looking that up…" : "Can’t find it? Look up with AI"}
-                      </Button>
+                      </div>
+
+                      <div className="max-h-[40vh] space-y-1.5 overflow-y-auto pr-1 sm:max-h-[44vh]">
+                        {ingredientCatalog
+                          .filter((item) => item.category === activeCategory)
+                          .map((item) => {
+                            const selected = selectedIngredients.includes(item.name)
+
+                            return (
+                              <button
+                                key={item.name}
+                                type="button"
+                                onClick={() => toggleIngredient(item.name)}
+                                aria-pressed={selected}
+                                className={ingredientCatalogButtonClass(selected)}
+                              >
+                                <div className="flex min-w-0 items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <div
+                                      className={cn(
+                                        "break-words text-[15px] font-semibold leading-5 transition-colors",
+                                        selected ? "text-[#243128]" : "text-[#28312b]"
+                                      )}
+                                    >
+                                      {item.name}
+                                    </div>
+                                    <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-[#7a8079]">
+                                      <span>{item.calories} kcal</span>
+                                      <span>P {item.protein}</span>
+                                      <span>C {item.carbs}</span>
+                                      <span>F {item.fat}</span>
+                                      <span>per 100g</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex shrink-0 flex-col items-end gap-1">
+                                    <span className={ingredientPriceBadgeClass(item.cost, selected)}>{item.cost}</span>
+                                    {selected ? <span className="text-[11px] font-medium text-[#617055]">Added</span> : null}
+                                  </div>
+                                </div>
+                              </button>
+                            )
+                          })}
+                      </div>
                     </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-2">
-                    {categoryTabs.map((tab) => (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setActiveCategory(tab.id)}
-                        className={`min-h-11 rounded-lg px-3 py-2 text-sm ${
-                          activeCategory === tab.id ? "bg-primary text-primary-foreground" : "bg-secondary"
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="max-h-[40vh] space-y-2 overflow-y-auto pr-1 sm:max-h-[44vh]">
-                    {ingredientCatalog
-                      .filter((item) => item.category === activeCategory)
-                      .map((item) => {
-                        const selected = selectedIngredients.includes(item.name)
-                        return (
-                          <button
-                            key={item.name}
-                            type="button"
-                            onClick={() => toggleIngredient(item.name)}
-                            className={`min-h-[44px] w-full rounded-xl border p-3 text-left ${
-                              selected ? "border-primary bg-primary/10" : "border-border"
-                            }`}
-                          >
-                            <div className="flex min-w-0 items-start justify-between gap-2">
-                              <div className="min-w-0 break-words font-medium">{item.name}</div>
-                              <span className="shrink-0 rounded-md bg-secondary px-2 py-1 text-xs">{item.cost}</span>
-                            </div>
-                            <div className="mt-1 break-words text-xs text-muted-foreground">
-                              {item.calories} kcal | P {item.protein} / C {item.carbs} / F {item.fat} per 100g
-                            </div>
-                          </button>
-                        )
-                      })}
                   </div>
                 </>
               )}
 
-              <div className="rounded-xl bg-secondary p-3 text-sm">
-                <div className="font-medium" suppressHydrationWarning>
-                  Typical cost mix: {sustainabilityLabel}
-                </div>
-                <div className="text-muted-foreground" suppressHydrationWarning>
-                  So far: Protein {ingredientCounts.protein}, Carbs {ingredientCounts.carbs}, Fats {ingredientCounts.fats}
+              <div className={onboardingUi.sectionSurface}>
+                <OnboardingSectionHeadingRow
+                  title="Selection snapshot"
+                  description="A quick check to keep the first meal plan practical."
+                />
+
+                <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Cost mix</div>
+                      <div className="mt-1 text-sm font-semibold leading-5 text-[#28312b]" suppressHydrationWarning>
+                        {sustainabilityLabel}
+                      </div>
+                    </div>
+                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Selected</div>
+                      <div className="mt-1 text-sm font-semibold leading-5 text-[#28312b]" suppressHydrationWarning>
+                        {selectedIngredients.length} ingredients
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className={ingredientRequirementPillClass(ingredientCounts.protein >= 2)}>
+                      Proteins: {ingredientCounts.protein} {ingredientCounts.protein >= 2 ? "OK" : "Need 2"}
+                    </span>
+                    <span className={ingredientRequirementPillClass(ingredientCounts.carbs >= 1)}>
+                      Carbs: {ingredientCounts.carbs} {ingredientCounts.carbs >= 1 ? "OK" : "Need 1"}
+                    </span>
+                    <span className={ingredientRequirementPillClass(ingredientCounts.fats >= 1)}>
+                      Fats: {ingredientCounts.fats} {ingredientCounts.fats >= 1 ? "OK" : "Need 1"}
+                    </span>
+                  </div>
+
+                  <OnboardingFieldNote>
+                    So far: Protein {ingredientCounts.protein}, Carbs {ingredientCounts.carbs}, Fats {ingredientCounts.fats}
+                  </OnboardingFieldNote>
                 </div>
               </div>
-              <div className="rounded-xl border border-border p-3 text-sm">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <span className={ingredientCounts.protein >= 2 ? "text-green-600 dark:text-green-500" : "text-amber-600 dark:text-amber-500"}>
-                    Proteins: {ingredientCounts.protein} {ingredientCounts.protein >= 2 ? "✓" : "⚠️"}
-                  </span>
-                  <span className={ingredientCounts.carbs >= 1 ? "text-green-600 dark:text-green-500" : "text-amber-600 dark:text-amber-500"}>
-                    Carbs: {ingredientCounts.carbs} {ingredientCounts.carbs >= 1 ? "✓" : "⚠️"}
-                  </span>
-                  <span className={ingredientCounts.fats >= 1 ? "text-green-600 dark:text-green-500" : "text-amber-600 dark:text-amber-500"}>
-                    Fats: {ingredientCounts.fats} {ingredientCounts.fats >= 1 ? "✓" : "⚠️"}
-                  </span>
-                </div>
-              </div>
+
               {!isIngredientSelectionValid && (
-                <p className="text-sm text-amber-600 dark:text-amber-500">{ingredientMinimumMessage}</p>
+                <OnboardingFieldNote error>{ingredientMinimumMessage}</OnboardingFieldNote>
               )}
 
-              <div className="sticky bottom-0 z-10 -mx-6 border-t bg-card px-6 pt-3">
-                <Button
-                  className="h-auto min-h-[44px] w-full whitespace-normal break-words py-3 leading-snug"
+              <div className="sticky bottom-0 z-10 -mx-5 border-t border-[#eadfce] bg-[#fffaf4]/95 px-5 pt-3 backdrop-blur sm:-mx-7 sm:px-7">
+                <OnboardingPrimaryCta
+                  className={cn(
+                    isIngredientSelectionValid
+                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
+                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                  )}
                   onClick={handleComplete}
                   disabled={!isIngredientSelectionValid}
                   suppressHydrationWarning
                 >
                   Create my 7-day plan ({selectedIngredients.length} ingredients)
-                </Button>
+                </OnboardingPrimaryCta>
               </div>
             </CardContent>
-          </Card>
+          </OnboardingMainCard>
         )}
 
         <OnboardingProgressIndicator activeStep={step} />
