@@ -20,7 +20,6 @@ import {
 } from "@/lib/meal-store"
 import {
   Scale,
-  Target,
   TrendingUp,
   Dumbbell,
   RefreshCw,
@@ -329,18 +328,33 @@ function OnboardingBoundedInput({
 function OnboardingSecondaryActionRow({
   children,
   onClick,
+  className,
+  icon,
+  iconPosition = "end",
 }: {
   children: ReactNode
   onClick: () => void
+  className?: string
+  icon?: ReactNode
+  iconPosition?: "start" | "end"
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={onboardingUi.secondaryActionRow}
+      className={cn(onboardingUi.secondaryActionRow, className)}
     >
-      <span className="pr-4 leading-6">{children}</span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-[#7a5b41]" />
+      {iconPosition === "start" ? (
+        <>
+          {icon ?? <ChevronLeft className="h-4 w-4 shrink-0 text-[#7a5b41]" />}
+          <span className="pl-1 leading-6">{children}</span>
+        </>
+      ) : (
+        <>
+          <span className="pr-4 leading-6">{children}</span>
+          {icon ?? <ChevronRight className="h-4 w-4 shrink-0 text-[#7a5b41]" />}
+        </>
+      )}
     </button>
   )
 }
@@ -623,7 +637,7 @@ export function Onboarding() {
       selectedDietType,
       sex,
       twArg,
-      selectedGoal === "gain-muscle" ? null : weightLossPace
+      selectedGoal === "lose-fat" ? weightLossPace : null
     )
   }, [
     weight,
@@ -702,7 +716,7 @@ export function Onboarding() {
       if (!Number.isFinite(target) || target <= 0) return false
       const current = parseFloat(weight)
       if (!Number.isFinite(current) || current <= 0 || !selectedGoal) return true
-      if (selectedGoal === "lose-fat") return target < current
+      if (selectedGoal === "lose-fat" || selectedGoal === "recomposition") return target < current
       if (selectedGoal === "gain-muscle") return target > current
       return true
     })()
@@ -716,6 +730,9 @@ export function Onboarding() {
     }
     if (selectedGoal === "gain-muscle" && target <= current) {
       return "Your target weight should be higher than your current weight for a Gain Muscle goal."
+    }
+    if (selectedGoal === "recomposition" && target >= current) {
+      return "For recomposition, use a lower scale target or skip this step and focus on body composition instead."
     }
     return null
   })()
@@ -731,6 +748,37 @@ export function Onboarding() {
     }
     setSearch("")
   }
+
+  const isLoseFatGoal = selectedGoal === "lose-fat"
+  const isGainMuscleGoal = selectedGoal === "gain-muscle"
+  const isRecompositionGoal = selectedGoal === "recomposition"
+
+  const stepFourSupportingCopy =
+    isLoseFatGoal
+      ? "If you want, add a goal weight and choose a pace. We’ll use it to estimate a rough timeline, or you can skip this and focus on habits first."
+      : isGainMuscleGoal
+        ? "If you have a goal weight in mind, add it here as a reference point. You can also skip this and focus on steady progress first."
+        : isRecompositionGoal
+          ? "If you want a loose scale reference, add it here. We’ll use a gentle recomposition approach, or you can skip this and focus on consistency first."
+          : "Add a target if you want a reference point for your plan, or skip this and keep things simple."
+
+  const stepFourTargetDescription =
+    isLoseFatGoal
+      ? "Add a number if you want a rough timeline. If not, use the skip option below and focus on the routine."
+      : isGainMuscleGoal
+        ? "Add a number if you have a goal in mind. If not, use the skip option below and keep the focus on steady progress."
+        : isRecompositionGoal
+          ? "Add a number if you want a loose scale reference. If not, use the skip option below and focus on consistency."
+          : "Add a target if you want one, or use the skip option below."
+
+  const stepFourTargetHelper =
+    isLoseFatGoal
+      ? "Use the skip option below if you’d rather not set a scale target yet."
+      : isGainMuscleGoal
+        ? "Use the skip option below if you’d rather focus on consistent training and meals first."
+        : isRecompositionGoal
+          ? "Use the skip option below if you’d rather focus on body composition, not scale changes."
+          : "Use the skip option below if you’d rather keep this flexible."
 
   const fetchIngredientViaClaude = async () => {
     const query = search.trim()
@@ -789,7 +837,7 @@ export function Onboarding() {
       selectedDietType,
       sex,
       targetKg != null && Number.isFinite(targetKg) ? targetKg : null,
-      selectedGoal === "gain-muscle" ? null : weightLossPace
+      selectedGoal === "lose-fat" ? weightLossPace : null
     )
 
     const now = new Date().toISOString()
@@ -810,7 +858,7 @@ export function Onboarding() {
       ...(targetWeightSkipped || !targetWeightInput.trim()
         ? {}
         : { targetWeight: parseFloat(targetWeightInput) }),
-      ...(selectedGoal !== "gain-muscle" ? { weightLossPace } : {}),
+      ...(selectedGoal === "lose-fat" ? { weightLossPace } : {}),
       cuisinePreference: selectedCuisines,
       createdAt: now,
       lastUpdatedAt: now,
@@ -836,6 +884,30 @@ export function Onboarding() {
       active
         ? "border-[#5f7654] bg-[#edf3e8] shadow-[0_14px_28px_-24px_rgba(40,70,47,0.42)]"
         : "border-[#d8ccb9] bg-[#fffdf9] hover:border-[#bfae95] hover:bg-white"
+    )
+
+  const goalOptionButtonClass = (active: boolean) =>
+    cn(
+      "group flex w-full items-start gap-4 rounded-[20px] border px-4 py-3.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      active
+        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_30px_-24px_rgba(40,70,47,0.48)] hover:border-[#526847] hover:bg-[#f2f6ee]"
+        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
+    )
+
+  const goalIconTileClass = (active: boolean) =>
+    cn(
+      "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition-[background-color,border-color,color,box-shadow] duration-150",
+      active
+        ? "border-[#526847] bg-[#5f7654] text-[#fffaf4] shadow-[0_12px_20px_-18px_rgba(40,70,47,0.48)]"
+        : "border-[#ddd1c1] bg-[#f7efe5] text-[#7a5b41] group-hover:border-[#cfbfaa] group-hover:bg-[#fbf3e8]"
+    )
+
+  const paceOptionButtonClass = (active: boolean) =>
+    cn(
+      "group w-full rounded-[20px] border px-4 py-3.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      active
+        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_30px_-24px_rgba(40,70,47,0.48)] hover:border-[#526847] hover:bg-[#f2f6ee]"
+        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
     )
 
   const getBodyFieldError = (field: BodyField): string | null => {
@@ -929,7 +1001,7 @@ export function Onboarding() {
   }
 
   return (
-    <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "activity" ? "bg-[#f5f1ea]" : "bg-background")} suppressHydrationWarning>
+    <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "activity" || step === "goal" || step === "target-weight" ? "bg-[#f5f1ea]" : "bg-background")} suppressHydrationWarning>
       <div className="page-column" suppressHydrationWarning>
         {step === "body" && (
           <OnboardingMainCard>
@@ -1296,120 +1368,173 @@ export function Onboarding() {
         )}
 
         {step === "goal" && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-xl" suppressHydrationWarning>
-                <Target className="h-5 w-5 text-primary" />
+          <OnboardingMainCard>
+            <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
+              <OnboardingStepChip>Step 3 of 8</OnboardingStepChip>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
                 What are you aiming for?
               </CardTitle>
-              <CardDescription suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
                 No wrong answer—this just nudges calories and macros in the right direction
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {goals.map((goal) => (
-                <button
-                  key={goal.id}
-                  onClick={() => setSelectedGoal(goal.id)}
-                  className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
-                    selectedGoal === goal.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-lg ${
-                      selectedGoal === goal.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                    }`}
-                  >
-                    {goal.icon}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-foreground">{goal.label}</div>
-                    <div className="text-sm text-muted-foreground">{goal.description}</div>
-                  </div>
-                </button>
-              ))}
+            <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
+              <div className={onboardingUi.sectionSurface}>
+                <OnboardingSectionHeadingRow
+                  title="Your goal"
+                  description="Choose the direction you want this plan to support first."
+                />
 
-              <div className="flex flex-col gap-3 pt-4 sm:flex-row">
-                <Button
-                  variant="outline"
-                  className="h-12 min-h-[44px] flex-1"
+                <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
+                  {goals.map((goal) => {
+                    const isActive = selectedGoal === goal.id
+
+                    return (
+                      <button
+                        key={goal.id}
+                        type="button"
+                        onClick={() => setSelectedGoal(goal.id)}
+                        aria-pressed={isActive}
+                        className={goalOptionButtonClass(isActive)}
+                      >
+                        <div className={goalIconTileClass(isActive)}>{goal.icon}</div>
+                        <div className="min-w-0">
+                          <div
+                            className={cn(
+                              "text-[15px] font-semibold transition-colors",
+                              isActive ? "text-[#243128]" : "text-[#28312b]"
+                            )}
+                          >
+                            {goal.label}
+                          </div>
+                          <div
+                            className={cn(
+                              "mt-1 text-sm leading-5 transition-colors",
+                              isActive ? "text-[#4f5e56]" : "text-[#5e665f]"
+                            )}
+                          >
+                            {goal.description}
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <OnboardingFieldNote>
+                You can fine-tune your target weight and pace on the next step.
+              </OnboardingFieldNote>
+
+              <div className="space-y-2.5 pt-0.5">
+                <OnboardingSecondaryActionRow
                   onClick={moveToPreviousStep}
+                  iconPosition="start"
+                  className="justify-start"
                 >
-                  Back
-                </Button>
-                <Button
-                  className="h-12 min-h-[44px] flex-1 text-lg font-semibold"
+                  Back to activity
+                </OnboardingSecondaryActionRow>
+                <OnboardingPrimaryCta
+                  className={cn(
+                    selectedGoal
+                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
+                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                  )}
                   onClick={moveToNextStep}
                   disabled={!selectedGoal}
                 >
-                  Continue
-                </Button>
+                  Continue with this goal
+                </OnboardingPrimaryCta>
               </div>
             </CardContent>
-          </Card>
+          </OnboardingMainCard>
         )}
 
         {step === "target-weight" && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
-              <CardTitle className="text-xl" suppressHydrationWarning>
+          <OnboardingMainCard>
+            <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
+              <OnboardingStepChip>Step 4 of 8</OnboardingStepChip>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
                 Set your target weight (optional)
               </CardTitle>
-              <CardDescription suppressHydrationWarning>
-                We&apos;ll estimate how long your plan will take to get you there
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+                {stepFourSupportingCopy}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="target-weight">Target weight ({unit})</Label>
-                <Input
-                  id="target-weight"
-                  inputMode="decimal"
-                  placeholder={unit === "kg" ? "e.g. 72" : "e.g. 160"}
-                  value={targetWeightInput}
-                  onChange={(e) => {
-                    setTargetWeightSkipped(false)
-                    handleNumericInput(e.target.value, setTargetWeightInput)
-                  }}
-                  className="h-12 text-lg"
+            <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
+              <div className={onboardingUi.sectionSurface}>
+                <OnboardingSectionHeadingRow
+                  title="Target weight"
+                  description={stepFourTargetDescription}
                 />
+
+                <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] pt-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="target-weight">Target weight ({unit})</Label>
+                    <OnboardingBoundedInput
+                      id="target-weight"
+                      inputMode="decimal"
+                      placeholder={unit === "kg" ? "e.g. 72" : "e.g. 160"}
+                      value={targetWeightInput}
+                      onChange={(e) => {
+                        setTargetWeightSkipped(false)
+                        handleNumericInput(e.target.value, setTargetWeightInput)
+                      }}
+                    />
+                    <OnboardingFieldNote error={Boolean(targetWeightGoalWarning)}>
+                      {targetWeightGoalWarning ?? stepFourTargetHelper}
+                    </OnboardingFieldNote>
+                  </div>
+                </div>
               </div>
-              {targetWeightGoalWarning && (
-                <p className="text-sm text-amber-600 dark:text-amber-500">{targetWeightGoalWarning}</p>
+
+              {isGainMuscleGoal && (
+                <div className={onboardingUi.sectionSurface}>
+                  <OnboardingSectionHeadingRow
+                    title="Muscle gain approach"
+                    description="We&apos;ll use a steady calorie surplus of about 300 kcal to support muscle growth."
+                  />
+                </div>
               )}
 
-              {selectedGoal === "gain-muscle" && (
-                <p className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
-                  We&apos;ll add ~300 kcal to support muscle growth
-                </p>
-              )}
+              {isLoseFatGoal && (
+                <div className={onboardingUi.sectionSurface}>
+                  <OnboardingSectionHeadingRow
+                    title="Weight loss pace"
+                    description="Pick the pace that feels realistic for your week."
+                  />
 
-              {(selectedGoal === "lose-fat" || selectedGoal === "recomposition") && (
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-foreground">Weight loss pace</p>
-                  <div className="space-y-2">
+                  <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
                     {weightLossPaceOptions.map((opt) => {
                       const weekly =
                         unit === "kg"
                           ? `~${opt.kgPerWeek}kg/week`
                           : `~${(opt.kgPerWeek * 2.20462).toFixed(1)}lb/week`
+
                       return (
                         <button
                           key={opt.id}
                           type="button"
                           onClick={() => setWeightLossPace(opt.id)}
-                          className={`min-h-[44px] w-full rounded-xl border-2 p-3 text-left text-sm transition-all ${
-                            weightLossPace === opt.id
-                              ? "border-primary bg-primary/10"
-                              : "border-border hover:border-primary/50"
-                          }`}
+                          aria-pressed={weightLossPace === opt.id}
+                          className={paceOptionButtonClass(weightLossPace === opt.id)}
                         >
-                          <div className="break-words font-semibold text-foreground">
+                          <div
+                            className={cn(
+                              "break-words text-[15px] font-semibold transition-colors",
+                              weightLossPace === opt.id ? "text-[#243128]" : "text-[#28312b]"
+                            )}
+                          >
                             {opt.emoji} {opt.label} — {weekly} (deficit ~{opt.deficitKcal} kcal/day)
                           </div>
-                          <div className="mt-1 break-words text-muted-foreground">{opt.hint}</div>
+                          <div
+                            className={cn(
+                              "mt-1 break-words text-sm leading-5 transition-colors",
+                              weightLossPace === opt.id ? "text-[#4f5e56]" : "text-[#5e665f]"
+                            )}
+                          >
+                            {opt.hint}
+                          </div>
                         </button>
                       )
                     })}
@@ -1417,35 +1542,54 @@ export function Onboarding() {
                 </div>
               )}
 
+              {isRecompositionGoal && (
+                <div className={onboardingUi.sectionSurface}>
+                  <OnboardingSectionHeadingRow
+                    title="Recomposition approach"
+                    description="We&apos;ll use a gentle calorie deficit and adapt as your body changes over time."
+                  />
+                </div>
+              )}
+
               {macroPreview?.calorieFloorApplied &&
-                (selectedGoal === "lose-fat" || selectedGoal === "recomposition") && (
-                  <p className="text-sm text-amber-600 dark:text-amber-500">
+                (isLoseFatGoal || isRecompositionGoal) && (
+                  <OnboardingFieldNote error>
                     We&apos;ve adjusted your target to stay above the minimum safe intake.
-                  </p>
+                  </OnboardingFieldNote>
                 )}
 
-              <div className="flex flex-col gap-3 pt-2">
-                <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={moveToPreviousStep}>
-                  <ChevronLeft className="mr-1 h-4 w-4" />
-                  Back
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-12 min-h-[44px] w-full whitespace-normal break-words py-3 leading-snug"
+              <div className="space-y-2.5 pt-0.5">
+                <OnboardingSecondaryActionRow
+                  onClick={moveToPreviousStep}
+                  iconPosition="start"
+                  className="justify-start"
+                >
+                  Back to goal
+                </OnboardingSecondaryActionRow>
+                <OnboardingSecondaryActionRow
                   onClick={() => {
                     setTargetWeightSkipped(true)
                     setTargetWeightInput("")
                     moveToNextStep()
                   }}
+                  className="whitespace-normal break-words py-3 leading-snug"
                 >
                   I&apos;ll focus on habits, not numbers
-                </Button>
-                <Button className="h-12 min-h-[44px] w-full" onClick={moveToNextStep} disabled={!targetWeightStepValid}>
-                  Continue
-                </Button>
+                </OnboardingSecondaryActionRow>
+                <OnboardingPrimaryCta
+                  className={cn(
+                    targetWeightStepValid
+                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
+                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                  )}
+                  onClick={moveToNextStep}
+                  disabled={!targetWeightStepValid}
+                >
+                  Continue with this target
+                </OnboardingPrimaryCta>
               </div>
             </CardContent>
-          </Card>
+          </OnboardingMainCard>
         )}
 
         {step === "cuisine" && (

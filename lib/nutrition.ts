@@ -26,6 +26,9 @@ const WEIGHT_LOSS_PACE_DISPLAY: Record<WeightLossPace, string> = {
   aggressive: "Aggressive",
 }
 
+const RECOMPOSITION_DEFICIT_KCAL = 200
+const RECOMPOSITION_PACE_KG_PER_WEEK = 0.18
+
 function resolveWeightLossPace(pace: WeightLossPace | undefined): WeightLossPace {
   if (pace === "steady" || pace === "aggressive") return pace
   return "moderate"
@@ -110,6 +113,8 @@ export function calculateNutritionTargets(input: {
   let adjustedCalories: number
   if (input.goal === "gain-muscle") {
     adjustedCalories = tdee + 300
+  } else if (input.goal === "recomposition") {
+    adjustedCalories = tdee - RECOMPOSITION_DEFICIT_KCAL
   } else {
     const pace = resolveWeightLossPace(input.weightLossPace)
     adjustedCalories = tdee - WEIGHT_LOSS_DEFICIT_KCAL[pace]
@@ -193,7 +198,7 @@ export function getGoalWeightTimeline(
     }
   }
 
-  if (goal === "lose-fat" || goal === "recomposition") {
+  if (goal === "lose-fat") {
     const pace = resolveWeightLossPace(weightLossPace)
     const paceKg = WEIGHT_LOSS_PACE_KG_PER_WEEK[pace]
     const weeks = Math.max(1, Math.round(deltaKg / paceKg))
@@ -206,6 +211,20 @@ export function getGoalWeightTimeline(
       kind: "estimate",
       summaryLine: `${paceName} pace · ${weeklyStr} · ~${weeks} weeks to goal`,
       disclaimer,
+    }
+  }
+
+  if (goal === "recomposition") {
+    const paceKg = RECOMPOSITION_PACE_KG_PER_WEEK
+    const weeks = Math.max(1, Math.round(deltaKg / paceKg))
+    const weeklyStr =
+      unit === "kg"
+        ? `~${paceKg.toFixed(1)}kg/week`
+        : `~${(paceKg * 2.20462).toFixed(1)}lb/week`
+    return {
+      kind: "estimate",
+      summaryLine: `Gentle recomposition · ${weeklyStr} · ~${weeks} weeks to target`,
+      disclaimer: "Scale changes can be slower during recomposition",
     }
   }
 
