@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { GroceryItemRow } from "@/components/grocery-item-row"
 import { useMealStore } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
@@ -29,12 +30,12 @@ const categoryLabels: Record<string, string> = {
 }
 
 const categoryColors: Record<string, string> = {
-  protein: "bg-chart-1/10 text-chart-1",
-  vegetables: "bg-primary/10 text-primary",
-  carbs: "bg-chart-3/10 text-chart-3",
-  dairy: "bg-chart-2/10 text-chart-2",
-  fats: "bg-chart-5/10 text-chart-5",
-  fruits: "bg-chart-4/10 text-chart-4",
+  protein: "bg-[#eee5da] text-[#7a5b41]",
+  vegetables: "bg-[#edf4ec] text-primary",
+  carbs: "bg-[#f4efe5] text-[#8b6a45]",
+  dairy: "bg-[#edf1f4] text-[#5c7086]",
+  fats: "bg-[#f5efe4] text-[#8a704f]",
+  fruits: "bg-[#f5e8e0] text-[#a05d43]",
   spices: "bg-muted text-muted-foreground",
 }
 
@@ -62,6 +63,7 @@ export function GroceryList() {
 
   const totalItems = groceryCategories.reduce((sum, cat) => sum + cat.items.length, 0)
   const checkedCount = checkedItems.size
+  const completionRatio = totalItems > 0 ? checkedCount / totalItems : 0
 
   const handleCopy = async () => {
     const listText = groceryCategories
@@ -84,122 +86,124 @@ export function GroceryList() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background pb-24">
-      {/* Header */}
+    <div className="app-shell bg-background pb-28">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto max-w-lg min-w-0 px-4 py-4">
+        <div className="page-column px-4 py-4">
           <button
             type="button"
             onClick={() => setCurrentStep(2)}
-            className="mb-3 flex min-h-11 w-full max-w-full items-center gap-1 rounded-md py-2 text-left text-sm text-muted-foreground hover:text-foreground sm:w-auto"
+            className="bridge-back-link mb-3 w-full justify-center sm:w-auto sm:justify-start"
           >
             <ChevronLeft className="h-4 w-4 shrink-0" />
             <span className="break-words">Back to your meal plan</span>
           </button>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <h1 className="break-words text-xl font-bold text-foreground sm:text-2xl">Weekly shopping list</h1>
-              <p className="text-sm text-muted-foreground">
-                {checkedCount} of {totalItems} checked off
-              </p>
+          <section className="dashboard-header-panel space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Weekly shopping list</div>
+                <h1 className="mt-3 break-words text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]">
+                  Everything for the week
+                </h1>
+                <p className="mt-2 max-w-[34rem] text-sm leading-6 text-muted-foreground">
+                  Check items off as you shop, or copy the full list into notes or your usual grocery app.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleCopy}
+                className="h-11 min-h-[44px] w-full gap-2 sm:w-auto sm:shrink-0"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    Copy list
+                  </>
+                )}
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopy}
-              className="h-11 min-h-[44px] w-full gap-2 sm:w-auto sm:shrink-0"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-4 w-4" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4" />
-                  Copy list
-                </>
-              )}
-            </Button>
-          </div>
 
-          {/* Progress Bar */}
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-secondary">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${(checkedCount / totalItems) * 100}%` }}
-            />
-          </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="dashboard-kpi-tile">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Checked off
+                </div>
+                <div className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{checkedCount}</div>
+                <div className="text-sm text-muted-foreground">of {totalItems} items</div>
+              </div>
+              <div className="dashboard-kpi-tile">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Remaining
+                </div>
+                <div className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{Math.max(totalItems - checkedCount, 0)}</div>
+                <div className="text-sm text-muted-foreground">across {groceryCategories.length} groups</div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                <span>{Math.round(completionRatio * 100)}% complete</span>
+                <span>{checkedCount} / {totalItems}</span>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${completionRatio * 100}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="bridge-note-strip">
+              <ShoppingCart className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <span className="break-words">
+                Sorted by ingredient type so it&apos;s easier to move through the store without bouncing around.
+              </span>
+            </div>
+          </section>
         </div>
       </div>
 
-      <div className="mx-auto max-w-lg min-w-0 px-4">
-        {/* Summary Card */}
-        <Card className="mb-4 border-0 bg-primary text-primary-foreground shadow-lg">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-foreground/20">
-                <ShoppingCart className="h-6 w-6" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-semibold">Everything for the week</div>
-                <div className="break-words text-sm text-primary-foreground/80">
-                  {totalItems} lines to grab, sorted into {groceryCategories.length} groups
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Grocery Categories */}
-        <div className="space-y-4">
+      <div className="page-column space-y-4 px-4">
+        <div className="space-y-3">
           {groceryCategories.map(({ category, items }) => (
-            <Card key={category} className="border-0 shadow-md">
-              <CardHeader className="px-4 pb-2 pt-6 sm:px-6">
-                <CardTitle className="flex min-w-0 flex-wrap items-center gap-2 text-base">
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${categoryColors[category] || 'bg-secondary text-secondary-foreground'}`}>
+            <Card key={category} className="grocery-category-card">
+              <CardHeader className="gap-3 px-5 pb-3 pt-5 sm:px-6">
+                <CardTitle className="flex min-w-0 items-center gap-3 text-base">
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${categoryColors[category] || 'bg-secondary text-secondary-foreground'}`}>
                     {categoryIcons[category] || <ShoppingCart className="h-4 w-4" />}
                   </span>
-                  <span className="min-w-0 flex-1 break-words">{categoryLabels[category] || category}</span>
-                  <span className="w-full shrink-0 text-sm font-normal text-muted-foreground sm:ml-auto sm:w-auto sm:text-right">
-                    {items.length} items
+                  <div className="min-w-0 flex-1">
+                    <div className="break-words text-base font-semibold text-foreground">{categoryLabels[category] || category}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {items.length} item{items.length === 1 ? "" : "s"}
+                    </div>
+                  </div>
+                  <span className="grocery-category-count">
+                    {items.filter((item) => checkedItems.has(`${category}-${item.name}`)).length}/{items.length}
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="px-4 pb-6 pt-0 sm:px-6">
-                <div className="space-y-1">
+              <CardContent className="px-5 pb-5 pt-0 sm:px-6">
+                <div className="grocery-list-panel overflow-hidden">
                   {items.map((item) => {
                     const itemKey = `${category}-${item.name}`
                     const isChecked = checkedItems.has(itemKey)
                     
                     return (
-                      <button
+                      <GroceryItemRow
                         key={item.name}
-                        type="button"
-                        onClick={() => toggleItem(itemKey)}
-                        className={`flex min-h-[44px] w-full min-w-0 flex-col gap-2 rounded-lg p-3 text-left transition-all sm:flex-row sm:items-center sm:gap-3 ${
-                          isChecked ? 'bg-primary/5' : 'bg-secondary hover:bg-secondary/80'
-                        }`}
-                      >
-                        <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
-                          <div
-                            className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all sm:mt-0 ${
-                              isChecked
-                                ? 'border-primary bg-primary'
-                                : 'border-border'
-                            }`}
-                          >
-                            {isChecked && <Check className="h-3 w-3 text-primary-foreground" />}
-                          </div>
-                          <span className={`min-w-0 flex-1 break-words text-left ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                            {item.name}
-                          </span>
-                        </div>
-                        <span className={`break-words pl-9 text-sm sm:max-w-[45%] sm:flex-none sm:pl-0 sm:text-right ${isChecked ? 'text-muted-foreground/50' : 'text-muted-foreground'}`}>
-                          {item.amounts}
-                        </span>
-                      </button>
+                        name={item.name}
+                        amount={item.amounts}
+                        checked={isChecked}
+                        showCheckbox
+                        onToggle={() => toggleItem(itemKey)}
+                        className="border-b border-border/80 last:border-b-0"
+                      />
                     )
                   })}
                 </div>
@@ -208,29 +212,35 @@ export function GroceryList() {
           ))}
         </div>
 
-        {/* Export Button */}
-        <div className="mt-6 space-y-3">
-          <Button
-            className="h-12 min-h-[44px] w-full"
-            onClick={handleCopy}
-          >
-            {copied ? (
-              <>
-                <Check className="mr-2 h-5 w-5" />
-                On your clipboard
-              </>
-            ) : (
-              <>
-                <Copy className="mr-2 h-5 w-5" />
-                Copy full list
-              </>
-            )}
-          </Button>
-          
-          <p className="text-center text-xs text-muted-foreground">
-            Paste into notes or your usual grocery app—however you shop is fine
-          </p>
-        </div>
+        <Card className="bridge-section">
+          <CardContent className="space-y-3 px-5 py-5 sm:px-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                <span className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Share this list</span>
+              </div>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Paste it into notes, messages, or your grocery app. However you shop is fine.
+              </p>
+            </div>
+            <Button
+              className="h-12 min-h-[44px] w-full"
+              onClick={handleCopy}
+            >
+              {copied ? (
+                <>
+                  <Check className="mr-2 h-5 w-5" />
+                  On your clipboard
+                </>
+              ) : (
+                <>
+                  <Copy className="mr-2 h-5 w-5" />
+                  Copy full list
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

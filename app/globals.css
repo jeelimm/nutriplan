@@ -176,4 +176,105 @@
   .hero-badge {
     @apply inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground;
   }
+
+  .bridge-back-link {
+    @apply inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-card/80 px-3.5 py-2 text-sm font-medium text-muted-foreground shadow-[0_12px_26px_-24px_rgba(18,33,23,0.32)] transition-[background-color,color,border-color,box-shadow] hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .bridge-hero {
+    @apply relative overflow-hidden rounded-[28px] border border-border bg-card px-5 py-6 shadow-[0_24px_56px_-34px_rgba(18,33,23,0.34)] sm:px-7 sm:py-7;
+    @apply space-y-4;
+    background-image: linear-gradient(180deg, rgba(255, 250, 244, 0.98) 0%, rgba(248, 242, 234, 0.96) 100%);
+  }
+
+  .bridge-section {
+    @apply rounded-[24px] border border-border bg-card/95 shadow-[0_18px_40px_-28px_rgba(18,33,23,0.38)];
+  }
+
+  .bridge-stat-tile {
+    @apply rounded-2xl border border-border bg-background/80 px-3 py-3;
+  }
+
+  .bridge-note-strip {
+    @apply flex items-start gap-3 rounded-2xl border border-border bg-secondary/85 px-4 py-3 text-sm leading-6 text-muted-foreground;
+  }
+
+  .bridge-status-panel {
+    @apply relative overflow-hidden rounded-[28px] border border-border bg-card px-5 py-7 text-center shadow-[0_24px_56px_-34px_rgba(18,33,23,0.34)] sm:px-7 sm:py-8;
+  }
+
+  .bridge-status-icon {
+    @apply mx-auto flex size-14 items-center justify-center rounded-2xl border border-border bg-secondary/85 text-primary;
+  }
+
+  .bridge-soft-callout {
+    border: 1px solid #e5d7c7;
+    background: #f8f2ea;
+    color: #5e665f;
+    @apply rounded-2xl px-4 py-3 text-sm leading-6;
+  }
+
+  .dashboard-header-panel {
+    @apply relative overflow-hidden rounded-[28px] border border-border bg-card px-5 py-5 shadow-[0_22px_48px_-34px_rgba(18,33,23,0.34)] sm:px-6 sm:py-6;
+    background-image: linear-gradient(180deg, rgba(255, 250, 244, 0.96) 0%, rgba(248, 242, 234, 0.92) 100%);
+  }
+
+  .dashboard-day-chip {
+    @apply flex min-h-11 min-w-0 flex-col items-center justify-center rounded-2xl border border-border bg-card px-2 py-2 text-center text-[11px] font-medium text-muted-foreground transition-[background-color,border-color,color,box-shadow,transform] duration-150 hover:border-primary/35 hover:bg-[#fcf7ef] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px;
+  }
+
+  .dashboard-kpi-tile {
+    @apply rounded-2xl border border-border bg-background/80 px-4 py-3;
+  }
+
+  .dashboard-progress-row {
+    @apply rounded-2xl border border-border bg-background/78 px-3.5 py-3;
+  }
+
+  .dashboard-meta-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-muted-foreground;
+  }
+
+  .dashboard-detail-panel {
+    @apply rounded-2xl border border-[#e5d7c7] bg-[#f8f2ea] px-4 py-3.5;
+  }
+
+  .dashboard-warning {
+    @apply rounded-2xl border px-4 py-3 text-sm leading-6;
+    border-color: rgba(183, 119, 73, 0.28);
+    background: #fff3e6;
+    color: #7a5b41;
+  }
+
+  .grocery-category-card {
+    @apply rounded-[24px] border border-border bg-card/95 shadow-[0_16px_34px_-28px_rgba(18,33,23,0.34)];
+  }
+
+  .grocery-list-panel {
+    @apply rounded-[20px] border border-border bg-background/78;
+  }
+
+  .grocery-item-row {
+    @apply min-h-[60px] w-full min-w-0 px-3.5 py-3 text-left transition-[background-color,color,border-color] duration-150 hover:bg-[#fcf7ef] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-inset;
+  }
+
+  .grocery-item-row-compact {
+    @apply min-h-[52px] px-3 py-2.5;
+  }
+
+  .grocery-checkbox {
+    @apply mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-[background-color,border-color,box-shadow] duration-150;
+  }
+
+  .grocery-row-marker {
+    @apply mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#b77749]/70;
+  }
+
+  .grocery-amount-text {
+    @apply mt-1.5 block break-words text-sm leading-5 text-muted-foreground;
+  }
+
+  .grocery-category-count {
+    @apply inline-flex items-center rounded-full border border-border bg-background/80 px-2.5 py-1 text-[11px] font-medium text-muted-foreground;
+  }
 }
