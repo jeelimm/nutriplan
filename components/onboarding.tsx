@@ -1087,7 +1087,7 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 1 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.82rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
                 Let&apos;s set your starting point
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
@@ -1423,14 +1423,13 @@ export function Onboarding() {
               </OnboardingFieldNote>
 
               <div className="space-y-2.5 pt-0.5">
-                <Button
-                  variant="ghost"
-                  className="min-h-11 w-full justify-center rounded-2xl border border-[#ddd0bf] bg-[#fbf4ea] text-[#5e665f] hover:bg-[#f4eadc] hover:text-[#28312b]"
+                <OnboardingSecondaryActionRow
                   onClick={moveToPreviousStep}
+                  iconPosition="start"
+                  className="justify-start"
                 >
-                  <ChevronLeft className="mr-1 h-4 w-4" />
                   Back to body stats
-                </Button>
+                </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
                     selectedActivityLevel
@@ -1455,7 +1454,7 @@ export function Onboarding() {
                 What are you aiming for?
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
-                No wrong answer—this just nudges calories and macros in the right direction
+                No wrong answer here. This just nudges calories and macros in the right direction.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
