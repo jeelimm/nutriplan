@@ -4,8 +4,8 @@
   "prompts": [
     {
       "id": 1,
-      "description": "Fix input field visibility and color contrast in onboarding",
-      "prompt": "In components/onboarding.tsx, the input fields have poor visibility — users report the color scheme makes them hard to see. Fix this by: 1) Check all input fields, select dropdowns, and number inputs in the onboarding flow. 2) Ensure text color has strong contrast against the input background (use dark text on light backgrounds). 3) Add visible borders to all input fields — use a subtle but clear border color (e.g. border-gray-300 for light mode, border-gray-600 for dark mode). 4) Make sure placeholder text is visible but lighter than actual input text. 5) Check focus states — inputs should have a clear focus ring or border color change when selected. 6) Test that this works in both light and dark mode if the app supports it. Match the existing design system in the app. Follow CLAUDE.md guidelines.",
+      "description": "Fix input field visibility with specific color values",
+      "prompt": "In components/onboarding.tsx, the input fields and placeholder text have poor visibility. Apply these EXACT color changes to ALL input fields, select dropdowns, and number inputs throughout the entire onboarding flow: 1) Input background: #FFFFFF (white). 2) Input border: #C8BDB0 (warm gray) — must be clearly visible, use border width of 1.5px or Tailwind 'border' class. 3) Input text color: #1A1A1A (near black) for strong readability. 4) Placeholder text color: #8C8279 (warm medium gray) — visible but clearly lighter than typed text. 5) Focus state border: #4A7C59 (the green accent color already used in the app) with ring or outline. 6) Apply these to EVERY input element in the onboarding — text inputs, number inputs, select dropdowns, radio/checkbox groups. Use inline styles or Tailwind arbitrary values like 'border-[#C8BDB0]' and 'text-[#1A1A1A]' and 'placeholder:text-[#8C8279]'. 7) Do NOT change button colors, card backgrounds, or any other non-input elements. Follow CLAUDE.md guidelines.",
       "files_affected": ["components/onboarding.tsx"]
     },
     {

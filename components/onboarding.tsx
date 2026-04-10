@@ -274,7 +274,7 @@ const onboardingUi = {
   progressTrack:
     "flex items-center gap-1.5 rounded-full border border-[#e2d6c5] bg-[#f7f1e8] px-2.5 py-1.5",
   boundedInputBase:
-    "h-12 rounded-2xl border border-[#d8ccb9] bg-[#fffdf9] px-4 py-2.5 text-base text-[#28312b] placeholder:text-[#9a948a] transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:border-[#8a6e4b] focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/18",
+    "h-12 rounded-2xl border border-[#C8BDB0] bg-white px-4 py-2.5 text-base text-[#1A1A1A] placeholder:text-[#8C8279] transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:border-[#4A7C59] focus-visible:ring-2 focus-visible:ring-[#4A7C59]/20",
 } as const
 
 function OnboardingMainCard({ children, className }: { children: ReactNode; className?: string }) {
@@ -1033,9 +1033,9 @@ export function Onboarding() {
     return cn(
       onboardingUi.boundedInputBase,
       hasValue
-        ? "border-[#d1c4b2] border-b-[#d1c4b2] bg-white shadow-[0_5px_12px_-14px_rgba(40,49,43,0.25)]"
-        : "border-[#d8ccb9] border-b-[#d8ccb9] bg-[#fffdf9] shadow-none",
-      isFocused && !hasError && "border-[#8a6e4b] border-b-[#8a6e4b] bg-white ring-2 ring-[#8a6e4b]/18 shadow-[0_12px_24px_-18px_rgba(122,91,65,0.35)]",
+        ? "border-[#C8BDB0] border-b-[#C8BDB0] bg-white shadow-[0_5px_12px_-14px_rgba(40,49,43,0.25)]"
+        : "border-[#C8BDB0] border-b-[#C8BDB0] bg-white shadow-none",
+      isFocused && !hasError && "border-[#4A7C59] border-b-[#4A7C59] bg-white ring-2 ring-[#4A7C59]/20 shadow-[0_12px_24px_-18px_rgba(74,124,89,0.35)]",
       hasError && "border-[#b77749] border-b-[#b77749] bg-[#fff6f0] text-[#7a4d2a] ring-2 ring-[#b77749]/12 shadow-none"
     )
   }
