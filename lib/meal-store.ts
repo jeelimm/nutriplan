@@ -81,6 +81,17 @@ export interface MealPlanConfig {
   mealsPerDay: number
 }
 
+export interface SwapCandidate {
+  id: string
+  name: string
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  ingredients: Ingredient[]
+  recipe: string
+}
+
 interface MealStore {
   currentStep: number
   setCurrentStep: (step: number) => void
@@ -107,6 +118,10 @@ interface MealStore {
     weightLossPace?: WeightLossPace | null
   ) => { calories: number; macros: UserProfile['macros']; calorieFloorApplied: boolean }
   generateMealPlan: () => Promise<void>
+  swapMeal: (dayIndex: number, mealIndex: number, newMeal: Meal) => void
+  swapCandidates: SwapCandidate[]
+  setSwapCandidates: (candidates: SwapCandidate[]) => void
+  clearSwapCandidates: () => void
 }
 
 const PROFILE_VERSION = 2
@@ -327,6 +342,25 @@ export const useMealStore = create<MealStore>()(
       setMealPlanConfig: (config) => set({ mealPlanConfig: config }),
       weekPlan: [],
       setWeekPlan: (plan) => set({ weekPlan: plan }),
+      swapMeal: (dayIndex, mealIndex, newMeal) =>
+        set((state) => {
+          const weekPlan = state.weekPlan.map((day, dIdx) => {
+            if (dIdx !== dayIndex) return day
+            const meals = day.meals.map((meal, mIdx) => (mIdx === mealIndex ? newMeal : meal))
+            return {
+              ...day,
+              meals,
+              totalCalories: meals.reduce((sum, m) => sum + m.calories, 0),
+              totalProtein: meals.reduce((sum, m) => sum + m.protein, 0),
+              totalCarbs: meals.reduce((sum, m) => sum + m.carbs, 0),
+              totalFat: meals.reduce((sum, m) => sum + m.fat, 0),
+            }
+          })
+          return { weekPlan }
+        }),
+      swapCandidates: [],
+      setSwapCandidates: (candidates) => set({ swapCandidates: candidates }),
+      clearSwapCandidates: () => set({ swapCandidates: [] }),
       mealPlanValidation: { isValid: true, errors: [], warnings: [] },
       isGeneratingMealPlan: false,
       selectedDay: 0,
