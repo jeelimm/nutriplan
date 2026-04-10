@@ -120,8 +120,8 @@ export function MealSwapSheet({
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
       <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl pb-safe">
-        <div className="mx-auto w-full max-w-lg">
-          <SheetHeader className="pb-2">
+        <div className="mx-auto w-full max-w-lg min-w-0 px-4">
+          <SheetHeader className="px-0 pb-2">
             <SheetTitle>Swap meal</SheetTitle>
             <SheetDescription>
               Replacing: <span className="font-medium text-foreground">{currentMeal.name}</span>
@@ -129,7 +129,7 @@ export function MealSwapSheet({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="px-4 py-2 flex-1">
+          <div className="py-2 flex-1">
             {loading && (
               <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground">
                 <Loader2 className="size-6 animate-spin" />
@@ -170,7 +170,7 @@ export function MealSwapSheet({
             )}
           </div>
 
-          <SheetFooter className="pt-2">
+          <SheetFooter className="px-0 pt-2">
             <Button variant="outline" className="w-full" onClick={onClose}>
               Keep current meal
             </Button>

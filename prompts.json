@@ -1,24 +1,18 @@
 {
-  "feature": "Meal Swap UI fixes — width, language, instruction steps",
-  "branch": "fix/meal-swap-ui",
+  "feature": "Meal Swap fixes round 2 — width alignment and English enforcement",
+  "branch": "fix/meal-swap-ui-v2",
   "prompts": [
     {
       "id": 1,
-      "description": "Constrain MealSwapSheet width to match existing components",
-      "prompt": "In components/meal-swap-sheet.tsx, the bottom sheet is too wide on desktop. Constrain the sheet content to match the max-width of the existing meal card components in daily-view.tsx. Typically this means adding a max-w-lg or max-w-xl with mx-auto to the sheet content container so it stays centered and doesn't stretch full screen width on larger viewports. Check how other components in the app handle responsive width and match that pattern. Follow CLAUDE.md guidelines.",
-      "files_affected": ["components/meal-swap-sheet.tsx"]
+      "description": "Match swap sheet width exactly to meal card width",
+      "prompt": "The MealSwapSheet bottom sheet in components/meal-swap-sheet.tsx is wider than the meal cards in daily-view.tsx. Fix this by: 1) First, read components/daily-view.tsx and find the exact wrapper/container element that sets the max-width for meal cards. 2) Apply the exact same max-width, padding, and margin values to the Sheet content wrapper in meal-swap-sheet.tsx. Do NOT guess — copy the exact Tailwind classes from daily-view's card container. 3) The swap sheet content should visually align perfectly with the meal cards above it. Follow CLAUDE.md guidelines.",
+      "files_affected": ["components/meal-swap-sheet.tsx", "components/daily-view.tsx"]
     },
     {
       "id": 2,
-      "description": "Force meal names to English unless user language is Korean",
-      "prompt": "The swap meal API and meal generation are returning Korean meal names even when the app language is set to English. In app/api/swap-meal/route.ts, update the Claude prompt to explicitly generate meal names, ingredients, and recipe instructions in English by default. Only use Korean if the user's language preference is set to Korean. Check how app/api/generate-meal-plan/route.ts handles the language setting and apply the same pattern to the swap endpoint. The userProfile should contain the language preference — pass it through and use it in the AI prompt. Follow CLAUDE.md guidelines.",
+      "description": "Force English meal names in swap API response",
+      "prompt": "Meal names from the swap API are still appearing in Korean even when the app is set to English. In app/api/swap-meal/route.ts: 1) Find the prompt string sent to Claude AI. 2) Add an explicit instruction at the TOP of the prompt: 'IMPORTANT: All meal names, ingredient names, and recipe instructions MUST be in English. Do NOT use Korean or any other language unless explicitly requested.' 3) Also check if the userProfile.language field is being read. If it exists and equals 'ko', then use Korean. For ALL other cases (including undefined, null, or 'en'), enforce English. 4) Double check that the response parsing does not have any hardcoded Korean text. Follow CLAUDE.md guidelines.",
       "files_affected": ["app/api/swap-meal/route.ts"]
-    },
-    {
-      "id": 3,
-      "description": "Fix swapped meal instructions to show numbered steps",
-      "prompt": "After swapping a meal, the recipe instructions are displayed as one single block of text under step 1 instead of being broken into separate numbered steps. In app/api/swap-meal/route.ts, update the Claude prompt to explicitly request that recipe instructions be returned as an array of individual step strings, not one long concatenated string. Then in the component that renders meal instructions (check daily-view.tsx or related components), ensure the instructions array is mapped to display each step with its own number (1, 2, 3, etc). Match the formatting pattern used by the original meal generation in generate-meal-plan/route.ts. Follow CLAUDE.md guidelines.",
-      "files_affected": ["app/api/swap-meal/route.ts", "components/daily-view.tsx"]
     }
   ]
 }
