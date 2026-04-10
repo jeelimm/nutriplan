@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { NextResponse } from "next/server"
 import type { Meal, UserProfile } from "@/lib/meal-store"
+import { validateSwapCandidate } from "@/lib/meal-validator"
 
 export const maxDuration = 60
 
@@ -49,11 +50,6 @@ function formatCuisinePreference(cuisines: unknown): string {
     .map((id) => CUISINE_STYLE_LABELS[id] ?? id)
     .filter(Boolean)
     .join(", ")
-}
-
-function withinTolerance(value: number, target: number, pct = 0.15): boolean {
-  if (target === 0) return true
-  return Math.abs(value - target) / target <= pct
 }
 
 function normalizeCandidateMacros(raw: any): {
@@ -203,16 +199,23 @@ Return JSON array only:
       throw new Error("Claude response is not an array")
     }
 
+    const originalMacros = {
+      calories: calTarget,
+      protein: proteinTarget,
+      carbs: carbsTarget,
+      fat: fatTarget,
+    }
+
     const candidates = parsed
       .slice(0, 3)
       .map(normalizeCandidateMacros)
-      .filter(
-        (c) =>
-          withinTolerance(c.calories, calTarget) &&
-          withinTolerance(c.protein, proteinTarget) &&
-          withinTolerance(c.carbs, carbsTarget) &&
-          withinTolerance(c.fat, fatTarget)
-      )
+      .filter((c) => {
+        const validation = validateSwapCandidate(c, originalMacros, mealSlot, userProfile)
+        if (!validation.isValid) {
+          console.log(`[swap-meal] Candidate "${c.name}" rejected:`, validation.reasons)
+        }
+        return validation.isValid
+      })
 
     console.log(`[swap-meal] Returning ${candidates.length} candidates for slot: ${mealSlot}`)
 
