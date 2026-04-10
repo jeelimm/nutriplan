@@ -157,7 +157,14 @@ export async function POST(req: Request) {
         ? "Korean only. All meal names, ingredients, and recipe instructions must be in Korean."
         : "English only. All meal names, ingredients, and recipe instructions must be in English."
 
-    const prompt = `Generate exactly 3 alternative ${mealSlot} options to replace "${currentMeal.name}".
+    const languageEnforcement =
+      language === "ko"
+        ? "IMPORTANT: All meal names, ingredient names, and recipe instructions MUST be in Korean. Do NOT use English or any other language."
+        : "IMPORTANT: All meal names, ingredient names, and recipe instructions MUST be in English. Do NOT use Korean or any other language unless explicitly requested."
+
+    const prompt = `${languageEnforcement}
+
+Generate exactly 3 alternative ${mealSlot} options to replace "${currentMeal.name}".
 
 User goal: ${userProfile.goal}
 Diet style: ${userProfile.dietType}
