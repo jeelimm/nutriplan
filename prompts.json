@@ -1,18 +1,18 @@
 {
-  "feature": "Meal Swap fixes round 2 — width alignment and English enforcement",
-  "branch": "fix/meal-swap-ui-v2",
+  "feature": "Meal swap width alignment + enforce English in all meal generation",
+  "branch": "fix/meal-swap-ui-v3",
   "prompts": [
     {
       "id": 1,
-      "description": "Match swap sheet width exactly to meal card width",
-      "prompt": "The MealSwapSheet bottom sheet in components/meal-swap-sheet.tsx is wider than the meal cards in daily-view.tsx. Fix this by: 1) First, read components/daily-view.tsx and find the exact wrapper/container element that sets the max-width for meal cards. 2) Apply the exact same max-width, padding, and margin values to the Sheet content wrapper in meal-swap-sheet.tsx. Do NOT guess — copy the exact Tailwind classes from daily-view's card container. 3) The swap sheet content should visually align perfectly with the meal cards above it. Follow CLAUDE.md guidelines.",
+      "description": "Make swap sheet width identical to meal cards",
+      "prompt": "The MealSwapSheet bottom sheet width does not match the meal cards in daily-view.tsx. Fix this: 1) Open components/daily-view.tsx and find the EXACT outermost container element that wraps each individual meal card — note its width-related Tailwind classes (max-w-*, w-*, px-*, mx-*). 2) Open components/meal-swap-sheet.tsx and find the Sheet content wrapper. 3) Remove any existing max-width or width constraints on the sheet content. 4) Apply the EXACT SAME width-related Tailwind classes from the meal card container to the sheet content wrapper, so they are pixel-perfect aligned. 5) Test by visually comparing — the left and right edges of the swap sheet candidates should align exactly with the left and right edges of the meal cards above. Follow CLAUDE.md guidelines.",
       "files_affected": ["components/meal-swap-sheet.tsx", "components/daily-view.tsx"]
     },
     {
       "id": 2,
-      "description": "Force English meal names in swap API response",
-      "prompt": "Meal names from the swap API are still appearing in Korean even when the app is set to English. In app/api/swap-meal/route.ts: 1) Find the prompt string sent to Claude AI. 2) Add an explicit instruction at the TOP of the prompt: 'IMPORTANT: All meal names, ingredient names, and recipe instructions MUST be in English. Do NOT use Korean or any other language unless explicitly requested.' 3) Also check if the userProfile.language field is being read. If it exists and equals 'ko', then use Korean. For ALL other cases (including undefined, null, or 'en'), enforce English. 4) Double check that the response parsing does not have any hardcoded Korean text. Follow CLAUDE.md guidelines.",
-      "files_affected": ["app/api/swap-meal/route.ts"]
+      "description": "Enforce English in generate-meal-plan API",
+      "prompt": "In app/api/generate-meal-plan/route.ts, find the prompt string sent to Claude AI for meal plan generation. Add this instruction at the very TOP of the prompt: 'CRITICAL LANGUAGE RULE: Generate ALL meal names, ingredient names, and recipe instructions in English. Do NOT use Korean, Japanese, or any other non-English language for food names. For example, use \"Egg Roll\" not \"계란말이\", use \"Bibimbap\" not \"비빔밥\". The only exception is if the user has explicitly set their language preference to Korean (language: \"ko\").' Also verify the userProfile.language field is checked — if it is 'ko', Korean is allowed. For all other values including undefined, null, or 'en', strictly enforce English. Follow CLAUDE.md guidelines.",
+      "files_affected": ["app/api/generate-meal-plan/route.ts"]
     }
   ]
 }

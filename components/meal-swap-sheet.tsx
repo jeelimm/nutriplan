@@ -120,7 +120,7 @@ export function MealSwapSheet({
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
       <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl pb-safe">
-        <div className="mx-auto w-full max-w-lg min-w-0 px-4">
+        <div className="page-column px-4">
           <SheetHeader className="px-0 pb-2">
             <SheetTitle>Swap meal</SheetTitle>
             <SheetDescription>
