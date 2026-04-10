@@ -113,6 +113,7 @@ export function MealSwapSheet({
   function handleSelect(candidate: SwapCandidate) {
     swapMeal(dayIndex, mealIndex, candidateToMeal(candidate, mealIndex))
     toast.success('Meal updated')
+    toast('Grocery list adjusted')
     onClose()
   }
 
