@@ -1,0 +1,18 @@
+{
+  "feature": "Meal swap width alignment + enforce English in all meal generation",
+  "branch": "fix/meal-swap-ui-v3",
+  "prompts": [
+    {
+      "id": 1,
+      "description": "Make swap sheet width identical to meal cards",
+      "prompt": "The MealSwapSheet bottom sheet width does not match the meal cards in daily-view.tsx. Fix this: 1) Open components/daily-view.tsx and find the EXACT outermost container element that wraps each individual meal card — note its width-related Tailwind classes (max-w-*, w-*, px-*, mx-*). 2) Open components/meal-swap-sheet.tsx and find the Sheet content wrapper. 3) Remove any existing max-width or width constraints on the sheet content. 4) Apply the EXACT SAME width-related Tailwind classes from the meal card container to the sheet content wrapper, so they are pixel-perfect aligned. 5) Test by visually comparing — the left and right edges of the swap sheet candidates should align exactly with the left and right edges of the meal cards above. Follow CLAUDE.md guidelines.",
+      "files_affected": ["components/meal-swap-sheet.tsx", "components/daily-view.tsx"]
+    },
+    {
+      "id": 2,
+      "description": "Enforce English in generate-meal-plan API",
+      "prompt": "In app/api/generate-meal-plan/route.ts, find the prompt string sent to Claude AI for meal plan generation. Add this instruction at the very TOP of the prompt: 'CRITICAL LANGUAGE RULE: Generate ALL meal names, ingredient names, and recipe instructions in English. Do NOT use Korean, Japanese, or any other non-English language for food names. For example, use \"Egg Roll\" not \"계란말이\", use \"Bibimbap\" not \"비빔밥\". The only exception is if the user has explicitly set their language preference to Korean (language: \"ko\").' Also verify the userProfile.language field is checked — if it is 'ko', Korean is allowed. For all other values including undefined, null, or 'en', strictly enforce English. Follow CLAUDE.md guidelines.",
+      "files_affected": ["app/api/generate-meal-plan/route.ts"]
+    }
+  ]
+}

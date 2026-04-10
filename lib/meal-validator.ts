@@ -13,6 +13,92 @@ type DayPlanLike = {
   totalProtein: number
 }
 
+export interface SwapCandidateInput {
+  name: string
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  ingredients: { name: string; amount: string; category: string }[]
+}
+
+export interface SwapCandidateValidationResult {
+  isValid: boolean
+  reasons: string[]
+}
+
+function withinTolerancePct(value: number, target: number, pct: number): boolean {
+  if (target === 0) return true
+  return Math.abs(value - target) / target <= pct
+}
+
+/**
+ * Validates a swap candidate against the original meal and user constraints.
+ *
+ * Checks:
+ * 1. Calories within ±15% of the original meal.
+ * 2. Protein, carbs, and fat each within ±20% of the original meal.
+ * 3. No ingredients outside the user's selectedIngredients allowlist (when non-empty).
+ * 4. Breakfast candidates must not have a dinner-heavy macro profile.
+ */
+export function validateSwapCandidate(
+  candidate: SwapCandidateInput,
+  originalMeal: { calories: number; protein: number; carbs: number; fat: number },
+  mealSlot: "breakfast" | "lunch" | "dinner",
+  userProfile: { selectedIngredients?: string[] }
+): SwapCandidateValidationResult {
+  const reasons: string[] = []
+
+  // 1. Calories within ±15%
+  if (!withinTolerancePct(candidate.calories, originalMeal.calories, 0.15)) {
+    reasons.push(
+      `Calories (${candidate.calories} kcal) are outside ±15% of the original meal (${originalMeal.calories} kcal).`
+    )
+  }
+
+  // 2. Protein/carbs/fat within ±20%
+  if (!withinTolerancePct(candidate.protein, originalMeal.protein, 0.2)) {
+    reasons.push(
+      `Protein (${candidate.protein}g) is outside ±20% of the original meal (${originalMeal.protein}g).`
+    )
+  }
+  if (!withinTolerancePct(candidate.carbs, originalMeal.carbs, 0.2)) {
+    reasons.push(
+      `Carbs (${candidate.carbs}g) are outside ±20% of the original meal (${originalMeal.carbs}g).`
+    )
+  }
+  if (!withinTolerancePct(candidate.fat, originalMeal.fat, 0.2)) {
+    reasons.push(
+      `Fat (${candidate.fat}g) is outside ±20% of the original meal (${originalMeal.fat}g).`
+    )
+  }
+
+  // 3. No excluded ingredients — selectedIngredients is the user's allowlist
+  const allowedIngredients = Array.isArray(userProfile.selectedIngredients)
+    ? userProfile.selectedIngredients
+    : []
+  if (allowedIngredients.length > 0) {
+    const allowedSet = new Set(allowedIngredients.map((i) => i.toLowerCase()))
+    for (const ingredient of candidate.ingredients) {
+      if (!allowedSet.has(ingredient.name.toLowerCase())) {
+        reasons.push(
+          `Ingredient "${ingredient.name}" is not in the user's selected ingredients.`
+        )
+        break
+      }
+    }
+  }
+
+  // 4. Breakfast slot: reject dinner-heavy candidates (high calorie + high fat)
+  if (mealSlot === "breakfast" && candidate.calories > 700 && candidate.fat > 30) {
+    reasons.push(
+      `Candidate (${candidate.calories} kcal, ${candidate.fat}g fat) appears dinner-heavy for a breakfast slot.`
+    )
+  }
+
+  return { isValid: reasons.length === 0, reasons }
+}
+
 export interface MealPlanValidationResult {
   isValid: boolean
   errors: string[]
