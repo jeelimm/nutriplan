@@ -150,13 +150,17 @@ export async function POST(req: Request) {
     const koreanRule = isKorean
       ? `STRICT RULE: Only Korean dish names. Examples: 볶음밥, 된장국, 제육볶음, 닭갈비, 계란말이, 두부조림.`
       : ""
+    const languageRule =
+      language === "ko"
+        ? "Korean only. All meal names, ingredients, and recipe instructions must be in Korean."
+        : "English only. All meal names, ingredients, and recipe instructions must be in English."
 
     const prompt = `Generate exactly 3 alternative ${mealSlot} options to replace "${currentMeal.name}".
 
 User goal: ${userProfile.goal}
 Diet style: ${userProfile.dietType}
 Cuisine: ${cuisinePreference}
-Language: ${language === "ko" ? "Korean" : "English"}
+${languageRule}
 ${koreanRule}
 Available ingredients: ${selectedIngredients}
 
