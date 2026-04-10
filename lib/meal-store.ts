@@ -11,6 +11,7 @@ export type RecipeUnitSystem = 'metric' | 'imperial'
 export type Language = 'en' | 'ko'
 
 export type WeightLossPace = 'steady' | 'moderate' | 'aggressive'
+export type BodyType = 'slim' | 'average' | 'athletic' | 'heavy'
 
 export type CuisinePreference =
   | 'western'
@@ -27,6 +28,7 @@ export interface UserProfile {
   language?: Language
   targetWeight?: number
   weightLossPace?: WeightLossPace
+  bodyType?: BodyType
   cuisinePreference?: CuisinePreference[]
   weight: number
   bodyFat: number
@@ -191,6 +193,11 @@ function ensureWeightLossPace(value: unknown): WeightLossPace | undefined {
   return undefined
 }
 
+function ensureBodyType(value: unknown): BodyType | undefined {
+  if (value === 'slim' || value === 'average' || value === 'athletic' || value === 'heavy') return value
+  return undefined
+}
+
 function normalizeUserProfile(raw: unknown): UserProfile | null {
   if (!raw || typeof raw !== 'object') return null
   const profile = raw as Partial<UserProfile> & { bodyFatPercentage?: number }
@@ -207,6 +214,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
         ? toNumber(profile.targetWeight, 0)
         : undefined,
     weightLossPace: ensureWeightLossPace(profile.weightLossPace),
+    bodyType: ensureBodyType(profile.bodyType),
     cuisinePreference: ensureCuisinePreference(profile.cuisinePreference),
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),

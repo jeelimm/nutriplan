@@ -1,4 +1,4 @@
-import type { ActivityLevel, DietType, Goal, Sex, UserProfile, WeightLossPace } from "@/lib/meal-store"
+import type { ActivityLevel, BodyType, DietType, Goal, Sex, UserProfile, WeightLossPace } from "@/lib/meal-store"
 
 const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
   sedentary: 1.2,
@@ -28,6 +28,20 @@ const WEIGHT_LOSS_PACE_DISPLAY: Record<WeightLossPace, string> = {
 
 const RECOMPOSITION_DEFICIT_KCAL = 200
 const RECOMPOSITION_PACE_KG_PER_WEEK = 0.18
+
+// Midpoint body fat % estimates by body type and sex, used when detailed body composition is unavailable.
+// Ranges: slim 12–18% (M) / 18–22% (F), average 18–25% (M) / 25–32% (F),
+//         athletic 15–20% (M) / 18–22% (F), heavy 25–35% (M) / 32–40% (F)
+const BODY_FAT_ESTIMATE: Record<BodyType, { male: number; female: number }> = {
+  slim:     { male: 15,   female: 20   },
+  average:  { male: 21.5, female: 28.5 },
+  athletic: { male: 17.5, female: 20   },
+  heavy:    { male: 30,   female: 36   },
+}
+
+export function estimateBodyFatFromBodyType(bodyType: BodyType, sex: Sex): number {
+  return BODY_FAT_ESTIMATE[bodyType][sex]
+}
 
 function resolveWeightLossPace(pace: WeightLossPace | undefined): WeightLossPace {
   if (pace === "steady" || pace === "aggressive") return pace
@@ -92,10 +106,15 @@ function splitRemainingCarbsFatKcal(
 /**
  * LBM-based protein; remaining calories split by diet (after protein).
  * Calorie floor: male 1500, female 1200.
+ *
+ * When `bodyFat` is not provided (undefined), `bodyType` + `sex` are used to
+ * estimate body fat % so that the Quick Estimate onboarding path can produce
+ * valid targets without requiring detailed body composition inputs.
  */
 export function calculateNutritionTargets(input: {
   weightKg: number
-  bodyFat: number
+  bodyFat?: number
+  bodyType?: BodyType
   activityLevel: ActivityLevel
   goal: Goal
   dietType: DietType
@@ -103,9 +122,17 @@ export function calculateNutritionTargets(input: {
   targetWeightKg?: number
   weightLossPace?: WeightLossPace
 }): { calories: number; macros: UserProfile["macros"]; calorieFloorApplied: boolean } {
-  const lbmForFormula = getLbmKgForNutrition(input.weightKg, input.bodyFat)
-
   const sex = input.sex ?? "male"
+
+  const resolvedBodyFat =
+    input.bodyFat !== undefined
+      ? input.bodyFat
+      : input.bodyType !== undefined
+        ? estimateBodyFatFromBodyType(input.bodyType, sex)
+        : 0
+
+  const lbmForFormula = getLbmKgForNutrition(input.weightKg, resolvedBodyFat)
+
   const bmrMultiplier = sex === "female" ? 0.9 : 1
   const bmr = 370 + 21.6 * lbmForFormula * bmrMultiplier
   const tdee = bmr * ACTIVITY_MULTIPLIERS[input.activityLevel]

@@ -1,7 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   useMealStore,
@@ -13,7 +15,7 @@ import {
 } from "@/lib/meal-store"
 import { toKg } from "@/lib/nutrition"
 import { cn } from "@/lib/utils"
-import { Check, ChevronLeft, Settings } from "lucide-react"
+import { Check, ChevronLeft, ChevronDown, Settings } from "lucide-react"
 
 const activityLevels: { id: ActivityLevel; label: string; description: string }[] = [
   { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, with little planned exercise." },
@@ -46,6 +48,12 @@ export function SettingsScreen() {
     calculateMacros,
     isGeneratingMealPlan,
   } = useMealStore()
+
+  const [bodyStatsOpen, setBodyStatsOpen] = useState(false)
+  const [bodyFatInput, setBodyFatInput] = useState("")
+  const [muscleMassInput, setMuscleMassInput] = useState("")
+  const [bodyStatsError, setBodyStatsError] = useState<string | null>(null)
+  const [bodyStatsSaved, setBodyStatsSaved] = useState(false)
 
   if (!userProfile) return null
 
@@ -102,6 +110,28 @@ export function SettingsScreen() {
     clearAllData()
     window.localStorage.removeItem("meal-plan-storage")
   }
+
+  const handleBodyStatsSave = () => {
+    setBodyStatsError(null)
+    const bf = parseFloat(bodyFatInput)
+    const mm = parseFloat(muscleMassInput)
+    if (!Number.isFinite(bf) || bf <= 0 || bf >= 100) {
+      setBodyStatsError("Enter a body fat % between 1 and 99.")
+      return
+    }
+    if (!Number.isFinite(mm) || mm <= 0) {
+      setBodyStatsError("Enter a muscle mass greater than 0.")
+      return
+    }
+    updateNutritionTargets({ bodyFat: bf, muscleMass: mm })
+    setBodyStatsOpen(false)
+    setBodyFatInput("")
+    setMuscleMassInput("")
+    setBodyStatsSaved(true)
+    setTimeout(() => setBodyStatsSaved(false), 3000)
+  }
+
+  const hasDetailedStats = userProfile.bodyFat > 0 && userProfile.muscleMass > 0
 
   return (
     <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
@@ -269,6 +299,124 @@ export function SettingsScreen() {
                 })}
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bridge-section">
+          <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
+            <CardTitle>Refine your targets</CardTitle>
+            <CardDescription>
+              Your current targets are a solid starting point. Detailed body stats can fine-tune them further.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
+            {!bodyStatsOpen ? (
+              <div className="settings-section-panel space-y-3.5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="text-sm font-semibold text-foreground">
+                      {hasDetailedStats ? "Update body stats" : "Got InBody or smart scale data?"}
+                    </span>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    {hasDetailedStats
+                      ? `Currently using ${userProfile.bodyFat}% body fat and ${userProfile.muscleMass}${userProfile.unit} muscle mass. Enter new measurements to keep your targets accurate.`
+                      : "Adding your body fat % and muscle mass from an InBody scan or smart scale can improve your calorie and macro targets."}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    className="h-12 min-h-[44px] flex-1"
+                    onClick={() => {
+                      setBodyFatInput(userProfile.bodyFat > 0 ? String(userProfile.bodyFat) : "")
+                      setMuscleMassInput(userProfile.muscleMass > 0 ? String(userProfile.muscleMass) : "")
+                      setBodyStatsError(null)
+                      setBodyStatsOpen(true)
+                    }}
+                  >
+                    <ChevronDown className="mr-2 h-4 w-4" />
+                    {hasDetailedStats ? "Update stats" : "Add detailed stats"}
+                  </Button>
+                  {bodyStatsSaved && (
+                    <span className="flex items-center gap-1 text-sm text-primary">
+                      <Check className="h-4 w-4" /> Saved
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="settings-section-panel space-y-4">
+                <div className="space-y-1">
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    These values come from an InBody scan, smart scale, or a trusted measurement. No data? Your existing targets still work great.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="bodyFatInput" className="text-sm font-medium text-foreground">
+                      Body Fat (%)
+                    </Label>
+                    <Input
+                      id="bodyFatInput"
+                      type="number"
+                      inputMode="decimal"
+                      min={1}
+                      max={99}
+                      step={0.1}
+                      placeholder="e.g. 18.5"
+                      value={bodyFatInput}
+                      onChange={(e) => {
+                        setBodyFatInput(e.target.value)
+                        setBodyStatsError(null)
+                      }}
+                      className="h-12"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="muscleMassInput" className="text-sm font-medium text-foreground">
+                      Muscle Mass ({userProfile.unit})
+                    </Label>
+                    <Input
+                      id="muscleMassInput"
+                      type="number"
+                      inputMode="decimal"
+                      min={0.1}
+                      step={0.1}
+                      placeholder={userProfile.unit === "kg" ? "e.g. 32.5" : "e.g. 71.6"}
+                      value={muscleMassInput}
+                      onChange={(e) => {
+                        setMuscleMassInput(e.target.value)
+                        setBodyStatsError(null)
+                      }}
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+                {bodyStatsError && (
+                  <p className="text-sm text-destructive">{bodyStatsError}</p>
+                )}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant="outline"
+                    className="h-12 min-h-[44px]"
+                    onClick={() => {
+                      setBodyStatsOpen(false)
+                      setBodyStatsError(null)
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="h-12 min-h-[44px]"
+                    onClick={handleBodyStatsSave}
+                  >
+                    Save &amp; recalculate
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

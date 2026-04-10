@@ -274,7 +274,7 @@ const onboardingUi = {
   progressTrack:
     "flex items-center gap-1.5 rounded-full border border-[#e2d6c5] bg-[#f7f1e8] px-2.5 py-1.5",
   boundedInputBase:
-    "h-12 rounded-2xl border px-4 py-2.5 text-base text-[#28312b] placeholder:text-[#9a948a] transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none",
+    "h-12 rounded-2xl border border-[#C8BDB0] bg-white px-4 py-2.5 text-base text-[#1A1A1A] placeholder:text-[#8C8279] transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:border-[#4A7C59] focus-visible:ring-2 focus-visible:ring-[#4A7C59]/20",
 } as const
 
 function OnboardingMainCard({ children, className }: { children: ReactNode; className?: string }) {
@@ -401,7 +401,7 @@ function OnboardingProgressIndicator({
 
 export function Onboarding() {
   const { setUserProfile, setCurrentStep, calculateMacros } = useMealStore()
-  const [step, setStep] = useState<OnboardingStep>("body")
+  const [step, setStep] = useState<OnboardingStep>("quick-estimate")
   const [sex, setSex] = useState<Sex>("male")
   const [unitSystem, setUnitSystem] = useState<RecipeUnitSystem>("metric")
   const [unit, setUnit] = useState<"kg" | "lbs">("kg")
@@ -1033,9 +1033,9 @@ export function Onboarding() {
     return cn(
       onboardingUi.boundedInputBase,
       hasValue
-        ? "border-[#d1c4b2] border-b-[#d1c4b2] bg-white shadow-[0_5px_12px_-14px_rgba(40,49,43,0.25)]"
-        : "border-[#d8ccb9] border-b-[#d8ccb9] bg-[#fffdf9] shadow-none",
-      isFocused && !hasError && "border-[#8a6e4b] border-b-[#8a6e4b] bg-white ring-2 ring-[#8a6e4b]/18 shadow-[0_12px_24px_-18px_rgba(122,91,65,0.35)]",
+        ? "border-[#C8BDB0] border-b-[#C8BDB0] bg-white shadow-[0_5px_12px_-14px_rgba(40,49,43,0.25)]"
+        : "border-[#C8BDB0] border-b-[#C8BDB0] bg-white shadow-none",
+      isFocused && !hasError && "border-[#4A7C59] border-b-[#4A7C59] bg-white ring-2 ring-[#4A7C59]/20 shadow-[0_12px_24px_-18px_rgba(74,124,89,0.35)]",
       hasError && "border-[#b77749] border-b-[#b77749] bg-[#fff6f0] text-[#7a4d2a] ring-2 ring-[#b77749]/12 shadow-none"
     )
   }
@@ -1087,10 +1087,10 @@ export function Onboarding() {
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 1 of 8</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
-                Let&apos;s set your starting point
+                Use detailed body stats
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
-                A few basic stats help us set a calorie and protein starting point for your plan. If you don&apos;t have InBody-style data, you can use the quick estimate option instead.
+                Best if you have body fat or scan-based measurements. These give us a more precise calorie and protein target.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
@@ -1143,7 +1143,7 @@ export function Onboarding() {
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
                   title="Your body stats"
-                  description="These help us set your calorie and protein targets."
+                  description="Enter your numbers from an InBody scan, smart scale, or your best estimate."
                 />
 
                 <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] pt-3">
@@ -1198,15 +1198,11 @@ export function Onboarding() {
                       className={getBodyFieldClassName("muscleMass", muscleMass)}
                     />
                     <OnboardingFieldNote error={Boolean(muscleMassError)}>
-                      {muscleMassError ?? "If you have it from a scan, use it. If not, you can switch to quick estimate instead."}
+                      {muscleMassError ?? "From an InBody scan or smart scale. If you don&apos;t have it, the basics setup estimates this for you."}
                     </OnboardingFieldNote>
                   </div>
                 </div>
               </div>
-
-              <OnboardingSecondaryActionRow onClick={() => setStep("quick-estimate")}>
-                Don&apos;t have InBody-style data? Use quick estimate instead.
-              </OnboardingSecondaryActionRow>
 
               <div className="space-y-2.5 pt-0.5">
                 <OnboardingPrimaryCta
@@ -1233,6 +1229,14 @@ export function Onboarding() {
                 <p className="text-center text-[11px] leading-[1.45] text-[#7a8079]">
                   Use your best estimate for now. You can update these details later.
                 </p>
+
+                <button
+                  type="button"
+                  onClick={() => setStep("quick-estimate")}
+                  className="mt-1 w-full py-1.5 text-center text-sm text-[#7a5b41] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
+                >
+                  ← Back to basics setup
+                </button>
               </div>
             </CardContent>
           </OnboardingMainCard>
@@ -1243,17 +1247,17 @@ export function Onboarding() {
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 1 of 8</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
-                Use a quick estimate
+                Start with the basics
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
-                No InBody scan needed. Share a few basics and we&apos;ll estimate body fat and muscle mass so you can keep moving.
+                A faster setup using height, weight, age, and body type.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
                   title="Basic details"
-                  description="Use your best estimate here. You can replace it later with scan data."
+                  description="Enter your best estimates — you can update these anytime."
                 />
 
                 <div className="mt-3.5 grid gap-4 border-t border-[#eadfce] pt-3">
@@ -1350,10 +1354,10 @@ export function Onboarding() {
 
                 <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-3">
                   {([
-                    { id: "lean", label: "Lean", description: "Naturally slim, low body fat" },
-                    { id: "average", label: "Average", description: "Typical build, some body fat" },
+                    { id: "lean", label: "Slim", description: "Naturally lean build, lower body fat" },
+                    { id: "average", label: "Average", description: "Typical build, moderate body fat" },
                     { id: "athletic", label: "Athletic", description: "Visibly muscular, active lifestyle" },
-                    { id: "heavy-set", label: "Heavy-set", description: "Carrying extra weight currently" },
+                    { id: "heavy-set", label: "Heavy", description: "Carrying extra weight currently" },
                   ] as const).map((item) => (
                     <button
                       key={item.id}
@@ -1383,18 +1387,7 @@ export function Onboarding() {
                 </div>
               </div>
 
-              <OnboardingFieldNote>
-                These are just starting estimates. You can update everything later with real InBody data for better accuracy.
-              </OnboardingFieldNote>
-
               <div className="space-y-2.5 pt-0.5">
-                <OnboardingSecondaryActionRow
-                  onClick={() => setStep("body")}
-                  iconPosition="start"
-                  className="justify-start"
-                >
-                  Back to body stats
-                </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
                     weight && quickHeight && quickAge && quickBodyType
@@ -1404,8 +1397,24 @@ export function Onboarding() {
                   onClick={applyQuickEstimate}
                   disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
                 >
-                  Apply estimate &amp; continue
+                  Set my targets
                 </OnboardingPrimaryCta>
+
+                <p className="text-center text-[11px] leading-[1.45] text-[#7a8079]">
+                  You can refine this later with detailed stats.
+                </p>
+              </div>
+
+              <div className="border-t border-[#eadfce] pt-4 text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a8079]">Use detailed body stats</p>
+                <p className="mt-1 text-xs leading-5 text-[#7a8079]">Best if you have body fat or scan-based measurements.</p>
+                <button
+                  type="button"
+                  onClick={() => setStep("body")}
+                  className="mt-2 text-sm font-medium text-[#7a5b41] underline underline-offset-2 hover:text-[#5e3e27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:rounded"
+                >
+                  I have detailed body stats (InBody, smart scale, etc.)
+                </button>
               </div>
             </CardContent>
           </OnboardingMainCard>
