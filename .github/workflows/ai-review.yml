@@ -1,0 +1,135 @@
+# AI-powered PR review workflow using Claude Code Action.
+# Triggers on pull requests targeting the design/codex-ui-redesign branch
+# and posts a structured review as a PR comment.
+
+name: AI PR Review
+
+on:
+  pull_request:
+    branches:
+      - design/codex-ui-redesign
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  ai-review:
+    name: Claude Code Review
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read       # Required to checkout code and read CLAUDE.md
+      pull-requests: write # Required to post review comments on the PR
+
+    steps:
+      # Step 1: Checkout with full history so we can compute the diff
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 2: Generate the PR diff (changed files only, relative to base branch)
+      - name: Generate PR diff
+        id: diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+
+          # Truncate to ~12 000 chars to stay within prompt limits
+          python3 - <<'PY'
+          with open("pr_diff.txt", "r", errors="replace") as f:
+              content = f.read()
+          if len(content) > 12000:
+              content = content[:12000] + "\n\n[... diff truncated for length ...]"
+          with open("pr_diff_trimmed.txt", "w") as f:
+              f.write(content)
+          PY
+
+      # Step 3: Read CLAUDE.md to supply coding standards to Claude
+      - name: Read CLAUDE.md
+        id: claude_md
+        run: |
+          if [ -f CLAUDE.md ]; then
+            # Escape the content for use in a multiline env var
+            echo "CLAUDE_MD_CONTENT<<EOF" >> $GITHUB_ENV
+            cat CLAUDE.md >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "CLAUDE_MD_CONTENT=No CLAUDE.md found in repository." >> $GITHUB_ENV
+          fi
+
+      # Step 4: Run Claude Code Action with a structured review prompt.
+      # The action posts its response directly as a PR comment.
+      - name: Run Claude Code review
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          direct_prompt: |
+            You are a senior engineer reviewing a pull request for the **NutriPlan** project.
+
+            ## Project coding standards (from CLAUDE.md)
+
+            ${{ env.CLAUDE_MD_CONTENT }}
+
+            ## PR information
+
+            - **PR title**: ${{ github.event.pull_request.title }}
+            - **Author**: ${{ github.event.pull_request.user.login }}
+            - **Base branch**: ${{ github.base_ref }}
+            - **Head branch**: ${{ github.head_ref }}
+
+            ## Diff
+
+            ```diff
+            $(cat pr_diff_trimmed.txt)
+            ```
+
+            ## Review instructions
+
+            Analyze the diff above and produce a concise review covering **all four areas** below.
+            Skip any area where there are no issues — do not pad the review.
+
+            ### 1. Coding Standards (CLAUDE.md compliance)
+            - Are comments written in English?
+            - Are only functional components used (no class components)?
+            - Is global state managed exclusively through `lib/meal-store.ts` (Zustand)?
+            - Are shadcn/ui components from `components/ui/` used for common UI elements?
+            - Were any new packages added without prior notice?
+
+            ### 2. Security Issues
+            - Any hardcoded API keys, tokens, or secrets?
+            - Any risk of `.env` or credential files being committed?
+            - Any sensitive data exposed on the client side (e.g., `ANTHROPIC_API_KEY` referenced in a client component)?
+
+            ### 3. TypeScript Type Safety
+            - Unnecessary use of `any` without explanation?
+            - Missing or incorrect type annotations that could cause runtime errors?
+            - Type mismatches between props or function signatures?
+
+            ### 4. Code Quality
+            - Dead code, commented-out blocks, or unused imports?
+            - Obvious duplication that should be extracted into a shared utility?
+            - Logic that is overly complex for what it does?
+
+            ## Output format
+
+            Reply in the following markdown structure. Use ✅ for no issues, ⚠️ for minor issues, and 🚨 for critical issues.
+
+            ---
+            ## 🤖 Claude Code Review
+
+            ### 1. Coding Standards  <status emoji>
+            <findings or "No issues found.">
+
+            ### 2. Security  <status emoji>
+            <findings or "No issues found.">
+
+            ### 3. TypeScript Type Safety  <status emoji>
+            <findings or "No issues found.">
+
+            ### 4. Code Quality  <status emoji>
+            <findings or "No issues found.">
+
+            ---
+            > Reviewed by Claude (`claude-sonnet-4-5`) via [claude-code-action](https://github.com/anthropics/claude-code-action).
