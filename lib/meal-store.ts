@@ -89,7 +89,7 @@ export interface SwapCandidate {
   carbs: number
   fat: number
   ingredients: Ingredient[]
-  recipe: string
+  instructions: string[]
 }
 
 interface MealStore {

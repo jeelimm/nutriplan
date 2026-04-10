@@ -61,7 +61,7 @@ function normalizeCandidateMacros(raw: any): {
   carbs: number
   fat: number
   ingredients: { name: string; amount: string; category: string }[]
-  recipe: string
+  instructions: string[]
 } {
   const protein = firstNumber(raw?.protein)
   const carbs = firstNumber(raw?.carbs)
@@ -78,13 +78,15 @@ function normalizeCandidateMacros(raw: any): {
     category: String(ing?.category ?? ""),
   }))
 
-  let recipe = ""
+  let instructions: string[] = []
   if (Array.isArray(raw?.recipe?.instructions)) {
-    recipe = raw.recipe.instructions.join(" ")
-  } else if (typeof raw?.recipe === "string") {
-    recipe = raw.recipe
+    instructions = raw.recipe.instructions.map((s: unknown) => String(s))
   } else if (Array.isArray(raw?.instructions)) {
-    recipe = (raw.instructions as string[]).join(" ")
+    instructions = (raw.instructions as unknown[]).map((s) => String(s))
+  } else if (typeof raw?.recipe?.instructions === "string") {
+    instructions = [raw.recipe.instructions]
+  } else if (typeof raw?.recipe === "string") {
+    instructions = [raw.recipe]
   }
 
   return {
@@ -94,7 +96,7 @@ function normalizeCandidateMacros(raw: any): {
     carbs,
     fat,
     ingredients,
-    recipe,
+    instructions,
   }
 }
 
@@ -170,7 +172,7 @@ Protein: ${proteinTarget}g (${proteinMin}–${proteinMax}g)
 Carbs: ${carbsTarget}g (${carbsMin}–${carbsMax}g)
 Fat: ${fatTarget}g (${fatMin}–${fatMax}g)
 
-Return JSON array only:
+Return JSON array only. Each recipe.instructions MUST be an array of separate step strings — never concatenate steps into one string.
 [
   {
     "name": "",
@@ -179,7 +181,7 @@ Return JSON array only:
     "carbs": 0,
     "fat": 0,
     "ingredients": [{"name": "", "amount": "", "category": ""}],
-    "recipe": {"prepTime": 0, "cookTime": 0, "instructions": [""]}
+    "recipe": {"prepTime": 0, "cookTime": 0, "instructions": ["Step 1 text.", "Step 2 text.", "Step 3 text."]}
   }
 ]`
 

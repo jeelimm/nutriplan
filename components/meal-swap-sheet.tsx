@@ -66,7 +66,7 @@ function candidateToMeal(candidate: SwapCandidate, mealIndex: number): Meal {
     carbs: candidate.carbs,
     fat: candidate.fat,
     ingredients: candidate.ingredients,
-    instructions: candidate.recipe ? [candidate.recipe] : [],
+    instructions: candidate.instructions ?? [],
     prepTime: 10,
     cookTime: 20,
   }
