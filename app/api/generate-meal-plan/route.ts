@@ -341,7 +341,9 @@ ALL meal names must be Korean dishes.
 `
       : ""
 
-    const prompt = `Generate exactly:
+    const prompt = `CRITICAL LANGUAGE RULE: Generate ALL meal names, ingredient names, and recipe instructions in English. Do NOT use Korean, Japanese, or any other non-English language for food names. For example, use "Egg Roll" not "계란말이", use "Bibimbap" not "비빔밥". The only exception is if the user has explicitly set their language preference to Korean (language: "ko").${language === "ko" ? ' This user has language set to "ko", so Korean names are allowed.' : ' This user does NOT have language set to "ko" — strictly use English for all food names, ingredient names, and instructions.'}
+
+Generate exactly:
 - 3 breakfast options
 - 3 lunch options
 - 3 dinner options
