@@ -1,0 +1,42 @@
+# NutriPlan CI 워크플로우
+# main 및 design/codex-ui-redesign 브랜치의 push/PR 시 빌드 검증을 실행한다.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - design/codex-ui-redesign
+  pull_request:
+    branches:
+      - main
+      - design/codex-ui-redesign
+
+jobs:
+  build:
+    name: 빌드 검증
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 소스코드 체크아웃
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      # 2. Node.js v20 설치
+      - name: Node.js 설치 (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3. 의존성 설치 (package-lock.json 기준 clean install)
+      - name: 의존성 설치
+        run: npm ci
+
+      # 4. Next.js 프로덕션 빌드 실행
+      # ANTHROPIC_API_KEY는 GitHub Secrets에서 주입 (코드에 직접 기입 금지)
+      - name: 빌드
+        run: npm run build
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
