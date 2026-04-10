@@ -1250,7 +1250,7 @@ export function Onboarding() {
                 Start with the basics
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
-                A faster setup using height, weight, age, and body type. You can refine this later with detailed stats.
+                A faster setup using height, weight, age, and body type.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
@@ -1401,24 +1401,19 @@ export function Onboarding() {
                 </OnboardingPrimaryCta>
 
                 <p className="text-center text-[11px] leading-[1.45] text-[#7a8079]">
-                  These are estimates. You can refine this later with detailed stats.
+                  You can refine this later with detailed stats.
                 </p>
               </div>
 
-              <div className="border-t border-[#eadfce] pt-4">
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a8079]">Use detailed body stats</p>
-                  <p className="text-xs leading-5 text-[#7a8079]">Best if you have body fat or scan-based measurements.</p>
-                </div>
+              <div className="border-t border-[#eadfce] pt-4 text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a8079]">Use detailed body stats</p>
+                <p className="mt-1 text-xs leading-5 text-[#7a8079]">Best if you have body fat or scan-based measurements.</p>
                 <button
                   type="button"
                   onClick={() => setStep("body")}
-                  className="mt-2.5 w-full rounded-2xl border border-[#d8ccb9] bg-[#fff7ee] px-4 py-3 text-left text-sm font-medium text-[#5e665f] transition-colors hover:bg-[#f8efe4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
+                  className="mt-2 text-sm font-medium text-[#7a5b41] underline underline-offset-2 hover:text-[#5e3e27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:rounded"
                 >
-                  <span className="flex items-center justify-between">
-                    <span>I have detailed body stats (InBody, smart scale, etc.)</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-[#7a5b41]" />
-                  </span>
+                  I have detailed body stats (InBody, smart scale, etc.)
                 </button>
               </div>
             </CardContent>
