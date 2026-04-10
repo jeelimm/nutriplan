@@ -274,7 +274,7 @@ const onboardingUi = {
   progressTrack:
     "flex items-center gap-1.5 rounded-full border border-[#e2d6c5] bg-[#f7f1e8] px-2.5 py-1.5",
   boundedInputBase:
-    "h-12 rounded-2xl border px-4 py-2.5 text-base text-[#28312b] placeholder:text-[#9a948a] transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none",
+    "h-12 rounded-2xl border border-[#d8ccb9] bg-[#fffdf9] px-4 py-2.5 text-base text-[#28312b] placeholder:text-[#9a948a] transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:border-[#8a6e4b] focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/18",
 } as const
 
 function OnboardingMainCard({ children, className }: { children: ReactNode; className?: string }) {

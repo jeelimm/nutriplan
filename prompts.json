@@ -1,18 +1,30 @@
 {
-  "feature": "Meal swap width alignment + enforce English in all meal generation",
-  "branch": "fix/meal-swap-ui-v3",
+  "feature": "Onboarding UX overhaul — input visibility fix + quick estimate as default",
+  "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Make swap sheet width identical to meal cards",
-      "prompt": "The MealSwapSheet bottom sheet width does not match the meal cards in daily-view.tsx. Fix this: 1) Open components/daily-view.tsx and find the EXACT outermost container element that wraps each individual meal card — note its width-related Tailwind classes (max-w-*, w-*, px-*, mx-*). 2) Open components/meal-swap-sheet.tsx and find the Sheet content wrapper. 3) Remove any existing max-width or width constraints on the sheet content. 4) Apply the EXACT SAME width-related Tailwind classes from the meal card container to the sheet content wrapper, so they are pixel-perfect aligned. 5) Test by visually comparing — the left and right edges of the swap sheet candidates should align exactly with the left and right edges of the meal cards above. Follow CLAUDE.md guidelines.",
-      "files_affected": ["components/meal-swap-sheet.tsx", "components/daily-view.tsx"]
+      "description": "Fix input field visibility and color contrast in onboarding",
+      "prompt": "In components/onboarding.tsx, the input fields have poor visibility — users report the color scheme makes them hard to see. Fix this by: 1) Check all input fields, select dropdowns, and number inputs in the onboarding flow. 2) Ensure text color has strong contrast against the input background (use dark text on light backgrounds). 3) Add visible borders to all input fields — use a subtle but clear border color (e.g. border-gray-300 for light mode, border-gray-600 for dark mode). 4) Make sure placeholder text is visible but lighter than actual input text. 5) Check focus states — inputs should have a clear focus ring or border color change when selected. 6) Test that this works in both light and dark mode if the app supports it. Match the existing design system in the app. Follow CLAUDE.md guidelines.",
+      "files_affected": ["components/onboarding.tsx"]
     },
     {
       "id": 2,
-      "description": "Enforce English in generate-meal-plan API",
-      "prompt": "In app/api/generate-meal-plan/route.ts, find the prompt string sent to Claude AI for meal plan generation. Add this instruction at the very TOP of the prompt: 'CRITICAL LANGUAGE RULE: Generate ALL meal names, ingredient names, and recipe instructions in English. Do NOT use Korean, Japanese, or any other non-English language for food names. For example, use \"Egg Roll\" not \"계란말이\", use \"Bibimbap\" not \"비빔밥\". The only exception is if the user has explicitly set their language preference to Korean (language: \"ko\").' Also verify the userProfile.language field is checked — if it is 'ko', Korean is allowed. For all other values including undefined, null, or 'en', strictly enforce English. Follow CLAUDE.md guidelines.",
-      "files_affected": ["app/api/generate-meal-plan/route.ts"]
+      "description": "Restructure onboarding to make Quick Estimate the default path",
+      "prompt": "In components/onboarding.tsx, restructure the onboarding flow so that Quick Estimate is the PRIMARY default path. Currently the detailed body stats (weight, body fat %, muscle mass) is the default. Change this so: 1) The first body stats screen shows Quick Estimate fields: height, weight, age, sex, and a body type selector (slim/average/athletic/heavy). 2) Below the quick estimate form, add a secondary link styled as a text button: 'I have detailed body stats (InBody, smart scale, etc.)' that expands or navigates to the detailed input fields (body fat %, muscle mass). 3) The primary option title should be 'Start with the basics' with description 'A faster setup using height, weight, age, and body type.' 4) The secondary option should say 'Use detailed body stats' with description 'Best if you have body fat or scan-based measurements.' 5) Do NOT frame Quick Estimate as inferior. Use warm, practical copy. 6) Add supportive copy: 'You can refine this later with detailed stats.' Follow CLAUDE.md guidelines.",
+      "files_affected": ["components/onboarding.tsx"]
+    },
+    {
+      "id": 3,
+      "description": "Update nutrition calculation to support quick estimate inputs",
+      "prompt": "In lib/nutrition.ts, ensure the calorie and macro target calculation works with Quick Estimate inputs (height, weight, age, sex, body type) in addition to the existing detailed inputs (body fat %, muscle mass). If body fat % and muscle mass are not provided: 1) Estimate body fat % from the body type selector (slim ~12-18%, average ~18-25%, athletic ~15-20%, heavy ~25-35%, adjusted by sex). 2) Estimate lean body mass from weight and estimated body fat. 3) Use these estimates to calculate calorie and macro targets using the same formulas already in place. 4) Make sure the existing detailed calculation path still works when body fat % and muscle mass ARE provided. 5) Add the 'bodyType' field to the UserProfile type in lib/meal-store.ts if it doesn't exist (options: 'slim' | 'average' | 'athletic' | 'heavy'). Follow CLAUDE.md guidelines.",
+      "files_affected": ["lib/nutrition.ts", "lib/meal-store.ts"]
+    },
+    {
+      "id": 4,
+      "description": "Add option to upgrade to detailed stats from settings",
+      "prompt": "In components/settings-screen.tsx, add an option that lets users upgrade their profile from Quick Estimate to Detailed Body Stats at any time. Requirements: 1) Add a section called 'Refine your targets' or 'Update body stats'. 2) If the user originally used Quick Estimate (no body fat % or muscle mass provided), show a prompt: 'Got InBody or smart scale data? Adding detailed body stats can improve your calorie and macro targets.' 3) Tapping it should open input fields for body fat % and muscle mass. 4) On save, recalculate targets using the detailed formula in lib/nutrition.ts. 5) Use warm, non-pressuring copy — do not make users feel their current setup is wrong. 6) Example copy: 'Your current targets are a solid starting point. Detailed stats can fine-tune them further.' Follow CLAUDE.md guidelines.",
+      "files_affected": ["components/settings-screen.tsx", "lib/meal-store.ts"]
     }
   ]
 }
