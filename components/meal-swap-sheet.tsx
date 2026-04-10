@@ -120,60 +120,62 @@ export function MealSwapSheet({
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
       <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl pb-safe">
-        <SheetHeader className="pb-2">
-          <SheetTitle>Swap meal</SheetTitle>
-          <SheetDescription>
-            Replacing: <span className="font-medium text-foreground">{currentMeal.name}</span>
-            {' '}({currentMeal.calories} kcal · {currentMeal.protein}g P · {currentMeal.carbs}g C · {currentMeal.fat}g F)
-          </SheetDescription>
-        </SheetHeader>
+        <div className="mx-auto w-full max-w-lg">
+          <SheetHeader className="pb-2">
+            <SheetTitle>Swap meal</SheetTitle>
+            <SheetDescription>
+              Replacing: <span className="font-medium text-foreground">{currentMeal.name}</span>
+              {' '}({currentMeal.calories} kcal · {currentMeal.protein}g P · {currentMeal.carbs}g C · {currentMeal.fat}g F)
+            </SheetDescription>
+          </SheetHeader>
 
-        <div className="px-4 py-2 flex-1">
-          {loading && (
-            <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground">
-              <Loader2 className="size-6 animate-spin" />
-              <p className="text-sm">Finding alternatives…</p>
-            </div>
-          )}
+          <div className="px-4 py-2 flex-1">
+            {loading && (
+              <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground">
+                <Loader2 className="size-6 animate-spin" />
+                <p className="text-sm">Finding alternatives…</p>
+              </div>
+            )}
 
-          {error && !loading && (
-            <p className="text-sm text-destructive text-center py-8">{error}</p>
-          )}
+            {error && !loading && (
+              <p className="text-sm text-destructive text-center py-8">{error}</p>
+            )}
 
-          {!loading && !error && candidates.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No suitable alternatives found. Try again.
-            </p>
-          )}
+            {!loading && !error && candidates.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No suitable alternatives found. Try again.
+              </p>
+            )}
 
-          {!loading && candidates.length > 0 && (
-            <ul className="flex flex-col gap-3">
-              {candidates.map((candidate) => (
-                <li key={candidate.id}>
-                  <button
-                    onClick={() => handleSelect(candidate)}
-                    className={cn(
-                      'w-full text-left rounded-xl border bg-card p-4 transition-colors',
-                      'hover:border-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                    )}
-                  >
-                    <p className="font-semibold text-sm leading-snug">{candidate.name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {candidate.calories} kcal · {candidate.protein}g protein · {candidate.carbs}g carbs · {candidate.fat}g fat
-                    </p>
-                    <MacroDiff candidate={candidate} current={currentMeal} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+            {!loading && candidates.length > 0 && (
+              <ul className="flex flex-col gap-3">
+                {candidates.map((candidate) => (
+                  <li key={candidate.id}>
+                    <button
+                      onClick={() => handleSelect(candidate)}
+                      className={cn(
+                        'w-full text-left rounded-xl border bg-card p-4 transition-colors',
+                        'hover:border-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                      )}
+                    >
+                      <p className="font-semibold text-sm leading-snug">{candidate.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {candidate.calories} kcal · {candidate.protein}g protein · {candidate.carbs}g carbs · {candidate.fat}g fat
+                      </p>
+                      <MacroDiff candidate={candidate} current={currentMeal} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <SheetFooter className="pt-2">
+            <Button variant="outline" className="w-full" onClick={onClose}>
+              Keep current meal
+            </Button>
+          </SheetFooter>
         </div>
-
-        <SheetFooter className="pt-2">
-          <Button variant="outline" className="w-full" onClick={onClose}>
-            Keep current meal
-          </Button>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   )

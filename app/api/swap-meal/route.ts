@@ -52,6 +52,8 @@ function formatCuisinePreference(cuisines: unknown): string {
     .join(", ")
 }
 
+// `any` is required here because the AI response structure is unpredictable and must be
+// parsed at runtime — field names, nesting depth, and value types can vary across responses.
 function normalizeCandidateMacros(raw: any): {
   name: string
   calories: number
@@ -68,6 +70,8 @@ function normalizeCandidateMacros(raw: any): {
     firstNumber(raw?.calories) || Math.round(protein * 4 + carbs * 4 + fat * 9)
 
   const rawIngredients = Array.isArray(raw?.ingredients) ? raw.ingredients : []
+  // `any` is required because each ingredient object from the AI response has an unpredictable
+  // shape — field names like `quantity` vs `amount` vary and must be handled at runtime.
   const ingredients = rawIngredients.map((ing: any) => ({
     name: String(ing?.name ?? "").trim(),
     amount: String(ing?.amount ?? ing?.quantity ?? "").trim(),
