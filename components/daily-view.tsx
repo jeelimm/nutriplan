@@ -15,11 +15,13 @@ import {
   type CuisinePreference,
   type DietType,
   type Goal,
+  type Meal,
 } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
-import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight } from "lucide-react"
+import { MealSwapSheet } from "@/components/meal-swap-sheet"
 
 function MacroProgress({ current, target, label, icon, color }: { 
   current: number
@@ -103,6 +105,7 @@ export function DailyView() {
   const [editCuisines, setEditCuisines] = useState<CuisinePreference[]>([])
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
+  const [swapTarget, setSwapTarget] = useState<{ meal: Meal; dayIndex: number; mealIndex: number } | null>(null)
 
   const convertWeightValue = (value: string, fromUnit: "kg" | "lbs", toUnit: "kg" | "lbs"): string => {
     if (fromUnit === toUnit || !value.trim()) return value
@@ -674,14 +677,24 @@ export function DailyView() {
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => toggleMealExpanded(meal.id)}
-                    className="mt-4 flex min-h-11 w-full items-center justify-between rounded-2xl border border-border bg-background/82 px-4 py-3 text-left text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-[#fcf7ef]"
-                  >
-                    <span>Recipe & details</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                  </button>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleMealExpanded(meal.id)}
+                      className="flex min-h-11 flex-1 items-center justify-between rounded-2xl border border-border bg-background/82 px-4 py-3 text-left text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-[#fcf7ef]"
+                    >
+                      <span>Recipe & details</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSwapTarget({ meal, dayIndex: selectedDay, mealIndex: idx })}
+                      className="flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-background/82 px-4 py-3 text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-[#fcf7ef]"
+                    >
+                      <ArrowLeftRight className="h-4 w-4" />
+                      <span>Swap</span>
+                    </button>
+                  </div>
 
                   {isExpanded && (
                     <div className="mt-4 space-y-4 border-t border-border pt-4">
@@ -1011,6 +1024,16 @@ export function DailyView() {
             </div>
           </div>
         </div>
+      )}
+
+      {swapTarget && (
+        <MealSwapSheet
+          isOpen={swapTarget !== null}
+          onClose={() => setSwapTarget(null)}
+          currentMeal={swapTarget.meal}
+          dayIndex={swapTarget.dayIndex}
+          mealIndex={swapTarget.mealIndex}
+        />
       )}
     </div>
   )
