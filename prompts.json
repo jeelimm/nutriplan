@@ -1,0 +1,42 @@
+{
+  "feature": "Meal Swap — replace a single meal without regenerating the full weekly plan",
+  "branch": "feature/meal-swap",
+  "prompts": [
+    {
+      "id": 1,
+      "description": "Add swapMeal action and types to Zustand store",
+      "prompt": "In lib/meal-store.ts, add the following: 1) A new type 'SwapCandidate' with fields: id (string), name (string), calories (number), protein (number), carbs (number), fat (number), ingredients (same type as Meal ingredients), recipe (string). 2) A new action 'swapMeal' that takes dayIndex (number), mealIndex (number), and newMeal (Meal), and replaces that specific meal in the weekly plan while keeping everything else intact. 3) A new state field 'swapCandidates: SwapCandidate[]' initialized as empty array, and actions 'setSwapCandidates' and 'clearSwapCandidates'. Follow CLAUDE.md guidelines.",
+      "files_affected": ["lib/meal-store.ts"]
+    },
+    {
+      "id": 2,
+      "description": "Create API endpoint for generating swap candidates",
+      "prompt": "Create a new API route at app/api/swap-meal/route.ts. It should: 1) Accept POST with body: { currentMeal: Meal, mealSlot: 'breakfast'|'lunch'|'dinner', userProfile: UserProfile }. 2) Call the Anthropic SDK (same model as route.ts uses) to generate 3 alternative meal options that match the user's goal, diet style, cuisine preference, and ingredient constraints. 3) Each candidate must stay within ±15% of the original meal's calorie and macro targets. 4) Return JSON array of candidates. 5) Use ANTHROPIC_API_KEY from environment variables. Follow CLAUDE.md guidelines and match the coding patterns in the existing app/api/generate-meal-plan/route.ts.",
+      "files_affected": ["app/api/swap-meal/route.ts"]
+    },
+    {
+      "id": 3,
+      "description": "Create MealSwapSheet bottom sheet component",
+      "prompt": "Create components/meal-swap-sheet.tsx — a bottom sheet modal component for meal swapping. Requirements: 1) Use shadcn Sheet component from components/ui/ (set side='bottom'). 2) Props: isOpen, onClose, currentMeal (Meal), dayIndex (number), mealIndex (number). 3) On open, call /api/swap-meal to fetch 3 candidates and show a loading spinner while fetching. 4) Display each candidate as a card showing: meal name, calories, protein/carbs/fat summary. 5) Highlight how each candidate compares to the current meal (e.g. '+20 cal, -5g protein'). 6) When user selects a candidate, call swapMeal from the Zustand store, show a success toast via Sonner ('Meal updated'), and close the sheet. 7) Add a 'Keep current meal' button to dismiss. 8) Use cn() for Tailwind classes. Follow CLAUDE.md guidelines.",
+      "files_affected": ["components/meal-swap-sheet.tsx"]
+    },
+    {
+      "id": 4,
+      "description": "Add Swap Meal button to daily-view meal cards",
+      "prompt": "In components/daily-view.tsx, add a 'Swap meal' button to each meal card. Requirements: 1) Place it near the existing 'Recipe & details' action area. 2) Use the ArrowLeftRight icon from lucide-react. 3) On click, open the MealSwapSheet component, passing the current meal data, dayIndex, and mealIndex. 4) Manage the sheet open/close state with useState. 5) Only show the swap button when a meal plan exists. Follow CLAUDE.md guidelines and match the existing UI style.",
+      "files_affected": ["components/daily-view.tsx"]
+    },
+    {
+      "id": 5,
+      "description": "Auto-update grocery list when a meal is swapped",
+      "prompt": "Update the grocery list logic so it reflects meal swaps. In lib/grocery.ts (or wherever the grocery list is derived), ensure that when a meal is swapped via the Zustand store, the grocery list recalculates automatically. The old meal's unique ingredients should be removed (unless used by another meal in the plan) and the new meal's ingredients should be added. If the grocery list is computed from the meal plan state, verify this reactivity works. If it's stored separately, update it in the swapMeal action in meal-store.ts. Add a toast notification 'Grocery list adjusted' via Sonner after a successful swap. Follow CLAUDE.md guidelines.",
+      "files_affected": ["lib/grocery.ts", "lib/meal-store.ts"]
+    },
+    {
+      "id": 6,
+      "description": "Add meal-validator check for swapped meals",
+      "prompt": "In lib/meal-validator.ts, add a validation function 'validateSwapCandidate' that checks a swap candidate against the user's constraints: 1) Calories within ±15% of the original meal. 2) Protein/carbs/fat within ±20% of the original. 3) No excluded ingredients from user profile. 4) Correct meal slot (breakfast candidates shouldn't be dinner-heavy meals). Export this function and use it in app/api/swap-meal/route.ts to filter the AI-generated candidates before returning them. Follow CLAUDE.md guidelines.",
+      "files_affected": ["lib/meal-validator.ts", "app/api/swap-meal/route.ts"]
+    }
+  ]
+}

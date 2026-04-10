@@ -15,11 +15,13 @@ import {
   type CuisinePreference,
   type DietType,
   type Goal,
+  type Meal,
 } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
-import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight } from "lucide-react"
+import { MealSwapSheet } from "@/components/meal-swap-sheet"
 
 function MacroProgress({ current, target, label, icon, color }: { 
   current: number
@@ -103,6 +105,7 @@ export function DailyView() {
   const [editCuisines, setEditCuisines] = useState<CuisinePreference[]>([])
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
+  const [swapTarget, setSwapTarget] = useState<{ meal: Meal; dayIndex: number; mealIndex: number } | null>(null)
 
   const convertWeightValue = (value: string, fromUnit: "kg" | "lbs", toUnit: "kg" | "lbs"): string => {
     if (fromUnit === toUnit || !value.trim()) return value
@@ -674,14 +677,24 @@ export function DailyView() {
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => toggleMealExpanded(meal.id)}
-                    className="mt-4 flex min-h-11 w-full items-center justify-between rounded-2xl border border-border bg-background/82 px-4 py-3 text-left text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-[#fcf7ef]"
-                  >
-                    <span>Recipe & details</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                  </button>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleMealExpanded(meal.id)}
+                      className="flex min-h-11 flex-1 items-center justify-between rounded-2xl border border-border bg-background/82 px-4 py-3 text-left text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-[#fcf7ef]"
+                    >
+                      <span>Recipe & details</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSwapTarget({ meal, dayIndex: selectedDay, mealIndex: idx })}
+                      className="flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-background/82 px-4 py-3 text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-[#fcf7ef]"
+                    >
+                      <ArrowLeftRight className="h-4 w-4" />
+                      <span>Swap</span>
+                    </button>
+                  </div>
 
                   {isExpanded && (
                     <div className="mt-4 space-y-4 border-t border-border pt-4">
@@ -764,112 +777,208 @@ export function DailyView() {
 
 
       {showEditProfileModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 backdrop-blur-sm md:items-center">
-          <div className="max-h-[90vh] w-full max-w-lg min-w-0 overflow-y-auto overflow-x-hidden rounded-t-3xl bg-card p-4 shadow-2xl sm:p-6 md:rounded-3xl">
-            <h2 className="mb-4 break-words text-xl font-bold text-foreground">Update your profile</h2>
+        <div className="settings-modal-backdrop">
+          <div className="settings-modal-shell max-w-lg">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="profileName">Profile Name</Label>
-                <Input
-                  id="profileName"
-                  className="w-full min-w-0"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
-                  placeholder="e.g. Joe"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Weight</Label>
-                <div className="mb-2 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditUnitWithConversion("kg")}
-                    className={`min-h-11 min-w-[44px] flex-1 rounded-lg px-3 py-2 text-sm sm:flex-none ${unit === "kg" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
-                  >
-                    kg
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditUnitWithConversion("lbs")}
-                    className={`min-h-11 min-w-[44px] flex-1 rounded-lg px-3 py-2 text-sm sm:flex-none ${unit === "lbs" ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
-                  >
-                    lbs
-                  </button>
-                </div>
-                <Input className="w-full min-w-0" value={weight} onChange={(e) => setWeight(e.target.value)} type="number" inputMode="decimal" />
-              </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-3">
+                <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Profile editor</div>
                 <div className="space-y-2">
-                  <Label>Body Fat %</Label>
-                  <Input className="w-full min-w-0" value={bodyFat} onChange={(e) => setBodyFat(e.target.value)} type="number" inputMode="decimal" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Muscle Mass</Label>
-                  <Input className="w-full min-w-0" value={muscleMass} onChange={(e) => setMuscleMass(e.target.value)} type="number" inputMode="decimal" />
+                  <h2 className="break-words text-[1.65rem] font-semibold leading-tight text-foreground">Update your profile</h2>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Keep your targets grounded in your current body stats and usual week. You can choose whether to regenerate after saving.
+                  </p>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Activity Level</Label>
+
+              <div className="settings-section-panel space-y-3.5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="text-sm font-semibold text-foreground">Basics</span>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">Use the details that best match how things look right now, not a perfect average.</p>
+                </div>
                 <div className="space-y-2">
-                  {activityLevels.map((level) => (
+                  <Label htmlFor="profileName" className="text-sm font-semibold text-foreground">Profile name</Label>
+                  <Input
+                    id="profileName"
+                    className="settings-input w-full min-w-0"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder="e.g. Joe"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-foreground">Weight</Label>
+                  <div className="flex flex-wrap gap-2">
                     <button
-                      key={level.id}
                       type="button"
-                      onClick={() => setActivityLevel(level.id)}
-                      className={`min-h-[44px] w-full rounded-xl border-2 p-3 text-left ${
-                        activityLevel === level.id ? "border-primary bg-primary/10" : "border-border"
-                      }`}
+                      onClick={() => setEditUnitWithConversion("kg")}
+                      className={cn("settings-chip flex-1 sm:flex-none", unit === "kg" ? "settings-chip-active" : "settings-chip-idle")}
                     >
-                      <div className="font-medium">{level.label}</div>
-                      <div className="text-xs text-muted-foreground">{level.description}</div>
+                      kg
                     </button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Goal</Label>
-                <div className="space-y-2">
-                  {goals.map((item) => (
                     <button
-                      key={item.id}
                       type="button"
-                      onClick={() => setGoal(item.id)}
-                      className={`min-h-[44px] w-full rounded-xl border-2 p-3 text-left ${
-                        goal === item.id ? "border-primary bg-primary/10" : "border-border"
-                      }`}
+                      onClick={() => setEditUnitWithConversion("lbs")}
+                      className={cn("settings-chip flex-1 sm:flex-none", unit === "lbs" ? "settings-chip-active" : "settings-chip-idle")}
                     >
-                      <div className="font-medium">{item.label}</div>
-                      <div className="text-xs text-muted-foreground">{item.description}</div>
+                      lbs
                     </button>
-                  ))}
+                  </div>
+                  <Input
+                    className="settings-input w-full min-w-0"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    type="number"
+                    inputMode="decimal"
+                  />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Cuisine (pick 1–2)</Label>
-                <p className="text-xs text-muted-foreground">Used when generating your meal plan</p>
+
+              <div className="settings-section-panel space-y-3.5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="text-sm font-semibold text-foreground">Body stats</span>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">These numbers keep calorie and protein targets anchored to your current body composition.</p>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-foreground">Body fat %</Label>
+                    <Input
+                      className="settings-input w-full min-w-0"
+                      value={bodyFat}
+                      onChange={(e) => setBodyFat(e.target.value)}
+                      type="number"
+                      inputMode="decimal"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-foreground">Muscle mass</Label>
+                    <Input
+                      className="settings-input w-full min-w-0"
+                      value={muscleMass}
+                      onChange={(e) => setMuscleMass(e.target.value)}
+                      type="number"
+                      inputMode="decimal"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-section-panel space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="text-sm font-semibold text-foreground">Weekly context</span>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">Choose the goal and activity level that feel closest to a normal week.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-foreground">Activity level</Label>
+                  <div className="grid gap-2">
+                    {activityLevels.map((level) => (
+                      <button
+                        key={level.id}
+                        type="button"
+                        onClick={() => setActivityLevel(level.id)}
+                        className={cn(
+                          "settings-choice-card",
+                          activityLevel === level.id ? "settings-choice-card-active" : "settings-choice-card-idle"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-foreground">{level.label}</div>
+                            <div className="mt-1 text-sm leading-6 text-muted-foreground">{level.description}</div>
+                          </div>
+                          {activityLevel === level.id && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-foreground">Goal</Label>
+                  <div className="grid gap-2">
+                    {goals.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setGoal(item.id)}
+                        className={cn(
+                          "settings-choice-card",
+                          goal === item.id ? "settings-choice-card-active" : "settings-choice-card-idle"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-foreground">{item.label}</div>
+                            <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
+                          </div>
+                          {goal === item.id && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-section-panel space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="text-sm font-semibold text-foreground">Cuisine focus</span>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">Pick one or two cuisines to keep the next plan realistic to shop for and repeat.</p>
+                </div>
                 <div className="grid gap-2">
-                  {CUISINE_OPTIONS.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => toggleEditCuisine(c.id)}
-                      className={`min-h-[44px] rounded-xl border-2 p-3 text-left text-sm ${
-                        editCuisines.includes(c.id) ? "border-primary bg-primary/10" : "border-border"
-                      }`}
-                    >
-                      <div className="font-medium">{c.title}</div>
-                      <div className="text-xs text-muted-foreground">{c.hint}</div>
-                    </button>
-                  ))}
+                  {CUISINE_OPTIONS.map((c) => {
+                    const selected = editCuisines.includes(c.id)
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => toggleEditCuisine(c.id)}
+                        className={cn(
+                          "settings-choice-card",
+                          selected ? "settings-choice-card-active" : "settings-choice-card-idle"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-foreground">{c.title}</div>
+                            <div className="mt-1 text-sm leading-6 text-muted-foreground">{c.hint}</div>
+                          </div>
+                          <span
+                            className={cn(
+                              "rounded-full px-2.5 py-1 text-[11px] font-medium",
+                              selected ? "bg-primary/12 text-primary" : "bg-background/85 text-muted-foreground"
+                            )}
+                          >
+                            {selected ? "Included" : "Add"}
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
+              </div>
+
+              <div className="bridge-note-strip">
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary/70" />
+                <span>Saving updates your targets right away. You can decide in the next step whether to regenerate this week&apos;s plan.</span>
               </div>
             </div>
+
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
               <Button variant="outline" className="h-12 min-h-[44px] flex-1" onClick={() => setShowEditProfileModal(false)}>
                 Cancel
               </Button>
               <Button className="h-12 min-h-[44px] flex-1" onClick={handleSaveProfile} disabled={editCuisines.length < 1}>
-                Save
+                Save profile updates
               </Button>
             </div>
           </div>
@@ -877,30 +986,54 @@ export function DailyView() {
       )}
 
       {showRegenerateConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 backdrop-blur-sm md:items-center">
-          <div className="w-full max-w-md min-w-0 rounded-t-3xl bg-card p-4 shadow-2xl sm:p-6 md:rounded-3xl">
-            <h3 className="break-words text-lg font-semibold text-foreground">
-              Your profile has been updated. Regenerate meal plan with new settings?
-            </h3>
-            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row">
-              <Button
-                variant="outline"
-                className="h-12 min-h-[44px] flex-1"
-                onClick={() => setShowRegenerateConfirmModal(false)}
-                disabled={isGeneratingMealPlan}
-              >
-                No
-              </Button>
-              <Button
-                className="h-12 min-h-[44px] flex-1"
-                onClick={handleRegenerateFromProfile}
-                disabled={isGeneratingMealPlan}
-              >
-                {isGeneratingMealPlan ? "Regenerating..." : "Yes"}
-              </Button>
+        <div className="settings-modal-backdrop">
+          <div className="settings-modal-shell max-w-md">
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Plan refresh</div>
+                <div className="space-y-2">
+                  <h3 className="break-words text-[1.5rem] font-semibold leading-tight text-foreground">Use these updates for a new meal plan?</h3>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Your profile is already saved. Regenerate when you want your meals and grocery list to catch up with the new settings.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bridge-note-strip">
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary/70" />
+                <span>Your current plan will stay in place until the new one finishes generating.</span>
+              </div>
+
+              <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row">
+                <Button
+                  variant="outline"
+                  className="h-12 min-h-[44px] flex-1"
+                  onClick={() => setShowRegenerateConfirmModal(false)}
+                  disabled={isGeneratingMealPlan}
+                >
+                  Keep current plan
+                </Button>
+                <Button
+                  className="h-12 min-h-[44px] flex-1"
+                  onClick={handleRegenerateFromProfile}
+                  disabled={isGeneratingMealPlan}
+                >
+                  {isGeneratingMealPlan ? "Regenerating..." : "Regenerate plan"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {swapTarget && (
+        <MealSwapSheet
+          isOpen={swapTarget !== null}
+          onClose={() => setSwapTarget(null)}
+          currentMeal={swapTarget.meal}
+          dayIndex={swapTarget.dayIndex}
+          mealIndex={swapTarget.mealIndex}
+        />
       )}
     </div>
   )
