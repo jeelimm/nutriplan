@@ -277,4 +277,44 @@
   .grocery-category-count {
     @apply inline-flex items-center rounded-full border border-border bg-background/80 px-2.5 py-1 text-[11px] font-medium text-muted-foreground;
   }
+
+  .settings-section-panel {
+    @apply rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-4;
+  }
+
+  .settings-choice-card {
+    @apply min-h-[52px] w-full rounded-2xl border px-4 py-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px;
+  }
+
+  .settings-choice-card-active {
+    @apply border-primary bg-[#edf4ec] shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)];
+  }
+
+  .settings-choice-card-idle {
+    @apply border-border bg-background/82 hover:border-primary/35 hover:bg-[#fcf7ef];
+  }
+
+  .settings-chip {
+    @apply inline-flex min-h-11 min-w-[44px] items-center justify-center rounded-2xl border px-3.5 py-2 text-sm font-medium transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px;
+  }
+
+  .settings-chip-active {
+    @apply border-primary bg-[#edf4ec] text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.45)];
+  }
+
+  .settings-chip-idle {
+    @apply border-border bg-card text-muted-foreground hover:border-primary/35 hover:bg-[#fcf7ef] hover:text-foreground;
+  }
+
+  .settings-input {
+    @apply !h-12 !rounded-2xl !border !border-border !bg-background/82 !px-4 !py-3 !text-[15px] !text-foreground !shadow-none placeholder:!text-muted-foreground/80 focus-visible:!border-primary focus-visible:!ring-2 focus-visible:!ring-ring/20 focus-visible:!ring-offset-2 focus-visible:!ring-offset-background;
+  }
+
+  .settings-modal-backdrop {
+    @apply fixed inset-0 z-50 flex items-end justify-center overflow-x-hidden bg-foreground/20 px-3 py-3 backdrop-blur-sm md:items-center;
+  }
+
+  .settings-modal-shell {
+    @apply max-h-[90vh] w-full min-w-0 overflow-y-auto overflow-x-hidden rounded-t-[28px] border border-border bg-card p-5 shadow-[0_26px_60px_-30px_rgba(18,33,23,0.42)] sm:p-6 md:rounded-[28px];
+  }
 }
