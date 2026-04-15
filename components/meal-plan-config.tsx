@@ -92,7 +92,7 @@ export function MealPlanConfig() {
 
         {userProfile && (
           <section className="bridge-hero mb-5">
-            <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Plan setup</div>
+            <div className="hero-badge bg-secondary text-secondary-foreground">Plan setup</div>
             <div className="space-y-2">
               <h1 className="text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]">
                 Here&apos;s your daily starting point
