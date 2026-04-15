@@ -500,9 +500,6 @@ export function DailyView() {
                     aria-current={idx === selectedDay ? "date" : undefined}
                   >
                     <span className="text-[13px] font-semibold leading-none text-foreground">{getShortDayLabel(dayPlan.day)}</span>
-                    <span className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                      {idx + 1}
-                    </span>
                   </button>
                 ))}
               </div>
@@ -532,39 +529,30 @@ export function DailyView() {
               <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
               <span className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today at a glance</span>
             </div>
-            <div className="flex min-w-0 items-end justify-between gap-3">
-              <CardTitle className="flex min-w-0 items-center gap-2 text-[1.35rem] leading-tight">
-                <Flame className="h-5 w-5 shrink-0 text-primary" />
-                <span className="break-words">Calories and macros</span>
-              </CardTitle>
-              <div className="shrink-0 text-right">
-                <div className="text-3xl font-semibold tabular-nums text-foreground">{currentDay.totalCalories}</div>
-                <div className="text-xs text-muted-foreground">of {userProfile.dailyCalories} cal</div>
-              </div>
-            </div>
+            <CardTitle className="flex min-w-0 items-center gap-2 text-[1.35rem] leading-tight">
+              <Flame className="h-5 w-5 shrink-0 text-primary" />
+              <span className="break-words">Calories and macros</span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 px-5 pb-5 sm:px-6">
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="dashboard-kpi-tile">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  Daily target
-                </div>
-                <div className="mt-2 text-2xl font-semibold tabular-nums text-foreground">
-                  {userProfile.dailyCalories}
-                </div>
-                <div className="text-sm text-muted-foreground">calories planned</div>
-              </div>
-              <div className="dashboard-kpi-tile">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  {calorieDifference >= 0 ? "Still available" : "Over target"}
-                </div>
-                <div className="mt-2 text-2xl font-semibold tabular-nums text-foreground">
-                  {Math.abs(Math.round(calorieDifference))}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {calorieDifference >= 0 ? "calories left today" : "calories above target"}
-                </div>
-              </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-2xl font-semibold tabular-nums text-foreground">
+                {currentDay.totalCalories} / {userProfile.dailyCalories} kcal
+              </span>
+              {calorieDifference !== 0 && (
+                <span
+                  className={cn(
+                    "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                    calorieDifference < 0
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+                  )}
+                >
+                  {calorieDifference < 0
+                    ? `+${Math.abs(Math.round(calorieDifference))} kcal`
+                    : `-${Math.round(calorieDifference)} kcal`}
+                </span>
+              )}
             </div>
 
             <div className="bridge-note-strip">
@@ -658,7 +646,7 @@ export function DailyView() {
                     </div>
                     <div className="dashboard-kpi-tile shrink-0 px-3 py-2 text-right">
                       <div className="text-lg font-semibold tabular-nums text-foreground">{meal.calories}</div>
-                      <div className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">cal</div>
+                      <div className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">kcal</div>
                     </div>
                   </div>
 
