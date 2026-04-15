@@ -186,6 +186,9 @@
     @apply space-y-4;
     background-image: linear-gradient(180deg, rgba(255, 250, 244, 0.98) 0%, rgba(248, 242, 234, 0.96) 100%);
   }
+  .dark .bridge-hero {
+    background-image: none;
+  }
 
   .bridge-section {
     @apply rounded-[24px] border border-border bg-card/95 shadow-[0_18px_40px_-28px_rgba(18,33,23,0.38)];
@@ -213,6 +216,11 @@
     color: #5e665f;
     @apply rounded-2xl px-4 py-3 text-sm leading-6;
   }
+  .dark .bridge-soft-callout {
+    border-color: var(--border);
+    background: var(--secondary);
+    color: var(--muted-foreground);
+  }
 
   .dashboard-header-panel {
     @apply relative overflow-hidden rounded-[28px] border border-border bg-card px-5 py-5 shadow-[0_22px_48px_-34px_rgba(18,33,23,0.34)] sm:px-6 sm:py-6;
@@ -223,7 +231,7 @@
   }
 
   .dashboard-day-chip {
-    @apply flex min-h-11 min-w-0 flex-col items-center justify-center rounded-2xl border border-border bg-card px-2 py-2 text-center text-[11px] font-medium text-muted-foreground transition-[background-color,border-color,color,box-shadow,transform] duration-150 hover:border-primary/35 hover:bg-[#fcf7ef] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px;
+    @apply flex min-h-11 min-w-0 flex-col items-center justify-center rounded-2xl border border-border bg-card px-2 py-2 text-center text-[11px] font-medium text-muted-foreground transition-[background-color,border-color,color,box-shadow,transform] duration-150 hover:border-primary/35 hover:bg-[#fcf7ef] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px;
   }
 
   .dashboard-kpi-tile {
@@ -239,7 +247,7 @@
   }
 
   .dashboard-detail-panel {
-    @apply rounded-2xl border border-[#e5d7c7] bg-[#f8f2ea] px-4 py-3.5;
+    @apply rounded-2xl border border-[#e5d7c7] dark:border-border bg-[#f8f2ea] dark:bg-secondary/60 px-4 py-3.5;
   }
 
   .dashboard-warning {
@@ -247,6 +255,11 @@
     border-color: rgba(183, 119, 73, 0.28);
     background: #fff3e6;
     color: #7a5b41;
+  }
+  .dark .dashboard-warning {
+    border-color: var(--border);
+    background: var(--secondary);
+    color: var(--muted-foreground);
   }
 
   .grocery-category-card {
@@ -258,7 +271,7 @@
   }
 
   .grocery-item-row {
-    @apply min-h-[60px] w-full min-w-0 px-3.5 py-3 text-left transition-[background-color,color,border-color] duration-150 hover:bg-[#fcf7ef] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-inset;
+    @apply min-h-[60px] w-full min-w-0 px-3.5 py-3 text-left transition-[background-color,color,border-color] duration-150 hover:bg-[#fcf7ef] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-inset;
   }
 
   .grocery-item-row-compact {
