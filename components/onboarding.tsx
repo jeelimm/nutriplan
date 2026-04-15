@@ -402,6 +402,7 @@ function OnboardingProgressIndicator({
 export function Onboarding() {
   const { setUserProfile, setCurrentStep, calculateMacros } = useMealStore()
   const [step, setStep] = useState<OnboardingStep>("quick-estimate")
+  const [firstStep, setFirstStep] = useState<"quick-estimate" | "body">("quick-estimate")
   const [sex, setSex] = useState<Sex>("male")
   const [unitSystem, setUnitSystem] = useState<RecipeUnitSystem>("metric")
   const [unit, setUnit] = useState<"kg" | "lbs">("kg")
@@ -481,7 +482,7 @@ export function Onboarding() {
         search: string
         activeCategory: IngredientCategory
       }>
-      if (draft.step) setStep(draft.step === "body" || draft.step === "quick-estimate" || stepOrder.includes(draft.step as (typeof stepOrder)[number]) ? draft.step : "body")
+      if (draft.step) setStep(draft.step === "body" || draft.step === "quick-estimate" || stepOrder.includes(draft.step as (typeof stepOrder)[number]) ? draft.step : "quick-estimate")
       if (draft.sex === "male" || draft.sex === "female") setSex(draft.sex)
       if (draft.unit === "kg" || draft.unit === "lbs") {
         setUnit(draft.unit)
@@ -683,6 +684,7 @@ export function Onboarding() {
 
     setBodyFat(String(Number(estimatedBodyFat.toFixed(1))))
     setMuscleMass(String(Number(estimatedMuscleMass.toFixed(1))))
+    setFirstStep("quick-estimate")
     setStep("activity")
   }
 
@@ -692,6 +694,10 @@ export function Onboarding() {
   }
 
   const moveToPreviousStep = () => {
+    if (displayStepIndex === 1) {
+      setStep(firstStep)
+      return
+    }
     const previous = stepOrder[displayStepIndex - 1]
     if (previous) setStep(previous)
   }
@@ -1072,6 +1078,7 @@ export function Onboarding() {
     if (!canAdvanceBodyStep) return
 
     setIsAdvancingBody(true)
+    setFirstStep("body")
 
     window.setTimeout(() => {
       setIsAdvancingBody(false)
@@ -1480,7 +1487,7 @@ export function Onboarding() {
                   iconPosition="start"
                   className="justify-start"
                 >
-                  Back to body stats
+                  {firstStep === "quick-estimate" ? "Back to basics setup" : "Back to body stats"}
                 </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
