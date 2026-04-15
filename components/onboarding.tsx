@@ -254,7 +254,7 @@ const onboardingUi = {
   sectionHeadingRow:
     "flex items-center gap-2",
   sectionAccentDot:
-    "h-2.5 w-2.5 rounded-full bg-[#b77749]",
+    "h-2.5 w-2.5 rounded-full bg-[#b77749] dark:bg-muted-foreground",
   sectionHeading:
     "text-sm font-semibold uppercase tracking-[0.14em] text-[#5e665f] dark:text-muted-foreground",
   sectionDescription:
@@ -268,7 +268,7 @@ const onboardingUi = {
   secondaryActionRow:
     "flex min-h-11 w-full items-center justify-between rounded-2xl border border-[#d8ccb9] dark:border-border bg-[#fff7ee] dark:bg-secondary/60 px-4 py-3 text-left text-sm font-medium text-[#5e665f] dark:text-muted-foreground transition-colors hover:bg-[#f8efe4] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20",
   primaryCtaBase:
-    "min-h-12 w-full rounded-2xl text-base font-semibold text-[#fffaf4] dark:text-primary-foreground transition-[background-color,box-shadow,transform] duration-150 focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-100",
+    "min-h-12 w-full rounded-2xl text-base font-semibold transition-[background-color,box-shadow,transform] duration-150 focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
   progressShell:
     "mt-5 flex justify-center gap-1.5",
   progressTrack:
@@ -1103,9 +1103,62 @@ export function Onboarding() {
     }, 140)
   }
 
+  const handleStartOver = () => {
+    try { window.localStorage.removeItem(ONBOARDING_DRAFT_KEY) } catch {}
+    setStep("quick-estimate")
+    setFirstStep("quick-estimate")
+    setSex("male")
+    setUnitSystem("metric")
+    setUnit("kg")
+    setWeight("")
+    setBodyFat("")
+    setMuscleMass("")
+    setQuickHeight("")
+    setQuickAge("")
+    setQuickBodyType(null)
+    setSelectedGoal(null)
+    setSelectedActivityLevel(null)
+    setSelectedDietType(null)
+    setTargetWeightInput("")
+    setTargetWeightSkipped(false)
+    setWeightLossPace("moderate")
+    setSelectedCuisines([])
+    setIngredientMode(null)
+    setSelectedBudgetPreset(null)
+    setSelectedIngredients([])
+    setSearch("")
+    setActiveCategory("protein")
+    setShowBodyValidation(false)
+    setTouchedBodyFields({ weight: false, bodyFat: false, muscleMass: false })
+  }
+
   return (
     <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "quick-estimate" || step === "activity" || step === "goal" || step === "target-weight" || step === "cuisine" || step === "diet" || step === "ingredient-mode" || step === "ingredients" ? "bg-[#f5f1ea] dark:bg-background" : "bg-background")} suppressHydrationWarning>
       <div className="page-column" suppressHydrationWarning>
+        {(step === "body" || (step !== "quick-estimate" && displayStepIndex > 0)) && (
+          <OnboardingSecondaryActionRow
+            onClick={step === "body" ? () => setStep("quick-estimate") : moveToPreviousStep}
+            iconPosition="start"
+            className="justify-start mb-3"
+          >
+            {step === "body"
+              ? "Back to basics setup"
+              : step === "activity"
+                ? (firstStep === "quick-estimate" ? "Back to basics setup" : "Back to body stats")
+                : step === "goal"
+                  ? "Back to activity"
+                  : step === "target-weight"
+                    ? "Back to goal"
+                    : step === "cuisine"
+                      ? "Back to target weight"
+                      : step === "diet"
+                        ? "Back to cuisines"
+                        : step === "ingredient-mode"
+                          ? "Back to diet style"
+                          : "Back to ingredient setup"}
+          </OnboardingSecondaryActionRow>
+        )}
+
         {step === "body" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
@@ -1232,10 +1285,10 @@ export function Onboarding() {
                 <OnboardingPrimaryCta
                   className={cn(
                     isAdvancingBody
-                      ? "border border-[#526747] bg-[#58704e] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_28px_-20px_rgba(40,70,47,0.62)]"
+                      ? "bg-primary/80 text-primary-foreground cursor-wait"
                       : canAdvanceBodyStep
-                        ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_18px_30px_-18px_rgba(40,70,47,0.72)] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_20px_32px_-18px_rgba(40,70,47,0.76)]"
-                        : "border border-[#c1c9ba] bg-[#c8d0c2] text-[#f4f0e8] shadow-none"
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={handleBodyContinue}
                   disabled={!canAdvanceBodyStep || isAdvancingBody}
@@ -1253,14 +1306,6 @@ export function Onboarding() {
                 <p className="text-center text-[11px] leading-[1.45] text-[#7a8079] dark:text-muted-foreground">
                   Use your best estimate for now. You can update these details later.
                 </p>
-
-                <button
-                  type="button"
-                  onClick={() => setStep("quick-estimate")}
-                  className="mt-1 w-full py-1.5 text-center text-sm text-[#7a5b41] dark:text-muted-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
-                >
-                  ← Back to basics setup
-                </button>
               </div>
             </CardContent>
           </OnboardingMainCard>
@@ -1415,8 +1460,8 @@ export function Onboarding() {
                 <OnboardingPrimaryCta
                   className={cn(
                     weight && quickHeight && quickAge && quickBodyType
-                      ? "border border-[#536847] dark:border-primary bg-[#5f7654] dark:bg-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] dark:hover:border-primary/90 hover:bg-[#516647] dark:hover:bg-primary/90 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
-                      : "border border-[#ccd2c5] dark:border-border bg-[#d9ded4] dark:bg-secondary text-[#808876] dark:text-muted-foreground shadow-none"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={applyQuickEstimate}
                   disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
@@ -1438,6 +1483,16 @@ export function Onboarding() {
                   className="mt-2 text-sm font-medium text-[#7a5b41] dark:text-muted-foreground underline underline-offset-2 hover:text-[#5e3e27] dark:hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:rounded"
                 >
                   I have detailed body stats (InBody, smart scale, etc.)
+                </button>
+              </div>
+
+              <div className="pt-3 text-center">
+                <button
+                  type="button"
+                  onClick={handleStartOver}
+                  className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:rounded"
+                >
+                  Start over
                 </button>
               </div>
             </CardContent>
@@ -1499,18 +1554,11 @@ export function Onboarding() {
               </OnboardingFieldNote>
 
               <div className="space-y-2.5 pt-0.5">
-                <OnboardingSecondaryActionRow
-                  onClick={moveToPreviousStep}
-                  iconPosition="start"
-                  className="justify-start"
-                >
-                  {firstStep === "quick-estimate" ? "Back to basics setup" : "Back to body stats"}
-                </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
                     selectedActivityLevel
-                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_18px_30px_-18px_rgba(40,70,47,0.72)] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_20px_32px_-18px_rgba(40,70,47,0.76)]"
-                      : "border border-[#c1c9ba] bg-[#c8d0c2] text-[#f4f0e8] shadow-none"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={moveToNextStep}
                   disabled={!selectedActivityLevel}
@@ -1582,18 +1630,11 @@ export function Onboarding() {
               </OnboardingFieldNote>
 
               <div className="space-y-2.5 pt-0.5">
-                <OnboardingSecondaryActionRow
-                  onClick={moveToPreviousStep}
-                  iconPosition="start"
-                  className="justify-start"
-                >
-                  Back to activity
-                </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
                     selectedGoal
-                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
-                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={moveToNextStep}
                   disabled={!selectedGoal}
@@ -1715,13 +1756,6 @@ export function Onboarding() {
 
               <div className="space-y-2.5 pt-0.5">
                 <OnboardingSecondaryActionRow
-                  onClick={moveToPreviousStep}
-                  iconPosition="start"
-                  className="justify-start"
-                >
-                  Back to goal
-                </OnboardingSecondaryActionRow>
-                <OnboardingSecondaryActionRow
                   onClick={() => {
                     setTargetWeightSkipped(true)
                     setTargetWeightInput("")
@@ -1734,8 +1768,8 @@ export function Onboarding() {
                 <OnboardingPrimaryCta
                   className={cn(
                     targetWeightStepValid
-                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
-                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={moveToNextStep}
                   disabled={!targetWeightStepValid}
@@ -1814,18 +1848,11 @@ export function Onboarding() {
               </OnboardingFieldNote>
 
               <div className="space-y-2.5 pt-0.5">
-                <OnboardingSecondaryActionRow
-                  onClick={moveToPreviousStep}
-                  iconPosition="start"
-                  className="justify-start"
-                >
-                  Back to target weight
-                </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
                     selectedCuisines.length >= 1
-                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
-                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={moveToNextStep}
                   disabled={selectedCuisines.length < 1}
@@ -1922,18 +1949,11 @@ export function Onboarding() {
               )}
 
               <div className="space-y-2.5 pt-0.5">
-                <OnboardingSecondaryActionRow
-                  onClick={moveToPreviousStep}
-                  iconPosition="start"
-                  className="justify-start"
-                >
-                  Back to cuisines
-                </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
                     selectedDietType
-                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
-                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={moveToNextStep}
                   disabled={!selectedDietType}
@@ -2030,18 +2050,11 @@ export function Onboarding() {
               </OnboardingFieldNote>
 
               <div className="space-y-2.5 pt-0.5">
-                <OnboardingSecondaryActionRow
-                  onClick={moveToPreviousStep}
-                  iconPosition="start"
-                  className="justify-start"
-                >
-                  Back to diet style
-                </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
                     ingredientMode
-                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
-                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={moveToNextStep}
                   disabled={!ingredientMode}
@@ -2069,14 +2082,6 @@ export function Onboarding() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-24 sm:px-7 sm:pb-8">
-              <OnboardingSecondaryActionRow
-                onClick={moveToPreviousStep}
-                iconPosition="start"
-                className="justify-start"
-              >
-                Back to ingredient setup
-              </OnboardingSecondaryActionRow>
-
               {ingredientMode === "recommend" && (
                 <div className={onboardingUi.sectionSurface}>
                   <OnboardingSectionHeadingRow
@@ -2294,8 +2299,8 @@ export function Onboarding() {
                 <OnboardingPrimaryCta
                   className={cn(
                     isIngredientSelectionValid
-                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
-                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                   )}
                   onClick={handleComplete}
                   disabled={!isIngredientSelectionValid}
