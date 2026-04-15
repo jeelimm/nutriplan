@@ -1,11 +1,17 @@
 {
-  "feature": "Redesign daily calorie summary: replace KPI tiles with single-line actual/target display",
+  "feature": "daily-view: tighter calorie header + muted progress bar colors",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Remove right-side header number and replace both KPI tiles with a single calorie summary line + diff badge",
-      "prompt": "In components/daily-view.tsx, make exactly these two changes inside the 'Today at a glance' Card and nothing else:\n\n**Change 1 — CardHeader**: The CardTitle row is currently wrapped in `<div className=\"flex min-w-0 items-end justify-between gap-3\">` with a right-side element showing the large calorie number. Unwrap the CardTitle and remove the right-side element so the header just has the title directly.\n\n**Change 2 — CardContent**: Replace the `<div className=\"grid grid-cols-2 gap-2.5\">` block (both dashboard-kpi-tile divs) with a single-line flex row:\n```tsx\n<div className=\"flex flex-wrap items-center gap-2\">\n  <span className=\"text-2xl font-semibold tabular-nums text-foreground\">\n    {currentDay.totalCalories} / {userProfile.dailyCalories} kcal\n  </span>\n  {calorieDifference !== 0 && (\n    <span className={cn(\n      \"rounded-full px-2.5 py-0.5 text-xs font-semibold\",\n      calorieDifference < 0\n        ? \"bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400\"\n        : \"bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400\"\n    )}>\n      {calorieDifference < 0\n        ? `+${Math.abs(Math.round(calorieDifference))} kcal`\n        : `-${Math.round(calorieDifference)} kcal`}\n    </span>\n  )}\n</div>\n```\n\nDo not touch the bridge-note-strip, progress bar, MacroProgress rows, or any other part of the file.",
+      "description": "Move calorie numbers into CardHeader title row with large/small visual hierarchy",
+      "prompt": "In components/daily-view.tsx, restructure the Today at a Glance CardHeader/CardContent: pull the calorie display out of CardContent and into CardHeader alongside the title, formatted as large totalCalories + small muted target. Remove the calorie div from CardContent.",
+      "files_affected": ["components/daily-view.tsx"]
+    },
+    {
+      "id": 2,
+      "description": "Replace vivid progress bar colors with muted 700/60 tones",
+      "prompt": "In components/daily-view.tsx, replace bg-rose-400/70 dark:bg-rose-500/50 with bg-rose-700/60, bg-emerald-400/70 dark:bg-emerald-500/50 with bg-emerald-700/60, bg-amber-400/70 dark:bg-amber-500/50 with bg-amber-700/60, bg-sky-400/70 dark:bg-sky-500/50 with bg-sky-700/60.",
       "files_affected": ["components/daily-view.tsx"]
     }
   ]
