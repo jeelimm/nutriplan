@@ -218,6 +218,9 @@
     @apply relative overflow-hidden rounded-[28px] border border-border bg-card px-5 py-5 shadow-[0_22px_48px_-34px_rgba(18,33,23,0.34)] sm:px-6 sm:py-6;
     background-image: linear-gradient(180deg, rgba(255, 250, 244, 0.96) 0%, rgba(248, 242, 234, 0.92) 100%);
   }
+  .dark .dashboard-header-panel {
+    background-image: none;
+  }
 
   .dashboard-day-chip {
     @apply flex min-h-11 min-w-0 flex-col items-center justify-center rounded-2xl border border-border bg-card px-2 py-2 text-center text-[11px] font-medium text-muted-foreground transition-[background-color,border-color,color,box-shadow,transform] duration-150 hover:border-primary/35 hover:bg-[#fcf7ef] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px;
@@ -279,7 +282,7 @@
   }
 
   .settings-section-panel {
-    @apply rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-4;
+    @apply rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-4 dark:border-border dark:bg-secondary/60;
   }
 
   .settings-choice-card {
@@ -287,11 +290,11 @@
   }
 
   .settings-choice-card-active {
-    @apply border-primary bg-[#edf4ec] shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)];
+    @apply border-primary bg-[#edf4ec] shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)] dark:bg-primary/15;
   }
 
   .settings-choice-card-idle {
-    @apply border-border bg-background/82 hover:border-primary/35 hover:bg-[#fcf7ef];
+    @apply border-border bg-background/82 hover:border-primary/35 hover:bg-[#fcf7ef] dark:hover:bg-secondary;
   }
 
   .settings-chip {
@@ -299,11 +302,11 @@
   }
 
   .settings-chip-active {
-    @apply border-primary bg-[#edf4ec] text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.45)];
+    @apply border-primary bg-[#edf4ec] text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.45)] dark:bg-primary/15;
   }
 
   .settings-chip-idle {
-    @apply border-border bg-card text-muted-foreground hover:border-primary/35 hover:bg-[#fcf7ef] hover:text-foreground;
+    @apply border-border bg-card text-muted-foreground hover:border-primary/35 hover:bg-[#fcf7ef] hover:text-foreground dark:hover:bg-secondary;
   }
 
   .settings-input {
