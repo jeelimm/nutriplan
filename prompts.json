@@ -1,12 +1,30 @@
 {
-  "feature": "Fix dark mode in meal-plan-config.tsx — 6 targeted color replacements",
+  "feature": "Fix dark mode in daily-view.tsx — semantic color replacements",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Replace all 6 hardcoded color values in meal-plan-config.tsx",
-      "prompt": "In components/meal-plan-config.tsx, make exactly these 6 color changes and nothing else:\n\n1. Hero badge (line ~95):\n   Change: `hero-badge bg-[#fff7ee] text-[#7a5b41]`\n   To:     `hero-badge bg-secondary text-secondary-foreground`\n\n2. Daily Target card container (line ~106):\n   Change: `rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-4`\n   To:     `rounded-[22px] border border-border bg-card p-4`\n\n3. \"Daily target\" label text (line ~109):\n   Change: `text-[#7a5b41]`\n   To:     `text-muted-foreground`\n\n4. Accent dot span (line ~152):\n   Change: `bg-[#b77749]`\n   To:     `bg-muted-foreground`\n\n5. Selected meal rhythm card — active state in the ternary (line ~173):\n   Change: `border-primary bg-[#edf4ec] shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]`\n   To:     `border-primary bg-primary/15 shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]`\n\n6. Unselected meal rhythm card — idle hover state in the ternary (line ~174):\n   Change: `border-border bg-card hover:border-primary/35 hover:bg-[#fcf7ef]`\n   To:     `border-border bg-card hover:border-primary/35 hover:bg-secondary`\n\nDo not change anything else — no layout, spacing, shadows, or other classes. Follow CLAUDE.md guidelines.",
-      "files_affected": ["components/meal-plan-config.tsx"]
+      "description": "Replace all hero-badge hardcoded colors with semantic classes",
+      "prompt": "In components/daily-view.tsx, find every element that has the class string `bg-[#fff7ee] text-[#7a5b41]` and replace it with `bg-secondary text-secondary-foreground`. There are 5 occurrences — the 'Building your plan' loading badge, the 'Plan needs another try' badge, the 'Your meal plan' badge, the meal type badge (Breakfast/Lunch/Dinner), the 'Profile editor' badge, and the 'Plan refresh' badge. Do not change anything else — no layout, spacing, or other classes.",
+      "files_affected": ["components/daily-view.tsx"]
+    },
+    {
+      "id": 2,
+      "description": "Replace all accent dot spans with semantic color",
+      "prompt": "In components/daily-view.tsx, find every `<span>` element with class `h-2.5 w-2.5 rounded-full bg-[#b77749]` and replace `bg-[#b77749]` with `bg-muted-foreground`. There are 6 occurrences — in the 'Today at a glance' header, 'Goal outlook' header, 'Shopping help' header, 'Profile editor' modal Basics section, Body stats section, Activity section, Goal section, and Cuisine section. Do not change anything else.",
+      "files_affected": ["components/daily-view.tsx"]
+    },
+    {
+      "id": 3,
+      "description": "Replace hover:bg-[#fcf7ef] with hover:bg-secondary on Recipe/Swap buttons",
+      "prompt": "In components/daily-view.tsx, find all occurrences of `hover:bg-[#fcf7ef]` and replace each with `hover:bg-secondary`. These appear on the 'Recipe & details' expand button and the 'Swap' button inside the meal cards. Do not change any other classes on those elements.",
+      "files_affected": ["components/daily-view.tsx"]
+    },
+    {
+      "id": 4,
+      "description": "Fix remaining hardcoded colors: section labels, active day chip, and error icon",
+      "prompt": "In components/daily-view.tsx, make exactly these 4 changes and nothing else:\n\n1. Ingredients heading (line ~714):\n   Change: `text-[#5e665f]` on the 'Ingredients' h4\n   To:     `text-muted-foreground`\n\n2. Instructions heading (line ~727):\n   Change: `text-[#5e665f]` on the 'Instructions' h4\n   To:     `text-muted-foreground`\n\n3. Active day chip (line ~496):\n   Change: `bg-[#edf4ec]` in the ternary active state\n   To:     `bg-primary/15`\n\n4. 'Plan needs another try' bridge-status-icon (line ~308):\n   Change: `border-[#e5d7c7] bg-[#f8f2ea] text-[#b77749]`\n   To:     `border-border bg-muted text-muted-foreground`\n\nDo not change any other classes, layout, or spacing.",
+      "files_affected": ["components/daily-view.tsx"]
     }
   ]
 }

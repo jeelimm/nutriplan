@@ -261,7 +261,7 @@ export function DailyView() {
       <div className="app-shell bg-background px-4 py-6 md:px-8 md:py-8">
         <div className="page-column flex min-h-[72vh] flex-col justify-center">
           <div className="bridge-status-panel">
-            <div className="hero-badge mx-auto bg-[#fff7ee] text-[#7a5b41]">Building your plan</div>
+            <div className="hero-badge mx-auto bg-secondary text-secondary-foreground">Building your plan</div>
             <div className="bridge-status-icon mt-4">
               <Spinner className="size-6 text-primary" />
             </div>
@@ -304,8 +304,8 @@ export function DailyView() {
       <div className="app-shell bg-background px-4 py-6 md:px-8 md:py-8">
         <div className="page-column flex min-h-[72vh] flex-col justify-center">
           <div className="bridge-status-panel text-left sm:text-center">
-            <div className="hero-badge mx-auto bg-[#fff7ee] text-[#7a5b41]">Plan needs another try</div>
-            <div className="bridge-status-icon mt-4 border-[#e5d7c7] bg-[#f8f2ea] text-[#b77749]">
+            <div className="hero-badge mx-auto bg-secondary text-secondary-foreground">Plan needs another try</div>
+            <div className="bridge-status-icon mt-4 border-border bg-muted text-muted-foreground">
               <Sparkles className="size-6" />
             </div>
             <div className="mt-5 space-y-2">
@@ -458,7 +458,7 @@ export function DailyView() {
           <section className="dashboard-header-panel space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Your meal plan</div>
+                <div className="hero-badge bg-secondary text-secondary-foreground">Your meal plan</div>
                 <h1 className="mt-3 break-words text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]">
                   {currentDay.day}
                 </h1>
@@ -493,7 +493,7 @@ export function DailyView() {
                     className={cn(
                       "dashboard-day-chip",
                       idx === selectedDay
-                        ? "border-primary bg-[#edf4ec] text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.5)]"
+                        ? "border-primary bg-primary/15 text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.5)]"
                         : ""
                     )}
                     aria-label={`View ${dayPlan.day}`}
@@ -529,7 +529,7 @@ export function DailyView() {
         <Card className="bridge-section">
           <CardHeader className="gap-3 px-5 pb-3 pt-5 sm:px-6">
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
               <span className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today at a glance</span>
             </div>
             <div className="flex min-w-0 items-end justify-between gap-3">
@@ -616,7 +616,7 @@ export function DailyView() {
           <Card className="bridge-section">
             <CardContent className="space-y-2 px-5 py-4 text-sm sm:px-6">
               <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
                 <span className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Goal outlook</span>
               </div>
               {goalTimeline.kind === "estimate" && (
@@ -651,7 +651,7 @@ export function DailyView() {
                 <CardContent className="px-5 py-5 sm:px-6">
                   <div className="flex min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <span className="dashboard-meta-pill bg-[#fff7ee] text-[#7a5b41]">
+                      <span className="dashboard-meta-pill bg-secondary text-secondary-foreground">
                         {getMealLabel(idx, currentDay.meals.length)}
                       </span>
                       <div className="mt-3 break-words text-lg font-semibold leading-snug text-foreground">{meal.name}</div>
@@ -681,7 +681,7 @@ export function DailyView() {
                     <button
                       type="button"
                       onClick={() => toggleMealExpanded(meal.id)}
-                      className="flex min-h-11 flex-1 items-center justify-between rounded-2xl border border-border bg-background/82 px-4 py-3 text-left text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-[#fcf7ef]"
+                      className="flex min-h-11 flex-1 items-center justify-between rounded-2xl border border-border bg-background/82 px-4 py-3 text-left text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-secondary"
                     >
                       <span>Recipe & details</span>
                       <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
@@ -689,7 +689,7 @@ export function DailyView() {
                     <button
                       type="button"
                       onClick={() => setSwapTarget({ meal, dayIndex: selectedDay, mealIndex: idx })}
-                      className="flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-background/82 px-4 py-3 text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-[#fcf7ef]"
+                      className="flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-background/82 px-4 py-3 text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-secondary"
                     >
                       <ArrowLeftRight className="h-4 w-4" />
                       <span>Swap</span>
@@ -711,7 +711,7 @@ export function DailyView() {
                       </div>
 
                       <div className="dashboard-detail-panel">
-                        <h4 className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#5e665f]">Ingredients</h4>
+                        <h4 className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Ingredients</h4>
                         <ul className="space-y-1.5">
                           {meal.ingredients.map((ingredient, i) => (
                             <li key={i} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
@@ -724,7 +724,7 @@ export function DailyView() {
                       </div>
 
                       <div className="dashboard-detail-panel">
-                        <h4 className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#5e665f]">Instructions</h4>
+                        <h4 className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">Instructions</h4>
                         <ol className="space-y-2">
                           {(meal.instructions || []).map((step, i) => (
                             <li key={i} className="flex gap-3 text-sm">
@@ -748,7 +748,7 @@ export function DailyView() {
           <CardContent className="space-y-3 px-5 py-5 sm:px-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
                 <span className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Shopping help</span>
               </div>
               <h3 className="text-lg font-semibold text-foreground">Take the plan with you</h3>
@@ -781,7 +781,7 @@ export function DailyView() {
           <div className="settings-modal-shell max-w-lg">
             <div className="space-y-4">
               <div className="space-y-3">
-                <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Profile editor</div>
+                <div className="hero-badge bg-secondary text-secondary-foreground">Profile editor</div>
                 <div className="space-y-2">
                   <h2 className="break-words text-[1.65rem] font-semibold leading-tight text-foreground">Update your profile</h2>
                   <p className="text-sm leading-6 text-muted-foreground">
@@ -793,7 +793,7 @@ export function DailyView() {
               <div className="settings-section-panel space-y-3.5">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
                     <span className="text-sm font-semibold text-foreground">Basics</span>
                   </div>
                   <p className="text-sm leading-6 text-muted-foreground">Use the details that best match how things look right now, not a perfect average.</p>
@@ -839,7 +839,7 @@ export function DailyView() {
               <div className="settings-section-panel space-y-3.5">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
                     <span className="text-sm font-semibold text-foreground">Body stats</span>
                   </div>
                   <p className="text-sm leading-6 text-muted-foreground">These numbers keep calorie and protein targets anchored to your current body composition.</p>
@@ -871,7 +871,7 @@ export function DailyView() {
               <div className="settings-section-panel space-y-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
                     <span className="text-sm font-semibold text-foreground">Weekly context</span>
                   </div>
                   <p className="text-sm leading-6 text-muted-foreground">Choose the goal and activity level that feel closest to a normal week.</p>
@@ -929,7 +929,7 @@ export function DailyView() {
               <div className="settings-section-panel space-y-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
                     <span className="text-sm font-semibold text-foreground">Cuisine focus</span>
                   </div>
                   <p className="text-sm leading-6 text-muted-foreground">Pick one or two cuisines to keep the next plan realistic to shop for and repeat.</p>
@@ -990,7 +990,7 @@ export function DailyView() {
           <div className="settings-modal-shell max-w-md">
             <div className="space-y-4">
               <div className="space-y-3">
-                <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Plan refresh</div>
+                <div className="hero-badge bg-secondary text-secondary-foreground">Plan refresh</div>
                 <div className="space-y-2">
                   <h3 className="break-words text-[1.5rem] font-semibold leading-tight text-foreground">Use these updates for a new meal plan?</h3>
                   <p className="text-sm leading-6 text-muted-foreground">
