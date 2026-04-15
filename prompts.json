@@ -1,18 +1,24 @@
 {
-  "feature": "Fix progress bar colors and dark mode badge/hover in daily-view.tsx",
+  "feature": "Fix grocery-list badge color, add daily view header, fix settings profile editor button",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Replace vivid progress bar colors with muted palette-specific classes",
-      "prompt": "In components/daily-view.tsx: (1) calorie over-target bar — change bg-destructive to bg-rose-400/70 dark:bg-rose-500/50; (2) MacroProgress color props — protein to bg-emerald-400/70 dark:bg-emerald-500/50, carbs to bg-amber-400/70 dark:bg-amber-500/50, fat to bg-sky-400/70 dark:bg-sky-500/50.",
-      "files_affected": ["components/daily-view.tsx"]
+      "description": "Fix hardcoded badge color in grocery-list.tsx weekly view header",
+      "prompt": "In components/grocery-list.tsx, on line 104, change:\n  `<div className=\"hero-badge bg-[#fff7ee] text-[#7a5b41]\">Weekly shopping list</div>`\nto:\n  `<div className=\"hero-badge bg-secondary text-secondary-foreground\">Weekly shopping list</div>`\n\nDo not change anything else.",
+      "files_affected": ["components/grocery-list.tsx"]
     },
     {
       "id": 2,
-      "description": "Fix meal type badge specificity and ensure Recipe hover classes are correct",
-      "prompt": "In components/daily-view.tsx: (1) meal type badge — replace dashboard-meta-pill with inline classes to avoid base-class conflict; (2) confirm Recipe & details and Swap buttons have hover:bg-secondary dark:hover:bg-secondary.",
-      "files_affected": ["components/daily-view.tsx"]
+      "description": "Add selectedDay optional prop to GroceryList for a properly-styled daily view header",
+      "prompt": "In components/grocery-list.tsx:\n\n1. Add a `GroceryListProps` interface above the export and update the function signature:\n```tsx\ninterface GroceryListProps {\n  selectedDay?: { dayName: string; dayIndex: number }\n}\n\nexport function GroceryList({ selectedDay }: GroceryListProps = {}) {\n```\n\n2. Replace the grocery data derivation (the `weekPlan.flatMap(...)` block) with a conditional that filters to a single day when `selectedDay` is provided:\n```tsx\nconst sourceIngredients = selectedDay\n  ? (weekPlan[selectedDay.dayIndex]?.meals ?? []).flatMap((meal) =>\n      meal.ingredients.map((ingredient) => ({\n        ...ingredient,\n        amount: convertRecipeText(ingredient.amount, recipeUnitSystem),\n      }))\n    )\n  : weekPlan.flatMap((day) =>\n      day.meals.flatMap((meal) =>\n        meal.ingredients.map((ingredient) => ({\n          ...ingredient,\n          amount: convertRecipeText(ingredient.amount, recipeUnitSystem),\n        }))\n      )\n    )\nconst groceryCategories = buildGroceryCategories(sourceIngredients)\n```\n\n3. In the return block, wrap the existing sticky header's `<section>` content in a conditional. When `selectedDay` is provided, replace the header `<section>` with:\n```tsx\n<section className=\"space-y-4\">\n  <div className=\"bg-card rounded-lg border border-border p-4\">\n    <div className=\"hero-badge bg-secondary text-secondary-foreground\">Shopping list</div>\n    <h1 className=\"mt-3 break-words text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]\">\n      Shopping list · {selectedDay.dayName}\n    </h1>\n    <p className=\"mt-2 text-sm leading-6 text-muted-foreground\">\n      Ingredients for today&apos;s meals. Check items off as you shop.\n    </p>\n  </div>\n  {/* keep the kpi tiles, progress bar, and bridge-note-strip unchanged */}\n</section>\n```\nWhen `selectedDay` is NOT provided, keep the existing `<section className=\"dashboard-header-panel space-y-4\">` block unchanged (except for the badge fix from prompt 1).",
+      "files_affected": ["components/grocery-list.tsx"]
+    },
+    {
+      "id": 3,
+      "description": "Fix 'Open profile editor' button in settings-screen.tsx to navigate to onboarding (step 0)",
+      "prompt": "In components/settings-screen.tsx, find the 'Detailed profile editor' settings-section-panel block (around line 307). Make exactly these changes:\n\n1. Change the button onClick from `() => setCurrentStep(2)` to `() => setCurrentStep(0)`.\n\n2. Update the description paragraph from:\n   `For weight, body fat, muscle mass, and profile name, use the detailed editor from your dashboard.`\n   to:\n   `Re-enter your body stats to recalculate your calorie and macro targets. This will take you back to update your profile.`\n\n3. Change the button label from `Open profile editor` to `Update my profile`.\n\nDo not change anything else.",
+      "files_affected": ["components/settings-screen.tsx"]
     }
   ]
 }
