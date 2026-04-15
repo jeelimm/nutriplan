@@ -246,33 +246,33 @@ function convertHeightValue(value: string, fromUnit: "cm" | "in", toUnit: "cm" |
 
 const onboardingUi = {
   mainCard:
-    "overflow-hidden rounded-[28px] border border-[#d8ccb9] bg-[#fffaf4] shadow-[0_22px_50px_-30px_rgba(40,49,43,0.28)]",
+    "overflow-hidden rounded-[28px] border border-[#d8ccb9] dark:border-border bg-[#fffaf4] dark:bg-card shadow-[0_22px_50px_-30px_rgba(40,49,43,0.28)]",
   stepChip:
-    "inline-flex w-fit items-center rounded-full bg-[#f1dfd1] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5b41]",
+    "inline-flex w-fit items-center rounded-full bg-[#f1dfd1] dark:bg-secondary px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5b41] dark:text-muted-foreground",
   sectionSurface:
-    "rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-3.5 sm:p-4",
+    "rounded-[22px] border border-[#e5d7c7] dark:border-border bg-[#f8f2ea] dark:bg-secondary/60 p-3.5 sm:p-4",
   sectionHeadingRow:
     "flex items-center gap-2",
   sectionAccentDot:
     "h-2.5 w-2.5 rounded-full bg-[#b77749]",
   sectionHeading:
-    "text-sm font-semibold uppercase tracking-[0.14em] text-[#5e665f]",
+    "text-sm font-semibold uppercase tracking-[0.14em] text-[#5e665f] dark:text-muted-foreground",
   sectionDescription:
-    "mt-2 text-xs leading-5 text-[#7a8079]",
+    "mt-2 text-xs leading-5 text-[#7a8079] dark:text-muted-foreground",
   segmentedGroup:
-    "grid grid-cols-2 gap-1 rounded-[18px] border border-[#e1d5c5] bg-[#efe6d8] p-1",
+    "grid grid-cols-2 gap-1 rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#efe6d8] dark:bg-secondary p-1",
   inputNote:
-    "text-xs leading-[1.35] text-[#7a8079]",
+    "text-xs leading-[1.35] text-[#7a8079] dark:text-muted-foreground",
   inputValidation:
-    "text-xs leading-[1.35] text-[#8b5a47]",
+    "text-xs leading-[1.35] text-[#8b5a47] dark:text-destructive/90",
   secondaryActionRow:
-    "flex min-h-11 w-full items-center justify-between rounded-2xl border border-[#d8ccb9] bg-[#fff7ee] px-4 py-3 text-left text-sm font-medium text-[#5e665f] transition-colors hover:bg-[#f8efe4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20",
+    "flex min-h-11 w-full items-center justify-between rounded-2xl border border-[#d8ccb9] dark:border-border bg-[#fff7ee] dark:bg-secondary/60 px-4 py-3 text-left text-sm font-medium text-[#5e665f] dark:text-muted-foreground transition-colors hover:bg-[#f8efe4] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20",
   primaryCtaBase:
-    "min-h-12 w-full rounded-2xl text-base font-semibold text-[#fffaf4] transition-[background-color,box-shadow,transform] duration-150 focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffaf4] disabled:opacity-100",
+    "min-h-12 w-full rounded-2xl text-base font-semibold text-[#fffaf4] dark:text-primary-foreground transition-[background-color,box-shadow,transform] duration-150 focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-100",
   progressShell:
     "mt-5 flex justify-center gap-1.5",
   progressTrack:
-    "flex items-center gap-1.5 rounded-full border border-[#e2d6c5] bg-[#f7f1e8] px-2.5 py-1.5",
+    "flex items-center gap-1.5 rounded-full border border-[#e2d6c5] dark:border-border bg-[#f7f1e8] dark:bg-secondary/60 px-2.5 py-1.5",
   boundedInputBase:
     "h-12 rounded-2xl border border-[#C8BDB0] dark:border-border bg-white dark:bg-card px-4 py-2.5 text-base text-[#1A1A1A] dark:text-foreground placeholder:text-[#8C8279] dark:placeholder:text-muted-foreground transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:border-[#4A7C59] dark:focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-[#4A7C59]/20 dark:focus-visible:ring-primary/20",
 } as const
@@ -345,13 +345,13 @@ function OnboardingSecondaryActionRow({
     >
       {iconPosition === "start" ? (
         <>
-          {icon ?? <ChevronLeft className="h-4 w-4 shrink-0 text-[#7a5b41]" />}
+          {icon ?? <ChevronLeft className="h-4 w-4 shrink-0 text-[#7a5b41] dark:text-muted-foreground" />}
           <span className="pl-1 leading-6">{children}</span>
         </>
       ) : (
         <>
           <span className="pr-4 leading-6">{children}</span>
-          {icon ?? <ChevronRight className="h-4 w-4 shrink-0 text-[#7a5b41]" />}
+          {icon ?? <ChevronRight className="h-4 w-4 shrink-0 text-[#7a5b41] dark:text-muted-foreground" />}
         </>
       )}
     </button>
@@ -389,8 +389,8 @@ function OnboardingProgressIndicator({
             className={cn(
               "h-1.5 rounded-full transition-all",
               resolvedStep === item
-                ? "w-7 bg-[#5f7654]"
-                : "w-4 bg-[#dccfbe]"
+                ? "w-7 bg-[#5f7654] dark:bg-primary"
+                : "w-4 bg-[#dccfbe] dark:bg-secondary"
             )}
           />
         ))}
@@ -894,106 +894,106 @@ export function Onboarding() {
 
   const optionButtonClass = (active: boolean) =>
     cn(
-      "min-h-11 rounded-[16px] border px-3.5 py-2.5 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-1 focus-visible:ring-offset-[#efe6d8]",
+      "min-h-11 rounded-[16px] border px-3.5 py-2.5 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
       active
-        ? "border-[#5f7654] bg-[#5f7654] text-[#fffaf4] shadow-[0_10px_18px_-16px_rgba(40,70,47,0.5)]"
-        : "border-transparent bg-transparent text-[#28312b] hover:bg-[#fffaf4]/90"
+        ? "border-[#5f7654] dark:border-primary bg-[#5f7654] dark:bg-primary text-[#fffaf4] dark:text-primary-foreground shadow-[0_10px_18px_-16px_rgba(40,70,47,0.5)]"
+        : "border-transparent bg-transparent text-[#28312b] dark:text-foreground hover:bg-[#fffaf4]/90 dark:hover:bg-secondary/60"
     )
 
   const activityOptionButtonClass = (active: boolean) =>
     cn(
-      "flex w-full items-center justify-between gap-3 rounded-[20px] border px-4 py-3.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea]",
+      "flex w-full items-center justify-between gap-3 rounded-[20px] border px-4 py-3.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       active
-        ? "border-[#5f7654] bg-[#edf3e8] shadow-[0_14px_28px_-24px_rgba(40,70,47,0.42)]"
+        ? "border-[#5f7654] dark:border-primary bg-[#edf3e8] dark:bg-primary/15 shadow-[0_14px_28px_-24px_rgba(40,70,47,0.42)]"
         : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card hover:border-[#bfae95] dark:hover:border-primary/40 hover:bg-white dark:hover:bg-secondary"
     )
 
   const goalOptionButtonClass = (active: boolean) =>
     cn(
-      "group flex w-full items-start gap-4 rounded-[20px] border px-4 py-3.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      "group flex w-full items-start gap-4 rounded-[20px] border px-4 py-3.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
       active
-        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_30px_-24px_rgba(40,70,47,0.48)] hover:border-[#526847] hover:bg-[#f2f6ee]"
-        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
+        ? "border-[#5f7654] dark:border-primary bg-[#eef4e8] dark:bg-primary/15 ring-1 ring-[#d8e4d1] dark:ring-primary/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_30px_-24px_rgba(40,70,47,0.48)] hover:border-[#526847] dark:hover:border-primary hover:bg-[#f2f6ee] dark:hover:bg-primary/20"
+        : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#c3b198] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
     )
 
   const goalIconTileClass = (active: boolean) =>
     cn(
       "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition-[background-color,border-color,color,box-shadow] duration-150",
       active
-        ? "border-[#526847] bg-[#5f7654] text-[#fffaf4] shadow-[0_12px_20px_-18px_rgba(40,70,47,0.48)]"
-        : "border-[#ddd1c1] bg-[#f7efe5] text-[#7a5b41] group-hover:border-[#cfbfaa] group-hover:bg-[#fbf3e8]"
+        ? "border-[#526847] dark:border-primary bg-[#5f7654] dark:bg-primary text-[#fffaf4] dark:text-primary-foreground shadow-[0_12px_20px_-18px_rgba(40,70,47,0.48)]"
+        : "border-[#ddd1c1] dark:border-border bg-[#f7efe5] dark:bg-secondary text-[#7a5b41] dark:text-muted-foreground group-hover:border-[#cfbfaa] dark:group-hover:border-primary/40 group-hover:bg-[#fbf3e8] dark:group-hover:bg-secondary/80"
     )
 
   const paceOptionButtonClass = (active: boolean) =>
     cn(
-      "group w-full rounded-[20px] border px-4 py-3.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      "group w-full rounded-[20px] border px-4 py-3.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
       active
-        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_30px_-24px_rgba(40,70,47,0.48)] hover:border-[#526847] hover:bg-[#f2f6ee]"
-        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
+        ? "border-[#5f7654] dark:border-primary bg-[#eef4e8] dark:bg-primary/15 ring-1 ring-[#d8e4d1] dark:ring-primary/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_30px_-24px_rgba(40,70,47,0.48)] hover:border-[#526847] dark:hover:border-primary hover:bg-[#f2f6ee] dark:hover:bg-primary/20"
+        : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#c3b198] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
     )
 
   const cuisineOptionButtonClass = (active: boolean) =>
     cn(
-      "group flex w-full items-start justify-between gap-2.5 rounded-[20px] border px-4 py-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      "group flex w-full items-start justify-between gap-2.5 rounded-[20px] border px-4 py-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
       active
-        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] hover:bg-[#f2f6ee]"
-        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_12px_22px_-26px_rgba(40,49,43,0.28)]"
+        ? "border-[#5f7654] dark:border-primary bg-[#eef4e8] dark:bg-primary/15 ring-1 ring-[#d8e4d1] dark:ring-primary/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] dark:hover:border-primary hover:bg-[#f2f6ee] dark:hover:bg-primary/20"
+        : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary hover:shadow-[0_12px_22px_-26px_rgba(40,49,43,0.28)]"
     )
 
   const cuisineSelectionBadgeClass = (active: boolean) =>
     cn(
       "inline-flex shrink-0 items-center justify-center border transition-[background-color,border-color,color,box-shadow] duration-150",
       active
-        ? "min-w-10 rounded-full border-[#5f7654] bg-[#5f7654] px-2.5 py-1 text-[11px] font-semibold tracking-[0.04em] text-[#fffaf4] shadow-[0_10px_20px_-18px_rgba(40,70,47,0.48)]"
-        : "h-8 w-8 rounded-full border-[#d9ccb9] bg-[#fcf6ee] text-[15px] font-semibold text-[#7a5b41]"
+        ? "min-w-10 rounded-full border-[#5f7654] dark:border-primary bg-[#5f7654] dark:bg-primary px-2.5 py-1 text-[11px] font-semibold tracking-[0.04em] text-[#fffaf4] dark:text-primary-foreground shadow-[0_10px_20px_-18px_rgba(40,70,47,0.48)]"
+        : "h-8 w-8 rounded-full border-[#d9ccb9] dark:border-border bg-[#fcf6ee] dark:bg-secondary text-[15px] font-semibold text-[#7a5b41] dark:text-muted-foreground"
     )
 
   const dietOptionButtonClass = (active: boolean) =>
     cn(
-      "group w-full rounded-[20px] border px-4 py-3.25 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      "group w-full rounded-[20px] border px-4 py-3.25 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
       active
-        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] hover:bg-[#f2f6ee]"
-        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_12px_24px_-26px_rgba(40,49,43,0.3)]"
+        ? "border-[#5f7654] dark:border-primary bg-[#eef4e8] dark:bg-primary/15 ring-1 ring-[#d8e4d1] dark:ring-primary/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] dark:hover:border-primary hover:bg-[#f2f6ee] dark:hover:bg-primary/20"
+        : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary hover:shadow-[0_12px_24px_-26px_rgba(40,49,43,0.3)]"
     )
 
   const ingredientPresetButtonClass = (active: boolean) =>
     cn(
-      "group w-full rounded-[20px] border px-4 py-3.25 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      "group w-full rounded-[20px] border px-4 py-3.25 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
       active
-        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] hover:bg-[#f2f6ee]"
-        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] hover:bg-[#fffaf4] hover:shadow-[0_12px_24px_-26px_rgba(40,49,43,0.3)]"
+        ? "border-[#5f7654] dark:border-primary bg-[#eef4e8] dark:bg-primary/15 ring-1 ring-[#d8e4d1] dark:ring-primary/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_16px_28px_-24px_rgba(40,70,47,0.5)] hover:border-[#526847] dark:hover:border-primary hover:bg-[#f2f6ee] dark:hover:bg-primary/20"
+        : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)] hover:border-[#c3b198] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary hover:shadow-[0_12px_24px_-26px_rgba(40,49,43,0.3)]"
     )
 
   const ingredientCategoryTabClass = (active: boolean) =>
     cn(
-      "min-h-11 rounded-[16px] border px-3.5 py-2 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea]",
+      "min-h-11 rounded-[16px] border px-3.5 py-2 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       active
-        ? "border-[#5f7654] bg-[#5f7654] text-[#fffaf4] shadow-[0_10px_18px_-16px_rgba(40,70,47,0.5)]"
-        : "border-[#d8ccb9] bg-[#fffdf9] text-[#5e665f] hover:border-[#c3b198] hover:bg-[#fffaf4]"
+        ? "border-[#5f7654] dark:border-primary bg-[#5f7654] dark:bg-primary text-[#fffaf4] dark:text-primary-foreground shadow-[0_10px_18px_-16px_rgba(40,70,47,0.5)]"
+        : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card text-[#5e665f] dark:text-muted-foreground hover:border-[#c3b198] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary"
     )
 
   const ingredientCatalogButtonClass = (active: boolean) =>
     cn(
-      "w-full rounded-[20px] border px-4 py-2.75 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea] active:translate-y-px",
+      "w-full rounded-[20px] border px-4 py-2.75 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/24 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
       active
-        ? "border-[#5f7654] bg-[#eef4e8] ring-1 ring-[#d8e4d1] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_14px_24px_-24px_rgba(40,70,47,0.44)]"
-        : "border-[#d8ccb9] bg-[#fffdf9] shadow-[0_6px_14px_-28px_rgba(40,49,43,0.2)] hover:border-[#c3b198] hover:bg-[#fffaf4]"
+        ? "border-[#5f7654] dark:border-primary bg-[#eef4e8] dark:bg-primary/15 ring-1 ring-[#d8e4d1] dark:ring-primary/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_14px_24px_-24px_rgba(40,70,47,0.44)]"
+        : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card shadow-[0_6px_14px_-28px_rgba(40,49,43,0.2)] hover:border-[#c3b198] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary"
     )
 
   const ingredientRequirementPillClass = (met: boolean) =>
     cn(
       "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium",
       met
-        ? "border-[#d8e4d1] bg-[#eef4e8] text-[#526847]"
-        : "border-[#ead2c1] bg-[#fdf1e8] text-[#8b5a47]"
+        ? "border-[#d8e4d1] dark:border-primary/30 bg-[#eef4e8] dark:bg-primary/15 text-[#526847] dark:text-primary"
+        : "border-[#ead2c1] dark:border-border bg-[#fdf1e8] dark:bg-secondary text-[#8b5a47] dark:text-muted-foreground"
     )
 
   const ingredientPresetStatusBadgeClass = (active: boolean) =>
     cn(
       "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.06em]",
       active
-        ? "border-[#cfe0c9] bg-[#edf3e8] text-[#526847]"
-        : "border-[#d9ccb9] bg-[#f7efe5] text-[#7a5b41]"
+        ? "border-[#cfe0c9] dark:border-primary/30 bg-[#edf3e8] dark:bg-primary/15 text-[#526847] dark:text-primary"
+        : "border-[#d9ccb9] dark:border-border bg-[#f7efe5] dark:bg-secondary text-[#7a5b41] dark:text-muted-foreground"
     )
 
   const ingredientPriceBadgeClass = (cost: CostTier, selected: boolean) =>
@@ -1001,15 +1001,15 @@ export function Onboarding() {
       "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.06em] transition-[border-color,background-color,color,box-shadow] duration-150",
       cost === "$"
         ? selected
-          ? "border-[#cad8c3] bg-[#eef4e8] text-[#526847]"
-          : "border-[#dbe6d5] bg-[#f4f8f1] text-[#617055]"
+          ? "border-[#cad8c3] dark:border-primary/30 bg-[#eef4e8] dark:bg-primary/15 text-[#526847] dark:text-primary"
+          : "border-[#dbe6d5] dark:border-border bg-[#f4f8f1] dark:bg-secondary text-[#617055] dark:text-muted-foreground"
         : cost === "$$"
           ? selected
-            ? "border-[#ddd0bf] bg-[#f8efe4] text-[#7a5b41]"
-            : "border-[#e6dacb] bg-[#fbf4ec] text-[#816650]"
+            ? "border-[#ddd0bf] dark:border-border bg-[#f8efe4] dark:bg-secondary text-[#7a5b41] dark:text-muted-foreground"
+            : "border-[#e6dacb] dark:border-border bg-[#fbf4ec] dark:bg-secondary text-[#816650] dark:text-muted-foreground"
           : selected
-            ? "border-[#decab8] bg-[#f5ebe1] text-[#8b5f45]"
-            : "border-[#eadfd2] bg-[#fbf6f0] text-[#8f7056]"
+            ? "border-[#decab8] dark:border-border bg-[#f5ebe1] dark:bg-secondary text-[#8b5f45] dark:text-muted-foreground"
+            : "border-[#eadfd2] dark:border-border bg-[#fbf6f0] dark:bg-secondary text-[#8f7056] dark:text-muted-foreground"
     )
 
   const getBodyFieldError = (field: BodyField): string | null => {
@@ -1070,10 +1070,10 @@ export function Onboarding() {
     return cn(
       "transition-colors",
       hasError
-        ? "text-[#8b5a47]"
+        ? "text-[#8b5a47] dark:text-destructive/90"
         : isFocused
-          ? "text-[#4e5b52]"
-          : "text-[#6f756e]"
+          ? "text-[#4e5b52] dark:text-primary/80"
+          : "text-[#6f756e] dark:text-muted-foreground"
     )
   }
 
@@ -1110,10 +1110,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 1 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 Use detailed body stats
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 Best if you have body fat or scan-based measurements. These give us a more precise calorie and protein target.
               </CardDescription>
             </CardHeader>
@@ -1170,7 +1170,7 @@ export function Onboarding() {
                   description="Enter your numbers from an InBody scan, smart scale, or your best estimate."
                 />
 
-                <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] dark:border-border pt-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="weight" className={getBodyLabelClassName("weight")}>Weight ({unit})</Label>
                     <OnboardingBoundedInput
@@ -1250,14 +1250,14 @@ export function Onboarding() {
                   )}
                 </OnboardingPrimaryCta>
 
-                <p className="text-center text-[11px] leading-[1.45] text-[#7a8079]">
+                <p className="text-center text-[11px] leading-[1.45] text-[#7a8079] dark:text-muted-foreground">
                   Use your best estimate for now. You can update these details later.
                 </p>
 
                 <button
                   type="button"
                   onClick={() => setStep("quick-estimate")}
-                  className="mt-1 w-full py-1.5 text-center text-sm text-[#7a5b41] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
+                  className="mt-1 w-full py-1.5 text-center text-sm text-[#7a5b41] dark:text-muted-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
                 >
                   ← Back to basics setup
                 </button>
@@ -1270,10 +1270,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 1 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 Start with the basics
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 A faster setup using height, weight, age, and body type.
               </CardDescription>
             </CardHeader>
@@ -1284,7 +1284,7 @@ export function Onboarding() {
                   description="Enter your best estimates — you can update these anytime."
                 />
 
-                <div className="mt-3.5 grid gap-4 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-4 border-t border-[#eadfce] dark:border-border pt-3">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2.5">
                       <Label>Sex</Label>
@@ -1376,7 +1376,7 @@ export function Onboarding() {
                   description="Pick the closest match. It doesn&apos;t need to be perfect."
                 />
 
-                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-3">
                   {([
                     { id: "lean", label: "Slim", description: "Naturally lean build, lower body fat" },
                     { id: "average", label: "Average", description: "Typical build, moderate body fat" },
@@ -1393,7 +1393,7 @@ export function Onboarding() {
                       <div
                         className={cn(
                           "text-[15px] font-semibold leading-5 transition-colors",
-                          quickBodyType === item.id ? "text-[#243128]" : "text-[#28312b]"
+                          quickBodyType === item.id ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                         )}
                       >
                         {item.label}
@@ -1401,7 +1401,7 @@ export function Onboarding() {
                       <div
                         className={cn(
                           "mt-0.5 text-sm leading-5 transition-colors",
-                          quickBodyType === item.id ? "text-[#4f5e56]" : "text-[#5e665f]"
+                          quickBodyType === item.id ? "text-[#4f5e56] dark:text-muted-foreground" : "text-[#5e665f] dark:text-muted-foreground"
                         )}
                       >
                         {item.description}
@@ -1424,18 +1424,18 @@ export function Onboarding() {
                   Set my targets
                 </OnboardingPrimaryCta>
 
-                <p className="text-center text-[11px] leading-[1.45] text-[#7a8079]">
+                <p className="text-center text-[11px] leading-[1.45] text-[#7a8079] dark:text-muted-foreground">
                   You can refine this later with detailed stats.
                 </p>
               </div>
 
-              <div className="border-t border-[#eadfce] pt-4 text-center">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a8079]">Use detailed body stats</p>
-                <p className="mt-1 text-xs leading-5 text-[#7a8079]">Best if you have body fat or scan-based measurements.</p>
+              <div className="border-t border-[#eadfce] dark:border-border pt-4 text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Use detailed body stats</p>
+                <p className="mt-1 text-xs leading-5 text-[#7a8079] dark:text-muted-foreground">Best if you have body fat or scan-based measurements.</p>
                 <button
                   type="button"
                   onClick={() => setStep("body")}
-                  className="mt-2 text-sm font-medium text-[#7a5b41] underline underline-offset-2 hover:text-[#5e3e27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:rounded"
+                  className="mt-2 text-sm font-medium text-[#7a5b41] dark:text-muted-foreground underline underline-offset-2 hover:text-[#5e3e27] dark:hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:rounded"
                 >
                   I have detailed body stats (InBody, smart scale, etc.)
                 </button>
@@ -1448,10 +1448,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 2 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 How active is your week?
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 Pick the option that feels closest to a normal week. This helps us turn your body stats into a realistic calorie starting point, and you can update it later.
               </CardDescription>
             </CardHeader>
@@ -1462,7 +1462,7 @@ export function Onboarding() {
                   description="Choose the option that sounds most like a regular week."
                 />
 
-                <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
                   {activityLevels.map((level) => {
                     const isActive = selectedActivityLevel === level.id
 
@@ -1475,15 +1475,15 @@ export function Onboarding() {
                         className={activityOptionButtonClass(isActive)}
                       >
                         <div className="min-w-0">
-                          <div className="text-[15px] font-semibold text-[#28312b]">{level.label}</div>
-                          <div className="mt-1 text-sm leading-5 text-[#5e665f]">{level.description}</div>
+                          <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">{level.label}</div>
+                          <div className="mt-1 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">{level.description}</div>
                         </div>
                         <span
                           className={cn(
                             "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.08em]",
                             isActive
-                              ? "border-[#5f7654] bg-[#5f7654] text-[#fffaf4]"
-                              : "border-[#d9ccb9] bg-[#f7efe5] text-[#7a5b41]"
+                              ? "border-[#5f7654] dark:border-primary bg-[#5f7654] dark:bg-primary text-[#fffaf4] dark:text-primary-foreground"
+                              : "border-[#d9ccb9] dark:border-border bg-[#f7efe5] dark:bg-secondary text-[#7a5b41] dark:text-muted-foreground"
                           )}
                         >
                           x{level.multiplier}
@@ -1526,10 +1526,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 3 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 What are you aiming for?
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 No wrong answer here. This just nudges calories and macros in the right direction.
               </CardDescription>
             </CardHeader>
@@ -1540,7 +1540,7 @@ export function Onboarding() {
                   description="Choose the direction you want this plan to support first."
                 />
 
-                <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
                   {goals.map((goal) => {
                     const isActive = selectedGoal === goal.id
 
@@ -1557,7 +1557,7 @@ export function Onboarding() {
                           <div
                             className={cn(
                               "text-[15px] font-semibold transition-colors",
-                              isActive ? "text-[#243128]" : "text-[#28312b]"
+                              isActive ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                             )}
                           >
                             {goal.label}
@@ -1565,7 +1565,7 @@ export function Onboarding() {
                           <div
                             className={cn(
                               "mt-1 text-sm leading-5 transition-colors",
-                              isActive ? "text-[#4f5e56]" : "text-[#5e665f]"
+                              isActive ? "text-[#4f5e56] dark:text-muted-foreground" : "text-[#5e665f] dark:text-muted-foreground"
                             )}
                           >
                             {goal.description}
@@ -1609,10 +1609,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 4 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 Set your target weight (optional)
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 {stepFourSupportingCopy}
               </CardDescription>
             </CardHeader>
@@ -1623,7 +1623,7 @@ export function Onboarding() {
                   description={stepFourTargetDescription}
                 />
 
-                <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] dark:border-border pt-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="target-weight">Target weight ({unit})</Label>
                     <OnboardingBoundedInput
@@ -1659,7 +1659,7 @@ export function Onboarding() {
                     description="Pick the pace that feels realistic for your week."
                   />
 
-                  <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
+                  <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
                     {weightLossPaceOptions.map((opt) => {
                       const weekly =
                         unit === "kg"
@@ -1677,7 +1677,7 @@ export function Onboarding() {
                           <div
                             className={cn(
                               "break-words text-[15px] font-semibold transition-colors",
-                              weightLossPace === opt.id ? "text-[#243128]" : "text-[#28312b]"
+                              weightLossPace === opt.id ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                             )}
                           >
                             {opt.emoji} {opt.label} — {weekly} (deficit ~{opt.deficitKcal} kcal/day)
@@ -1685,7 +1685,7 @@ export function Onboarding() {
                           <div
                             className={cn(
                               "mt-1 break-words text-sm leading-5 transition-colors",
-                              weightLossPace === opt.id ? "text-[#4f5e56]" : "text-[#5e665f]"
+                              weightLossPace === opt.id ? "text-[#4f5e56] dark:text-muted-foreground" : "text-[#5e665f] dark:text-muted-foreground"
                             )}
                           >
                             {opt.hint}
@@ -1751,10 +1751,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 5 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 What kind of food do you usually eat?
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 Pick one or two cuisines that feel closest to your real week. We&apos;ll lean toward foods you can actually find, afford, and want to keep eating.
               </CardDescription>
             </CardHeader>
@@ -1765,7 +1765,7 @@ export function Onboarding() {
                   description="Choose one or two styles so the plan feels familiar from the start."
                 />
 
-                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-2.5">
+                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-2.5">
                   {CUISINE_OPTIONS.map((c) => {
                     const isActive = selectedCuisines.includes(c.id)
                     const selectedCuisineIndex = selectedCuisines.indexOf(c.id)
@@ -1782,7 +1782,7 @@ export function Onboarding() {
                           <div
                             className={cn(
                               "break-words text-[15px] font-semibold leading-5 transition-colors",
-                              isActive ? "text-[#243128]" : "text-[#28312b]"
+                              isActive ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                             )}
                           >
                             {c.title}
@@ -1790,7 +1790,7 @@ export function Onboarding() {
                           <div
                             className={cn(
                               "mt-0.5 break-words text-sm leading-5 transition-colors",
-                              isActive ? "text-[#4f5e56]" : "text-[#5e665f]"
+                              isActive ? "text-[#4f5e56] dark:text-muted-foreground" : "text-[#5e665f] dark:text-muted-foreground"
                             )}
                           >
                             {c.hint}
@@ -1841,10 +1841,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 6 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 How do you like to eat?
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 Keep it simple: choose the style that sounds easiest to stick with, and we&apos;ll show a rough macro starting point below.
               </CardDescription>
             </CardHeader>
@@ -1855,7 +1855,7 @@ export function Onboarding() {
                   description="Pick the style that feels most realistic for your day-to-day meals."
                 />
 
-                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-3">
                   {dietTypes.map((diet) => {
                     const isActive = selectedDietType === diet.id
 
@@ -1870,7 +1870,7 @@ export function Onboarding() {
                           <div
                             className={cn(
                               "text-[15px] font-semibold leading-5 transition-colors",
-                              isActive ? "text-[#243128]" : "text-[#28312b]"
+                              isActive ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                             )}
                           >
                             {diet.label}
@@ -1878,7 +1878,7 @@ export function Onboarding() {
                           <div
                             className={cn(
                               "mt-0.5 text-sm leading-5 transition-colors",
-                              isActive ? "text-[#4f5e56]" : "text-[#5e665f]"
+                              isActive ? "text-[#4f5e56] dark:text-muted-foreground" : "text-[#5e665f] dark:text-muted-foreground"
                             )}
                           >
                             {diet.description}
@@ -1900,22 +1900,22 @@ export function Onboarding() {
                     description="A starting point based on your body stats, activity, goal, and diet style."
                   />
 
-                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#eadfce] pt-3 sm:grid-cols-4">
-                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">kcal</div>
-                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b]">{macroPreview.calories}</div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#eadfce] dark:border-border pt-3 sm:grid-cols-4">
+                    <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">kcal</div>
+                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b] dark:text-foreground">{macroPreview.calories}</div>
                     </div>
-                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Protein</div>
-                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b]">{macroPreview.macros.protein}g</div>
+                    <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Protein</div>
+                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b] dark:text-foreground">{macroPreview.macros.protein}g</div>
                     </div>
-                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Carbs</div>
-                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b]">{macroPreview.macros.carbs}g</div>
+                    <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Carbs</div>
+                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b] dark:text-foreground">{macroPreview.macros.carbs}g</div>
                     </div>
-                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Fat</div>
-                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b]">{macroPreview.macros.fat}g</div>
+                    <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Fat</div>
+                      <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b] dark:text-foreground">{macroPreview.macros.fat}g</div>
                     </div>
                   </div>
                 </div>
@@ -1949,10 +1949,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 7 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 Build your food list
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 Use a starter list by budget, or choose ingredients yourself. Both paths work, so pick the one that feels easiest to start with.
               </CardDescription>
             </CardHeader>
@@ -1963,7 +1963,7 @@ export function Onboarding() {
                   description="Choose how you want to build the ingredient list for your first plan."
                 />
 
-                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-3">
                   <button
                     type="button"
                     onClick={() => setIngredientMode("recommend")}
@@ -1973,7 +1973,7 @@ export function Onboarding() {
                     <div
                       className={cn(
                         "text-[15px] font-semibold leading-5 transition-colors",
-                        ingredientMode === "recommend" ? "text-[#243128]" : "text-[#28312b]"
+                        ingredientMode === "recommend" ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                       )}
                       suppressHydrationWarning
                     >
@@ -1982,7 +1982,7 @@ export function Onboarding() {
                     <div
                       className={cn(
                         "mt-0.5 text-sm leading-5 transition-colors",
-                        ingredientMode === "recommend" ? "text-[#4f5e56]" : "text-[#5e665f]"
+                        ingredientMode === "recommend" ? "text-[#4f5e56] dark:text-muted-foreground" : "text-[#5e665f] dark:text-muted-foreground"
                       )}
                       suppressHydrationWarning
                     >
@@ -2002,7 +2002,7 @@ export function Onboarding() {
                     <div
                       className={cn(
                         "text-[15px] font-semibold leading-5 transition-colors",
-                        ingredientMode === "custom" ? "text-[#243128]" : "text-[#28312b]"
+                        ingredientMode === "custom" ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                       )}
                       suppressHydrationWarning
                     >
@@ -2011,7 +2011,7 @@ export function Onboarding() {
                     <div
                       className={cn(
                         "mt-0.5 text-sm leading-5 transition-colors",
-                        ingredientMode === "custom" ? "text-[#4f5e56]" : "text-[#5e665f]"
+                        ingredientMode === "custom" ? "text-[#4f5e56] dark:text-muted-foreground" : "text-[#5e665f] dark:text-muted-foreground"
                       )}
                       suppressHydrationWarning
                     >
@@ -2061,10 +2061,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
               <OnboardingStepChip>Step 8 of 8</OnboardingStepChip>
-              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b]" suppressHydrationWarning>
+              <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                 Choose ingredients
               </CardTitle>
-              <CardDescription className="mt-1.5 max-w-xl pr-1 text-[14px] leading-6 text-[#5e665f] sm:text-[15px]" suppressHydrationWarning>
+              <CardDescription className="mt-1.5 max-w-xl pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 Build a list that feels realistic to shop for and repeat. For a workable plan, aim for at least 2 proteins, 1 carb, and 1 fat. Vegetables are a nice add-on.
               </CardDescription>
             </CardHeader>
@@ -2084,7 +2084,7 @@ export function Onboarding() {
                     description="Choose the budget range that feels most realistic for your week."
                   />
 
-                  <div className="mt-3.5 max-h-[40vh] space-y-1.5 overflow-y-auto border-t border-[#eadfce] pt-3 pr-1 sm:max-h-[44vh]">
+                  <div className="mt-3.5 max-h-[40vh] space-y-1.5 overflow-y-auto border-t border-[#eadfce] dark:border-border pt-3 pr-1 sm:max-h-[44vh]">
                     {budgetPresets.map((preset) => {
                       const isActive = selectedBudgetPreset === preset.id
 
@@ -2101,7 +2101,7 @@ export function Onboarding() {
                               <div
                                 className={cn(
                                   "break-words text-[15px] font-semibold leading-5 transition-colors",
-                                  isActive ? "text-[#243128]" : "text-[#28312b]"
+                                  isActive ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                                 )}
                                 suppressHydrationWarning
                               >
@@ -2110,7 +2110,7 @@ export function Onboarding() {
                               <div
                                 className={cn(
                                   "mt-0.5 text-sm leading-5 transition-colors",
-                                  isActive ? "text-[#4f5e56]" : "text-[#5e665f]"
+                                  isActive ? "text-[#4f5e56] dark:text-muted-foreground" : "text-[#5e665f] dark:text-muted-foreground"
                                 )}
                                 suppressHydrationWarning
                               >
@@ -2119,7 +2119,7 @@ export function Onboarding() {
                             </div>
                             <span className={ingredientPresetStatusBadgeClass(isActive)}>{isActive ? "Selected" : "Preset"}</span>
                           </div>
-                          <div className="mt-1.5 text-xs leading-5 text-[#7a8079]" suppressHydrationWarning>
+                          <div className="mt-1.5 text-xs leading-5 text-[#7a8079] dark:text-muted-foreground" suppressHydrationWarning>
                             {preset.items.join(", ")}
                           </div>
                         </button>
@@ -2137,9 +2137,9 @@ export function Onboarding() {
                       description="Search for something specific first, or browse by category below."
                     />
 
-                    <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
+                    <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
                       <div className="relative">
-                        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a8079]" />
+                        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a8079] dark:text-muted-foreground" />
                         <OnboardingBoundedInput
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
@@ -2149,7 +2149,7 @@ export function Onboarding() {
                       </div>
 
                       {search.trim() && (
-                        <div className="space-y-2 rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] p-2.5 shadow-[0_8px_18px_-28px_rgba(40,49,43,0.2)]">
+                        <div className="space-y-2 rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card p-2.5 shadow-[0_8px_18px_-28px_rgba(40,49,43,0.2)]">
                           {ingredientCatalog
                             .filter((item) => item.name.toLowerCase().includes(search.toLowerCase()))
                             .slice(0, 6)
@@ -2158,20 +2158,20 @@ export function Onboarding() {
                                 key={item.name}
                                 type="button"
                                 onClick={() => addIngredientFromSearch(item.name)}
-                                className="flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left text-sm text-[#28312b] transition-colors hover:bg-[#f7efe5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
+                                className="flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left text-sm text-[#28312b] dark:text-foreground transition-colors hover:bg-[#f7efe5] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
                               >
                                 <span className="min-w-0 break-words">{item.name}</span>
-                                <span className="shrink-0 text-[11px] font-medium text-[#7a8079]">Tap to add</span>
+                                <span className="shrink-0 text-[11px] font-medium text-[#7a8079] dark:text-muted-foreground">Tap to add</span>
                               </button>
                             ))}
                           <Button
                             type="button"
                             variant="outline"
-                            className="min-h-11 w-full justify-start rounded-[18px] border-[#d8ccb9] bg-[#fff7ee] px-3.5 py-2.5 text-sm font-medium text-[#5e665f] hover:bg-[#f8efe4] hover:text-[#28312b]"
+                            className="min-h-11 w-full justify-start rounded-[18px] border-[#d8ccb9] dark:border-border bg-[#fff7ee] dark:bg-secondary/60 px-3.5 py-2.5 text-sm font-medium text-[#5e665f] dark:text-muted-foreground hover:bg-[#f8efe4] dark:hover:bg-secondary hover:text-[#28312b] dark:hover:text-foreground"
                             onClick={fetchIngredientViaClaude}
                             disabled={fetchingIngredient}
                             >
-                            <Search className="mr-2 h-4 w-4 shrink-0 text-[#7a5b41]" />
+                            <Search className="mr-2 h-4 w-4 shrink-0 text-[#7a5b41] dark:text-muted-foreground" />
                             {fetchingIngredient ? "Looking that up…" : "Can’t find it? Look up with AI"}
                           </Button>
                         </div>
@@ -2185,7 +2185,7 @@ export function Onboarding() {
                       description="Tap ingredients to add or remove them from your list."
                     />
 
-                    <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] pt-3">
+                    <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] dark:border-border pt-3">
                       <div className="flex flex-wrap gap-1.5">
                         {categoryTabs.map((tab) => (
                           <button
@@ -2219,12 +2219,12 @@ export function Onboarding() {
                                     <div
                                       className={cn(
                                         "break-words text-[15px] font-semibold leading-5 transition-colors",
-                                        selected ? "text-[#243128]" : "text-[#28312b]"
+                                        selected ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                                       )}
                                     >
                                       {item.name}
                                     </div>
-                                    <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-[#7a8079]">
+                                    <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-[#7a8079] dark:text-muted-foreground">
                                       <span>{item.calories} kcal</span>
                                       <span>P {item.protein}</span>
                                       <span>C {item.carbs}</span>
@@ -2234,7 +2234,7 @@ export function Onboarding() {
                                   </div>
                                   <div className="flex shrink-0 flex-col items-end gap-1">
                                     <span className={ingredientPriceBadgeClass(item.cost, selected)}>{item.cost}</span>
-                                    {selected ? <span className="text-[11px] font-medium text-[#617055]">Added</span> : null}
+                                    {selected ? <span className="text-[11px] font-medium text-[#617055] dark:text-primary">Added</span> : null}
                                   </div>
                                 </div>
                               </button>
@@ -2252,17 +2252,17 @@ export function Onboarding() {
                   description="A quick check to keep the first meal plan practical."
                 />
 
-                <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] pt-3">
+                <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
                   <div className="grid grid-cols-2 gap-2.5">
-                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Cost mix</div>
-                      <div className="mt-1 text-sm font-semibold leading-5 text-[#28312b]" suppressHydrationWarning>
+                    <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Cost mix</div>
+                      <div className="mt-1 text-sm font-semibold leading-5 text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                         {sustainabilityLabel}
                       </div>
                     </div>
-                    <div className="rounded-[18px] border border-[#e1d5c5] bg-[#fffdf9] px-3 py-2.5">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079]">Selected</div>
-                      <div className="mt-1 text-sm font-semibold leading-5 text-[#28312b]" suppressHydrationWarning>
+                    <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Selected</div>
+                      <div className="mt-1 text-sm font-semibold leading-5 text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                         {selectedIngredients.length} ingredients
                       </div>
                     </div>
@@ -2290,7 +2290,7 @@ export function Onboarding() {
                 <OnboardingFieldNote error>{ingredientMinimumMessage}</OnboardingFieldNote>
               )}
 
-              <div className="sticky bottom-0 z-10 -mx-5 border-t border-[#eadfce] bg-[#fffaf4]/95 px-5 pt-3 backdrop-blur sm:-mx-7 sm:px-7">
+              <div className="sticky bottom-0 z-10 -mx-5 border-t border-[#eadfce] dark:border-border bg-[#fffaf4]/95 dark:bg-card/95 px-5 pt-3 backdrop-blur sm:-mx-7 sm:px-7">
                 <OnboardingPrimaryCta
                   className={cn(
                     isIngredientSelectionValid
