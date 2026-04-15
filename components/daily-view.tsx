@@ -577,7 +577,7 @@ export function DailyView() {
             <div className="relative h-3.5 w-full overflow-hidden rounded-full bg-secondary">
               <div
                 className={`absolute left-0 top-0 h-full rounded-full transition-all ${
-                  calorieProgress > 100 ? "bg-destructive" : "bg-primary"
+                  calorieProgress > 100 ? "bg-rose-400/70 dark:bg-rose-500/50" : "bg-primary"
                 }`}
                 style={{ width: `${Math.min(calorieProgress, 100)}%` }}
               />
@@ -593,21 +593,21 @@ export function DailyView() {
               target={userProfile.macros.protein}
               label="Protein"
               icon={<Beef className="h-4 w-4 text-chart-1" />}
-              color="bg-chart-1"
+              color="bg-emerald-400/70 dark:bg-emerald-500/50"
             />
             <MacroProgress
               current={currentDay.totalCarbs}
               target={userProfile.macros.carbs}
               label="Carbs"
               icon={<Wheat className="h-4 w-4 text-chart-3" />}
-              color="bg-chart-3"
+              color="bg-amber-400/70 dark:bg-amber-500/50"
             />
             <MacroProgress
               current={currentDay.totalFat}
               target={userProfile.macros.fat}
               label="Fat"
               icon={<Droplets className="h-4 w-4 text-chart-2" />}
-              color="bg-chart-2"
+              color="bg-sky-400/70 dark:bg-sky-500/50"
             />
           </CardContent>
         </Card>
@@ -651,7 +651,7 @@ export function DailyView() {
                 <CardContent className="px-5 py-5 sm:px-6">
                   <div className="flex min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <span className="dashboard-meta-pill bg-secondary text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground">
                         {getMealLabel(idx, currentDay.meals.length)}
                       </span>
                       <div className="mt-3 break-words text-lg font-semibold leading-snug text-foreground">{meal.name}</div>

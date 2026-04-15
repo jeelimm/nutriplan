@@ -39,7 +39,11 @@ const categoryColors: Record<string, string> = {
   spices: "bg-muted text-muted-foreground",
 }
 
-export function GroceryList() {
+interface GroceryListProps {
+  selectedDay?: { dayName: string; dayIndex: number }
+}
+
+export function GroceryList({ selectedDay }: GroceryListProps = {}) {
   const { weekPlan, setCurrentStep, userProfile } = useMealStore()
   const [copied, setCopied] = useState(false)
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
@@ -47,16 +51,22 @@ export function GroceryList() {
   if (!weekPlan.length) return null
 
   const recipeUnitSystem = userProfile?.unitSystem ?? "metric"
-  const groceryCategories = buildGroceryCategories(
-    weekPlan.flatMap((day) =>
-      day.meals.flatMap((meal) =>
+  const sourceIngredients = selectedDay
+    ? (weekPlan[selectedDay.dayIndex]?.meals ?? []).flatMap((meal) =>
         meal.ingredients.map((ingredient) => ({
           ...ingredient,
           amount: convertRecipeText(ingredient.amount, recipeUnitSystem),
         }))
       )
-    )
-  )
+    : weekPlan.flatMap((day) =>
+        day.meals.flatMap((meal) =>
+          meal.ingredients.map((ingredient) => ({
+            ...ingredient,
+            amount: convertRecipeText(ingredient.amount, recipeUnitSystem),
+          }))
+        )
+      )
+  const groceryCategories = buildGroceryCategories(sourceIngredients)
 
   // Sort categories by item count
   groceryCategories.sort((a, b) => b.items.length - a.items.length)
@@ -99,34 +109,46 @@ export function GroceryList() {
           </button>
 
           <section className="dashboard-header-panel space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Weekly shopping list</div>
+            {selectedDay ? (
+              <div className="bg-card rounded-lg border border-border p-4">
+                <div className="hero-badge bg-secondary text-secondary-foreground">Shopping list</div>
                 <h1 className="mt-3 break-words text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]">
-                  Everything for the week
+                  Shopping list · {selectedDay.dayName}
                 </h1>
-                <p className="mt-2 max-w-[34rem] text-sm leading-6 text-muted-foreground">
-                  Check items off as you shop, or copy the full list into notes or your usual grocery app.
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Ingredients for today&apos;s meals. Check items off as you shop.
                 </p>
               </div>
-              <Button
-                variant="outline"
-                onClick={handleCopy}
-                className="h-11 min-h-[44px] w-full gap-2 sm:w-auto sm:shrink-0"
-              >
-                {copied ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4" />
-                    Copy list
-                  </>
-                )}
-              </Button>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="hero-badge bg-secondary text-secondary-foreground">Weekly shopping list</div>
+                  <h1 className="mt-3 break-words text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]">
+                    Everything for the week
+                  </h1>
+                  <p className="mt-2 max-w-[34rem] text-sm leading-6 text-muted-foreground">
+                    Check items off as you shop, or copy the full list into notes or your usual grocery app.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleCopy}
+                  className="h-11 min-h-[44px] w-full gap-2 sm:w-auto sm:shrink-0"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy list
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-2.5">
               <div className="dashboard-kpi-tile">

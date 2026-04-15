@@ -311,11 +311,11 @@ export function SettingsScreen() {
                   <span className="text-sm font-semibold text-foreground">Detailed profile editor</span>
                 </div>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  For weight, body fat, muscle mass, and profile name, use the detailed editor from your dashboard.
+                  Re-enter your body stats to recalculate your calorie and macro targets. This will take you back to update your profile.
                 </p>
               </div>
-              <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={() => setCurrentStep(2)}>
-                Open profile editor
+              <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={() => setCurrentStep(0)}>
+                Update my profile
               </Button>
             </div>
 

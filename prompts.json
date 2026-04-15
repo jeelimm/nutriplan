@@ -1,30 +1,24 @@
 {
-  "feature": "Fix onboarding.tsx: dark mode sweep, back button placement, CTA states, Start over link",
+  "feature": "Fix grocery-list badge color, add daily view header, fix settings profile editor button",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Update onboardingUi base tokens: remove disabled:opacity-100 from primaryCtaBase, add dark mode to sectionAccentDot",
-      "prompt": "In components/onboarding.tsx, make exactly these two changes to the `onboardingUi` const object and nothing else:\n\n1. `primaryCtaBase` — remove `text-[#fffaf4] dark:text-primary-foreground` and `disabled:opacity-100` from the string. The new value should be:\n   `\"min-h-12 w-full rounded-2xl text-base font-semibold transition-[background-color,box-shadow,transform] duration-150 focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background\"`\n\n2. `sectionAccentDot` — add `dark:bg-muted-foreground` to the end. The new value should be:\n   `\"h-2.5 w-2.5 rounded-full bg-[#b77749] dark:bg-muted-foreground\"`\n\nDo not change any other keys in onboardingUi or anything else in the file.",
-      "files_affected": ["components/onboarding.tsx"]
+      "description": "Fix hardcoded badge color in grocery-list.tsx weekly view header",
+      "prompt": "In components/grocery-list.tsx, on line 104, change:\n  `<div className=\"hero-badge bg-[#fff7ee] text-[#7a5b41]\">Weekly shopping list</div>`\nto:\n  `<div className=\"hero-badge bg-secondary text-secondary-foreground\">Weekly shopping list</div>`\n\nDo not change anything else.",
+      "files_affected": ["components/grocery-list.tsx"]
     },
     {
       "id": 2,
-      "description": "Add handleStartOver function and lift all back buttons above the card into a single consolidated block",
-      "prompt": "In components/onboarding.tsx:\n\n**Part A — Add handleStartOver function**\nAfter the `handleBodyContinue` function, add:\n\n```tsx\nconst handleStartOver = () => {\n  try { window.localStorage.removeItem(ONBOARDING_DRAFT_KEY) } catch {}\n  setStep(\"quick-estimate\")\n  setFirstStep(\"quick-estimate\")\n  setSex(\"male\")\n  setUnitSystem(\"metric\")\n  setUnit(\"kg\")\n  setWeight(\"\")\n  setBodyFat(\"\")\n  setMuscleMass(\"\")\n  setQuickHeight(\"\")\n  setQuickAge(\"\")\n  setQuickBodyType(null)\n  setSelectedGoal(null)\n  setSelectedActivityLevel(null)\n  setSelectedDietType(null)\n  setTargetWeightInput(\"\")\n  setTargetWeightSkipped(false)\n  setWeightLossPace(\"moderate\")\n  setSelectedCuisines([])\n  setIngredientMode(null)\n  setSelectedBudgetPreset(null)\n  setSelectedIngredients([])\n  setSearch(\"\")\n  setActiveCategory(\"protein\")\n  setShowBodyValidation(false)\n  setTouchedBodyFields({ weight: false, bodyFat: false, muscleMass: false })\n}\n```\n\n**Part B — Add consolidated back-nav block**\nIn the return block, immediately after `<div className=\"page-column\" suppressHydrationWarning>` and before the first `{step === \"body\" && (`, add a single conditional `OnboardingSecondaryActionRow` that shows for all steps except `quick-estimate`, with step-based label logic.\n\n**Part C — Remove the 8 in-card back buttons**\nRemove all `OnboardingSecondaryActionRow` back-navigation elements from inside CardContent blocks (one per step: body, activity, goal, target-weight, cuisine, diet, ingredient-mode, ingredients).",
-      "files_affected": ["components/onboarding.tsx"]
+      "description": "Add selectedDay optional prop to GroceryList for a properly-styled daily view header",
+      "prompt": "In components/grocery-list.tsx:\n\n1. Add a `GroceryListProps` interface above the export and update the function signature:\n```tsx\ninterface GroceryListProps {\n  selectedDay?: { dayName: string; dayIndex: number }\n}\n\nexport function GroceryList({ selectedDay }: GroceryListProps = {}) {\n```\n\n2. Replace the grocery data derivation (the `weekPlan.flatMap(...)` block) with a conditional that filters to a single day when `selectedDay` is provided:\n```tsx\nconst sourceIngredients = selectedDay\n  ? (weekPlan[selectedDay.dayIndex]?.meals ?? []).flatMap((meal) =>\n      meal.ingredients.map((ingredient) => ({\n        ...ingredient,\n        amount: convertRecipeText(ingredient.amount, recipeUnitSystem),\n      }))\n    )\n  : weekPlan.flatMap((day) =>\n      day.meals.flatMap((meal) =>\n        meal.ingredients.map((ingredient) => ({\n          ...ingredient,\n          amount: convertRecipeText(ingredient.amount, recipeUnitSystem),\n        }))\n      )\n    )\nconst groceryCategories = buildGroceryCategories(sourceIngredients)\n```\n\n3. In the return block, wrap the existing sticky header's `<section>` content in a conditional. When `selectedDay` is provided, replace the header `<section>` with:\n```tsx\n<section className=\"space-y-4\">\n  <div className=\"bg-card rounded-lg border border-border p-4\">\n    <div className=\"hero-badge bg-secondary text-secondary-foreground\">Shopping list</div>\n    <h1 className=\"mt-3 break-words text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]\">\n      Shopping list · {selectedDay.dayName}\n    </h1>\n    <p className=\"mt-2 text-sm leading-6 text-muted-foreground\">\n      Ingredients for today&apos;s meals. Check items off as you shop.\n    </p>\n  </div>\n  {/* keep the kpi tiles, progress bar, and bridge-note-strip unchanged */}\n</section>\n```\nWhen `selectedDay` is NOT provided, keep the existing `<section className=\"dashboard-header-panel space-y-4\">` block unchanged (except for the badge fix from prompt 1).",
+      "files_affected": ["components/grocery-list.tsx"]
     },
     {
       "id": 3,
-      "description": "Standardize all 9 CTA buttons to bg-primary/bg-muted pattern",
-      "prompt": "In components/onboarding.tsx, update every `OnboardingPrimaryCta` className ternary:\n- Enabled: `\"bg-primary text-primary-foreground hover:bg-primary/90\"`\n- Disabled: `\"bg-muted text-muted-foreground cursor-not-allowed opacity-50\"`\n- Advancing (body only): `\"bg-primary/80 text-primary-foreground cursor-wait\"`\n\nApply to all 9 buttons: body, quick-estimate, activity, goal, target-weight, cuisine, diet, ingredient-mode, ingredients.",
-      "files_affected": ["components/onboarding.tsx"]
-    },
-    {
-      "id": 4,
-      "description": "Add 'Start over' link at bottom of quick-estimate step",
-      "prompt": "In components/onboarding.tsx, in the `quick-estimate` step CardContent, after the closing `</div>` of the 'Use detailed body stats' section (the last element), add:\n\n```tsx\n<div className=\"pt-3 text-center\">\n  <button\n    type=\"button\"\n    onClick={handleStartOver}\n    className=\"text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-none\"\n  >\n    Start over\n  </button>\n</div>\n```",
-      "files_affected": ["components/onboarding.tsx"]
+      "description": "Fix 'Open profile editor' button in settings-screen.tsx to navigate to onboarding (step 0)",
+      "prompt": "In components/settings-screen.tsx, find the 'Detailed profile editor' settings-section-panel block (around line 307). Make exactly these changes:\n\n1. Change the button onClick from `() => setCurrentStep(2)` to `() => setCurrentStep(0)`.\n\n2. Update the description paragraph from:\n   `For weight, body fat, muscle mass, and profile name, use the detailed editor from your dashboard.`\n   to:\n   `Re-enter your body stats to recalculate your calorie and macro targets. This will take you back to update your profile.`\n\n3. Change the button label from `Open profile editor` to `Update my profile`.\n\nDo not change anything else.",
+      "files_affected": ["components/settings-screen.tsx"]
     }
   ]
 }
