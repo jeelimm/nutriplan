@@ -70,7 +70,7 @@ export function SettingsScreen() {
             <span>Back to setup</span>
           </button>
           <section className="dashboard-header-panel space-y-4">
-            <div className="hero-badge bg-[#fff7ee] text-[#7a5b41] dark:bg-secondary dark:text-muted-foreground">App settings</div>
+            <div className="hero-badge bg-secondary text-muted-foreground">App settings</div>
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-background/85 text-primary">
                 <Settings className="h-5 w-5" />
@@ -262,7 +262,7 @@ export function SettingsScreen() {
         </button>
 
         <section className="dashboard-header-panel space-y-4">
-          <div className="hero-badge bg-[#fff7ee] text-[#7a5b41] dark:bg-secondary dark:text-muted-foreground">
+          <div className="hero-badge bg-secondary text-muted-foreground">
             {onboardingComplete ? "Profile & plan settings" : "App settings"}
           </div>
           <div className="space-y-2">
