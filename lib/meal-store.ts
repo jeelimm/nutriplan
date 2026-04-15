@@ -30,6 +30,8 @@ export interface UserProfile {
   weightLossPace?: WeightLossPace
   bodyType?: BodyType
   cuisinePreference?: CuisinePreference[]
+  height?: number
+  age?: number
   weight: number
   bodyFat: number
   muscleMass: number
@@ -117,7 +119,9 @@ interface MealStore {
     dietType: DietType,
     sex?: Sex,
     targetWeightKg?: number | null,
-    weightLossPace?: WeightLossPace | null
+    weightLossPace?: WeightLossPace | null,
+    heightCm?: number | null,
+    age?: number | null
   ) => { calories: number; macros: UserProfile['macros']; calorieFloorApplied: boolean }
   generateMealPlan: () => Promise<void>
   swapMeal: (dayIndex: number, mealIndex: number, newMeal: Meal) => void
@@ -382,7 +386,9 @@ export const useMealStore = create<MealStore>()(
         dietType,
         sex = DEFAULT_SEX,
         targetWeightKg = null,
-        weightLossPace = null
+        weightLossPace = null,
+        heightCm = null,
+        age = null
       ) => {
         const calculatedLbm = getLbmKgForNutrition(weightKg, bodyFat)
         const proteinMultiplier = proteinGPerKgLbm(goal, dietType)
@@ -395,6 +401,8 @@ export const useMealStore = create<MealStore>()(
           sex,
           targetWeightKg: targetWeightKg ?? undefined,
           weightLossPace: weightLossPace ?? undefined,
+          heightCm: heightCm ?? undefined,
+          age: age ?? undefined,
         })
         console.log('[meal-store] calculateMacros', {
           weightKg,

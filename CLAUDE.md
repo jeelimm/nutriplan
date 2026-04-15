@@ -60,9 +60,6 @@ lib/
 hooks/
 ├── use-mobile.ts                   # Mobile detection hook
 └── use-toast.ts                    # Toast notification hook
-
-public/                             # Static assets
-styles/                             # Additional style files
 ```
 
 ### App Flow (by currentStep)
@@ -78,42 +75,158 @@ styles/                             # Additional style files
 ## Coding Guidelines
 
 ### Language & Comments
-- All comments and documentation should be written in **English**.
-- Only add comments where the logic is not self-evident. Do not add comments to obvious code.
+- All comments and documentation must be written in **English**.
+- Only add comments where the logic is not self-evident.
 
 ### Components
-- Use **function components only**. Class components are not allowed.
-- Client components must have the `"use client"` directive at the top of the file.
-- Place new components in `components/` or `components/ui/` depending on their role.
+- Use **function components only**. No class components.
+- Client components must have `"use client"` at the top.
+- Place new components in `components/` or `components/ui/`.
 
 ### State Management
-- All global state must be managed **exclusively through the Zustand store in `lib/meal-store.ts`**.
-- When new state is needed, add the types and actions to `meal-store.ts`.
-- Local UI state (e.g., modal open/closed) may use `useState`.
+- All global state through **Zustand store in `lib/meal-store.ts`** only.
+- Local UI state (modal open/closed, etc.) may use `useState`.
 
 ### UI Components
-- For common UI elements (buttons, inputs, cards, etc.), **prefer shadcn components from `components/ui/`**.
-- If a needed component does not exist in shadcn, add it to `components/ui/`.
-- Use the `cn()` helper from `lib/utils.ts` for composing Tailwind classes.
+- Prefer shadcn components from `components/ui/`.
+- Use `cn()` from `lib/utils.ts` for composing Tailwind classes.
 
 ### Package Installation
 - **Always notify the user and get approval before installing any new package.**
-- Do not add new packages if the existing dependencies can solve the problem.
 
 ### Types
-- Avoid using `any`. If unavoidable, add a comment explaining why.
-- Core domain types (`UserProfile`, `Meal`, `DayPlan`, etc.) are defined and managed in `lib/meal-store.ts`.
+- Avoid `any`. Core types live in `lib/meal-store.ts`.
 
 ---
 
-## Important Notes
+## Security Rules
 
-### Security
-- **Never commit `.env` or `.env.local` files.**
-- **Never hardcode API keys in source code.** Always reference them via environment variables (e.g., `process.env.ANTHROPIC_API_KEY`).
-- Never reference server-only environment variables (e.g., `ANTHROPIC_API_KEY`) directly inside client components.
+- **Never commit `.env` or `.env.local`.**
+- **Never hardcode API keys.** Use `process.env.ANTHROPIC_API_KEY`.
+- Never reference server-only env vars inside client components.
+- `node_modules/`, `.next/`, `tsconfig.tsbuildinfo` must not be committed.
+- API routes (`app/api/`) are server-side only.
 
-### General
-- `node_modules/`, `.next/`, and `tsconfig.tsbuildinfo` should not be committed.
-- API routes (`app/api/`) are server-side only. Keep all sensitive logic inside them.
-- The meal generation model is currently `claude-haiku-4-5-20251001`. To change it, update the `model` field in `route.ts`.
+---
+
+## Automation Pipeline
+
+This project uses a Claude Code automation pipeline for all feature development.
+
+### How It Works
+
+```
+/project:prd "feature description"
+        ↓
+Product Agent generates PRD → saved to Notion
+        ↓
+/project:implement (uses PRD output)
+        ↓
+Engineering Agent generates Cursor prompts → updates prompts.json
+        ↓
+./run-prompts.sh
+        ↓
+Build check → auto commit → push
+```
+
+### Slash Commands
+
+| Command | What it does |
+|---------|-------------|
+| `/project:prd` | Generate a PRD from a feature request and save to Notion |
+| `/project:implement` | Generate ordered Cursor prompts from a PRD, write to prompts.json |
+| `/project:ship` | Run prd + implement end-to-end in one command |
+
+### Git Rules for Automation
+- Always `git commit` before running any automation script.
+- Commit message format: `feat: [feature name]`, `fix: [bug description]`, `chore: [task]`
+- Never force push to `main`. Use feature branches for risky changes.
+
+---
+
+## Agent System Prompts
+
+These prompts define how the Product Agent and Engineering Agent behave.
+They are used internally by the slash commands below.
+
+### Product Agent
+
+```
+You are a senior Product Manager at a fast-moving startup.
+Convert raw feature requests, bug reports, or ideas into concise, actionable PRDs.
+
+Stack context: Next.js app, React, Tailwind CSS, Zustand for state,
+Anthropic API for AI features, deployed on Vercel.
+App: NutriPlan — AI-powered calorie and meal planning app.
+Users: health-conscious individuals tracking calories, macros, and meal plans.
+
+Output format (plain text, no markdown # headers):
+
+OVERVIEW
+One sentence: what this is and why it matters to the user.
+
+USER STORY
+As a [user], I want to [action] so that [outcome].
+
+ACCEPTANCE CRITERIA
+- [specific, testable criterion]
+- [3-5 criteria total]
+
+SCOPE (IN)
+- [what is included, 2-4 bullets]
+
+SCOPE (OUT)
+- [explicitly excluded to keep scope tight, 2-3 bullets]
+
+OPEN QUESTIONS
+- [unknowns the engineer needs to resolve, 1-3 items]
+
+Rules:
+- No fluff. PM-first: user value over technical details.
+- Keep it tight. If scope creeps, cut it.
+- Think MVP. Flag overbuilding risks in SCOPE (OUT).
+```
+
+### Engineering Agent
+
+```
+You are a senior frontend engineer specializing in precise,
+copy-paste ready prompts for Cursor AI IDE.
+
+Stack: Next.js 16.2, React 19, TypeScript, Tailwind v4, shadcn/ui,
+Zustand v5, Anthropic SDK, deployed on Vercel.
+
+File structure reference:
+- app/page.tsx — root, controls currentStep
+- app/api/generate-meal-plan/route.ts — AI endpoint
+- components/onboarding.tsx, meal-plan-config.tsx, daily-view.tsx,
+  grocery-list.tsx, settings-screen.tsx
+- lib/meal-store.ts — all global state and types
+- lib/nutrition.ts — calorie/macro calculations
+
+Given a PRD, output 3-5 ordered Cursor prompts implementing it incrementally.
+Each prompt must be small, safe, and independently executable.
+
+Output format:
+
+PROMPT 1 — [what it does in 5 words]
+[Exact prompt to paste into Cursor. Start with "In [filepath], ...".
+Mention exact component names, prop names, and behavior.
+Never bundle UI + logic + state in one prompt.]
+
+PROMPT 2 — [what it does]
+[prompt text]
+
+(continue for all prompts)
+
+VERIFICATION STEPS
+After running all prompts, check:
+- [specific thing to verify in browser]
+- [specific thing to verify in code/console]
+
+Rules:
+- One concern per prompt. Atomic changes only.
+- Reference exact file paths from the file structure above.
+- If a new file is needed, that is its own prompt.
+- Flag any risk of breaking existing state or components.
+```

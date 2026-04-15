@@ -50,6 +50,7 @@ export function SettingsScreen() {
   } = useMealStore()
 
   const [bodyStatsOpen, setBodyStatsOpen] = useState(false)
+  const [weightInput, setWeightInput] = useState("")
   const [bodyFatInput, setBodyFatInput] = useState("")
   const [muscleMassInput, setMuscleMassInput] = useState("")
   const [bodyStatsError, setBodyStatsError] = useState<string | null>(null)
@@ -84,7 +85,9 @@ export function SettingsScreen() {
       next.dietType,
       next.sex ?? "male",
       targetKg,
-      next.weightLossPace ?? null
+      next.weightLossPace ?? null,
+      next.height ?? null,
+      next.age ?? null
     )
     setUserProfile({
       ...next,
@@ -113,8 +116,13 @@ export function SettingsScreen() {
 
   const handleBodyStatsSave = () => {
     setBodyStatsError(null)
+    const w = parseFloat(weightInput)
     const bf = parseFloat(bodyFatInput)
     const mm = parseFloat(muscleMassInput)
+    if (!Number.isFinite(w) || w <= 0) {
+      setBodyStatsError(`Enter a valid weight in ${userProfile.unit}.`)
+      return
+    }
     if (!Number.isFinite(bf) || bf <= 0 || bf >= 100) {
       setBodyStatsError("Enter a body fat % between 1 and 99.")
       return
@@ -123,8 +131,9 @@ export function SettingsScreen() {
       setBodyStatsError("Enter a muscle mass greater than 0.")
       return
     }
-    updateNutritionTargets({ bodyFat: bf, muscleMass: mm })
+    updateNutritionTargets({ weight: w, bodyFat: bf, muscleMass: mm })
     setBodyStatsOpen(false)
+    setWeightInput("")
     setBodyFatInput("")
     setMuscleMassInput("")
     setBodyStatsSaved(true)
@@ -316,13 +325,13 @@ export function SettingsScreen() {
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
                     <span className="text-sm font-semibold text-foreground">
-                      {hasDetailedStats ? "Update body stats" : "Got InBody or smart scale data?"}
+                      {hasDetailedStats ? "Update body metrics" : "Add detailed body metrics"}
                     </span>
                   </div>
                   <p className="text-sm leading-6 text-muted-foreground">
                     {hasDetailedStats
-                      ? `Currently using ${userProfile.bodyFat}% body fat and ${userProfile.muscleMass}${userProfile.unit} muscle mass. Enter new measurements to keep your targets accurate.`
-                      : "Adding your body fat % and muscle mass from an InBody scan or smart scale can improve your calorie and macro targets."}
+                      ? `Currently using ${userProfile.weight}${userProfile.unit}, ${userProfile.bodyFat}% body fat, ${userProfile.muscleMass}${userProfile.unit} muscle mass. Enter new measurements to recalculate your targets.`
+                      : "Enter your weight, body fat %, and muscle mass from an InBody scan, smart scale, or your best estimate to get more accurate calorie and macro targets."}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -330,6 +339,7 @@ export function SettingsScreen() {
                     variant="outline"
                     className="h-12 min-h-[44px] flex-1"
                     onClick={() => {
+                      setWeightInput(userProfile.weight > 0 ? String(userProfile.weight) : "")
                       setBodyFatInput(userProfile.bodyFat > 0 ? String(userProfile.bodyFat) : "")
                       setMuscleMassInput(userProfile.muscleMass > 0 ? String(userProfile.muscleMass) : "")
                       setBodyStatsError(null)
@@ -337,7 +347,7 @@ export function SettingsScreen() {
                     }}
                   >
                     <ChevronDown className="mr-2 h-4 w-4" />
-                    {hasDetailedStats ? "Update stats" : "Add detailed stats"}
+                    {hasDetailedStats ? "Update metrics" : "Add detailed metrics"}
                   </Button>
                   {bodyStatsSaved && (
                     <span className="flex items-center gap-1 text-sm text-primary">
@@ -350,10 +360,29 @@ export function SettingsScreen() {
               <div className="settings-section-panel space-y-4">
                 <div className="space-y-1">
                   <p className="text-sm leading-6 text-muted-foreground">
-                    These values come from an InBody scan, smart scale, or a trusted measurement. No data? Your existing targets still work great.
+                    Enter your current measurements to recalculate calorie and macro targets. Use an InBody scan, smart scale, or your best estimate.
                   </p>
                 </div>
                 <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="weightInput" className="text-sm font-medium text-foreground">
+                      Weight ({userProfile.unit})
+                    </Label>
+                    <Input
+                      id="weightInput"
+                      type="number"
+                      inputMode="decimal"
+                      min={0.1}
+                      step={0.1}
+                      placeholder={userProfile.unit === "kg" ? "e.g. 80" : "e.g. 176"}
+                      value={weightInput}
+                      onChange={(e) => {
+                        setWeightInput(e.target.value)
+                        setBodyStatsError(null)
+                      }}
+                      className="settings-input"
+                    />
+                  </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="bodyFatInput" className="text-sm font-medium text-foreground">
                       Body Fat (%)
@@ -371,7 +400,7 @@ export function SettingsScreen() {
                         setBodyFatInput(e.target.value)
                         setBodyStatsError(null)
                       }}
-                      className="h-12"
+                      className="settings-input"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -390,7 +419,7 @@ export function SettingsScreen() {
                         setMuscleMassInput(e.target.value)
                         setBodyStatsError(null)
                       }}
-                      className="h-12"
+                      className="settings-input"
                     />
                   </div>
                 </div>
