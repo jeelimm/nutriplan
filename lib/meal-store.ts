@@ -96,7 +96,15 @@ export interface SwapCandidate {
   instructions: string[]
 }
 
+interface AppPrefs {
+  language: Language
+  unitSystem: RecipeUnitSystem
+  darkMode: boolean
+}
+
 interface MealStore {
+  appPrefs: AppPrefs
+  setAppPrefs: (patch: Partial<AppPrefs>) => void
   currentStep: number
   setCurrentStep: (step: number) => void
   userProfile: UserProfile | null
@@ -319,6 +327,8 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 export const useMealStore = create<MealStore>()(
   persist(
     (set, get) => ({
+      appPrefs: { language: DEFAULT_LANGUAGE, unitSystem: DEFAULT_RECIPE_UNIT_SYSTEM, darkMode: false },
+      setAppPrefs: (patch) => set((state) => ({ appPrefs: { ...state.appPrefs, ...patch } })),
       currentStep: 0,
       setCurrentStep: (step) => set({ currentStep: step }),
       userProfile: null,
