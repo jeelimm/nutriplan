@@ -51,3 +51,9 @@ This will:
 | `/project:prd` | You want to review the PRD before coding starts |
 | `/project:implement` | You already have a PRD and just need Cursor prompts |
 | `/project:ship` | You trust the process and want to go fast |
+
+## After completing all code changes
+
+Stage and commit locally only.
+Run: git add -A && git commit -m "..."
+Do NOT run git push under any circumstances.
