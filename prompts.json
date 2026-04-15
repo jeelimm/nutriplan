@@ -1,12 +1,18 @@
 {
-  "feature": "Fix remaining dark mode failures in meal-plan-config.tsx — direct replacements",
+  "feature": "Fix progress bar colors and dark mode badge/hover in daily-view.tsx",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Replace all hardcoded color classes in meal-plan-config.tsx with semantic equivalents",
-      "prompt": "In components/meal-plan-config.tsx, make exactly these replacements and nothing else. Use direct class substitution — do NOT add classes alongside the old ones, replace them outright.\n\n1. Daily Target card container (line ~106):\n   Find:    `rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-4`\n   Replace: `rounded-[22px] border border-border bg-card p-4`\n\n2. \"Daily target\" label text (line ~109):\n   Find:    `text-[#7a5b41]`\n   Replace: `text-muted-foreground`\n   (The full class string is `text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5b41]` — only swap the color token.)\n\n3. Hero badge (line ~95):\n   Find:    `hero-badge bg-[#fff7ee] text-[#7a5b41]`\n   Replace: `hero-badge bg-secondary text-muted-foreground`\n\n4. Accent dot (line ~152):\n   Find:    `h-2.5 w-2.5 rounded-full bg-[#b77749]`\n   Replace: `h-2.5 w-2.5 rounded-full bg-muted-foreground`\n\n5. Meal rhythm card ternary — selected state (line ~173):\n   Find:    `border-primary bg-[#edf4ec] shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]`\n   Replace: `border-primary bg-primary/15 shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]`\n\n6. Meal rhythm card ternary — idle hover state (line ~174):\n   Find:    `border-border bg-card hover:border-primary/35 hover:bg-[#fcf7ef]`\n   Replace: `border-border bg-card hover:border-primary/35 hover:bg-secondary`\n\nNote: the large calorie number (line ~112) already uses `text-foreground` and the meal count number (line ~177) also already uses `text-foreground` — do not touch those lines.\n\nDo not change any other classes, spacing, shadows, logic, or files. Follow CLAUDE.md guidelines.",
-      "files_affected": ["components/meal-plan-config.tsx"]
+      "description": "Replace vivid progress bar colors with muted palette-specific classes",
+      "prompt": "In components/daily-view.tsx: (1) calorie over-target bar — change bg-destructive to bg-rose-400/70 dark:bg-rose-500/50; (2) MacroProgress color props — protein to bg-emerald-400/70 dark:bg-emerald-500/50, carbs to bg-amber-400/70 dark:bg-amber-500/50, fat to bg-sky-400/70 dark:bg-sky-500/50.",
+      "files_affected": ["components/daily-view.tsx"]
+    },
+    {
+      "id": 2,
+      "description": "Fix meal type badge specificity and ensure Recipe hover classes are correct",
+      "prompt": "In components/daily-view.tsx: (1) meal type badge — replace dashboard-meta-pill with inline classes to avoid base-class conflict; (2) confirm Recipe & details and Swap buttons have hover:bg-secondary dark:hover:bg-secondary.",
+      "files_affected": ["components/daily-view.tsx"]
     }
   ]
 }
