@@ -57,9 +57,32 @@ export function SettingsScreen() {
   const [bodyStatsError, setBodyStatsError] = useState<string | null>(null)
   const [bodyStatsSaved, setBodyStatsSaved] = useState(false)
 
-  if (!userProfile) return null
+  const onboardingComplete = !!userProfile && currentStep !== 0
 
-  const onboardingComplete = currentStep !== 0
+  if (!userProfile) {
+    return (
+      <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
+        <div className="page-column space-y-4">
+          <button type="button" onClick={() => setCurrentStep(0)} className="bridge-back-link">
+            <ChevronLeft className="h-4 w-4 shrink-0" />
+            <span>Back to setup</span>
+          </button>
+          <section className="dashboard-header-panel space-y-4">
+            <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">App settings</div>
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-background/85 text-primary">
+                <Settings className="h-5 w-5" />
+              </span>
+              <h1 className="text-[1.9rem] font-semibold leading-tight text-foreground">App preferences</h1>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Complete your profile setup to unlock goal, activity, and meal plan settings. Language and measurement preferences are set during onboarding.
+            </p>
+          </section>
+        </div>
+      </div>
+    )
+  }
 
   const activeDiet = dietTypes.find((item) => item.id === userProfile.dietType)
   const activeGoal = goals.find((item) => item.id === userProfile.goal)
