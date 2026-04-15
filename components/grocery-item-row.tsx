@@ -31,7 +31,7 @@ export function GroceryItemRow({
             "grocery-checkbox",
             checked
               ? "border-primary bg-primary shadow-[0_10px_20px_-16px_rgba(38,96,63,0.55)] ring-4 ring-primary/8"
-              : "border-border bg-card group-hover:border-primary/40 group-hover:bg-[#f8f2ea]"
+              : "border-border bg-card group-hover:border-primary/40 group-hover:bg-secondary/60"
           )}
         >
           {checked && <Check className="h-3 w-3 text-primary-foreground" />}
@@ -60,7 +60,7 @@ export function GroceryItemRow({
         type="button"
         onClick={onToggle}
         aria-pressed={checked}
-        className={cn("grocery-item-row group", compact && "grocery-item-row-compact", checked ? "bg-[#edf4ec]" : "", className)}
+        className={cn("grocery-item-row group", compact && "grocery-item-row-compact", checked ? "bg-primary/10 dark:bg-primary/20" : "", className)}
       >
         {content}
       </button>
