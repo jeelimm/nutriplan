@@ -1,18 +1,30 @@
 {
-  "feature": "Fix dark mode in daily-view.tsx — explicit dark: variant classes",
+  "feature": "Fix onboarding.tsx: dark mode sweep, back button placement, CTA states, Start over link",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Add dark:bg-card dark:text-foreground to loading step list items",
-      "prompt": "In components/daily-view.tsx, inside the isGeneratingMealPlan block, find the 3 bridge-note-strip divs in the loading message map. Add dark:bg-card dark:text-foreground to each.",
-      "files_affected": ["components/daily-view.tsx"]
+      "description": "Update onboardingUi base tokens: remove disabled:opacity-100 from primaryCtaBase, add dark mode to sectionAccentDot",
+      "prompt": "In components/onboarding.tsx, make exactly these two changes to the `onboardingUi` const object and nothing else:\n\n1. `primaryCtaBase` — remove `text-[#fffaf4] dark:text-primary-foreground` and `disabled:opacity-100` from the string. The new value should be:\n   `\"min-h-12 w-full rounded-2xl text-base font-semibold transition-[background-color,box-shadow,transform] duration-150 focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background\"`\n\n2. `sectionAccentDot` — add `dark:bg-muted-foreground` to the end. The new value should be:\n   `\"h-2.5 w-2.5 rounded-full bg-[#b77749] dark:bg-muted-foreground\"`\n\nDo not change any other keys in onboardingUi or anything else in the file.",
+      "files_affected": ["components/onboarding.tsx"]
     },
     {
       "id": 2,
-      "description": "Add dark:border-border to all hero-badge instances; dark: variants to meal type badge, recipe/swap hover, and Cards",
-      "prompt": "In components/daily-view.tsx: (1) add dark:border-border to all hero-badge bg-secondary elements, (2) add dark:bg-secondary dark:text-secondary-foreground to the meal type dashboard-meta-pill, (3) add dark:hover:bg-secondary to Recipe/Swap buttons, (4) add dark:bg-card dark:border-border to all bridge-section Cards.",
-      "files_affected": ["components/daily-view.tsx"]
+      "description": "Add handleStartOver function and lift all back buttons above the card into a single consolidated block",
+      "prompt": "In components/onboarding.tsx:\n\n**Part A — Add handleStartOver function**\nAfter the `handleBodyContinue` function, add:\n\n```tsx\nconst handleStartOver = () => {\n  try { window.localStorage.removeItem(ONBOARDING_DRAFT_KEY) } catch {}\n  setStep(\"quick-estimate\")\n  setFirstStep(\"quick-estimate\")\n  setSex(\"male\")\n  setUnitSystem(\"metric\")\n  setUnit(\"kg\")\n  setWeight(\"\")\n  setBodyFat(\"\")\n  setMuscleMass(\"\")\n  setQuickHeight(\"\")\n  setQuickAge(\"\")\n  setQuickBodyType(null)\n  setSelectedGoal(null)\n  setSelectedActivityLevel(null)\n  setSelectedDietType(null)\n  setTargetWeightInput(\"\")\n  setTargetWeightSkipped(false)\n  setWeightLossPace(\"moderate\")\n  setSelectedCuisines([])\n  setIngredientMode(null)\n  setSelectedBudgetPreset(null)\n  setSelectedIngredients([])\n  setSearch(\"\")\n  setActiveCategory(\"protein\")\n  setShowBodyValidation(false)\n  setTouchedBodyFields({ weight: false, bodyFat: false, muscleMass: false })\n}\n```\n\n**Part B — Add consolidated back-nav block**\nIn the return block, immediately after `<div className=\"page-column\" suppressHydrationWarning>` and before the first `{step === \"body\" && (`, add a single conditional `OnboardingSecondaryActionRow` that shows for all steps except `quick-estimate`, with step-based label logic.\n\n**Part C — Remove the 8 in-card back buttons**\nRemove all `OnboardingSecondaryActionRow` back-navigation elements from inside CardContent blocks (one per step: body, activity, goal, target-weight, cuisine, diet, ingredient-mode, ingredients).",
+      "files_affected": ["components/onboarding.tsx"]
+    },
+    {
+      "id": 3,
+      "description": "Standardize all 9 CTA buttons to bg-primary/bg-muted pattern",
+      "prompt": "In components/onboarding.tsx, update every `OnboardingPrimaryCta` className ternary:\n- Enabled: `\"bg-primary text-primary-foreground hover:bg-primary/90\"`\n- Disabled: `\"bg-muted text-muted-foreground cursor-not-allowed opacity-50\"`\n- Advancing (body only): `\"bg-primary/80 text-primary-foreground cursor-wait\"`\n\nApply to all 9 buttons: body, quick-estimate, activity, goal, target-weight, cuisine, diet, ingredient-mode, ingredients.",
+      "files_affected": ["components/onboarding.tsx"]
+    },
+    {
+      "id": 4,
+      "description": "Add 'Start over' link at bottom of quick-estimate step",
+      "prompt": "In components/onboarding.tsx, in the `quick-estimate` step CardContent, after the closing `</div>` of the 'Use detailed body stats' section (the last element), add:\n\n```tsx\n<div className=\"pt-3 text-center\">\n  <button\n    type=\"button\"\n    onClick={handleStartOver}\n    className=\"text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-none\"\n  >\n    Start over\n  </button>\n</div>\n```",
+      "files_affected": ["components/onboarding.tsx"]
     }
   ]
 }
