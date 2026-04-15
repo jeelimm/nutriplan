@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,7 +15,7 @@ import {
 } from "@/lib/meal-store"
 import { toKg } from "@/lib/nutrition"
 import { cn } from "@/lib/utils"
-import { Check, ChevronLeft, ChevronDown, Settings } from "lucide-react"
+import { Check, ChevronLeft, ChevronDown, Moon, Settings, Sun } from "lucide-react"
 
 const activityLevels: { id: ActivityLevel; label: string; description: string }[] = [
   { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, with little planned exercise." },
@@ -39,6 +39,8 @@ const dietTypes: { id: DietType; label: string; description: string }[] = [
 
 export function SettingsScreen() {
   const {
+    appPrefs,
+    setAppPrefs,
     userProfile,
     setUserProfile,
     setMealPlanConfig,
@@ -49,6 +51,10 @@ export function SettingsScreen() {
     calculateMacros,
     isGeneratingMealPlan,
   } = useMealStore()
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", appPrefs.darkMode)
+  }, [appPrefs.darkMode])
 
   const [bodyStatsOpen, setBodyStatsOpen] = useState(false)
   const [weightInput, setWeightInput] = useState("")
@@ -76,9 +82,88 @@ export function SettingsScreen() {
               <h1 className="text-[1.9rem] font-semibold leading-tight text-foreground">App preferences</h1>
             </div>
             <p className="text-sm leading-6 text-muted-foreground">
-              Complete your profile setup to unlock goal, activity, and meal plan settings. Language and measurement preferences are set during onboarding.
+              Profile and meal plan settings unlock after setup. Configure appearance, language, and units here anytime.
             </p>
           </section>
+
+          <Card className="bridge-section">
+            <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
+              <CardTitle>Preferences</CardTitle>
+              <CardDescription>These apply across the whole app and are saved immediately.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
+              <div className="settings-section-panel space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-sm font-semibold text-foreground">Appearance</Label>
+                  <p className="text-sm leading-6 text-muted-foreground">Switch between light and dark mode.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAppPrefs({ darkMode: false })}
+                    className={cn("settings-chip flex-1 sm:flex-none", !appPrefs.darkMode ? "settings-chip-active" : "settings-chip-idle")}
+                  >
+                    <Sun className="mr-1.5 inline h-3.5 w-3.5" />
+                    Light
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAppPrefs({ darkMode: true })}
+                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.darkMode ? "settings-chip-active" : "settings-chip-idle")}
+                  >
+                    <Moon className="mr-1.5 inline h-3.5 w-3.5" />
+                    Dark
+                  </button>
+                </div>
+              </div>
+
+              <div className="settings-section-panel space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-sm font-semibold text-foreground">Language</Label>
+                  <p className="text-sm leading-6 text-muted-foreground">Switch the interface language.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAppPrefs({ language: "en" })}
+                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.language !== "ko" ? "settings-chip-active" : "settings-chip-idle")}
+                  >
+                    English
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAppPrefs({ language: "ko" })}
+                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.language === "ko" ? "settings-chip-active" : "settings-chip-idle")}
+                  >
+                    한국어
+                  </button>
+                </div>
+              </div>
+
+              <div className="settings-section-panel space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-sm font-semibold text-foreground">Measurement system</Label>
+                  <p className="text-sm leading-6 text-muted-foreground">Applies to recipe measurements and grocery amounts.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAppPrefs({ unitSystem: "metric" })}
+                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.unitSystem !== "imperial" ? "settings-chip-active" : "settings-chip-idle")}
+                  >
+                    Metric
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAppPrefs({ unitSystem: "imperial" })}
+                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.unitSystem === "imperial" ? "settings-chip-active" : "settings-chip-idle")}
+                  >
+                    Imperial
+                  </button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
@@ -546,6 +631,31 @@ export function SettingsScreen() {
             <CardDescription>Smaller app-level choices that keep reading and shopping comfortable day to day.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
+            <div className="settings-section-panel space-y-3">
+              <div className="space-y-1">
+                <Label className="text-sm font-semibold text-foreground">Appearance</Label>
+                <p className="text-sm leading-6 text-muted-foreground">Switch between light and dark mode.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAppPrefs({ darkMode: false })}
+                  className={cn("settings-chip flex-1 sm:flex-none", !appPrefs.darkMode ? "settings-chip-active" : "settings-chip-idle")}
+                >
+                  <Sun className="mr-1.5 inline h-3.5 w-3.5" />
+                  Light
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAppPrefs({ darkMode: true })}
+                  className={cn("settings-chip flex-1 sm:flex-none", appPrefs.darkMode ? "settings-chip-active" : "settings-chip-idle")}
+                >
+                  <Moon className="mr-1.5 inline h-3.5 w-3.5" />
+                  Dark
+                </button>
+              </div>
+            </div>
+
             <div className="settings-section-panel space-y-3">
               <div className="space-y-1">
                 <Label className="text-sm font-semibold text-foreground">Measurement system</Label>
