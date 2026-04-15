@@ -32,6 +32,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Synchronously apply stored dark mode preference before first paint to avoid flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem('meal-plan-storage');if(s){var d=JSON.parse(s)?.state?.appPrefs?.darkMode;if(d)document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen overflow-x-hidden font-sans antialiased">
         {children}
         <Analytics />

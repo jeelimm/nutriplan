@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { useMealStore } from "@/lib/meal-store"
 import { Onboarding } from "@/components/onboarding"
 import { MealPlanConfig } from "@/components/meal-plan-config"
@@ -10,8 +11,12 @@ import { Button } from "@/components/ui/button"
 import { Settings } from "lucide-react"
 
 export default function MealPlanApp() {
-  const { currentStep, userProfile, setCurrentStep } = useMealStore()
+  const { appPrefs, currentStep, userProfile, setCurrentStep } = useMealStore()
   const showSettingsFab = currentStep !== 4
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", appPrefs.darkMode)
+  }, [appPrefs.darkMode])
 
   return (
     <main className="min-h-screen w-full max-w-[100vw] overflow-x-hidden">

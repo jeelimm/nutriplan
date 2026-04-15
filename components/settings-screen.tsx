@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -51,10 +51,6 @@ export function SettingsScreen() {
     calculateMacros,
     isGeneratingMealPlan,
   } = useMealStore()
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", appPrefs.darkMode)
-  }, [appPrefs.darkMode])
 
   const [bodyStatsOpen, setBodyStatsOpen] = useState(false)
   const [weightInput, setWeightInput] = useState("")
