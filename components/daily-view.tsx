@@ -500,9 +500,6 @@ export function DailyView() {
                     aria-current={idx === selectedDay ? "date" : undefined}
                   >
                     <span className="text-[13px] font-semibold leading-none text-foreground">{getShortDayLabel(dayPlan.day)}</span>
-                    <span className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                      {idx + 1}
-                    </span>
                   </button>
                 ))}
               </div>
@@ -539,7 +536,7 @@ export function DailyView() {
               </CardTitle>
               <div className="shrink-0 text-right">
                 <div className="text-3xl font-semibold tabular-nums text-foreground">{currentDay.totalCalories}</div>
-                <div className="text-xs text-muted-foreground">of {userProfile.dailyCalories} cal</div>
+                <div className="text-xs text-muted-foreground">of {userProfile.dailyCalories} kcal</div>
               </div>
             </div>
           </CardHeader>
@@ -552,7 +549,7 @@ export function DailyView() {
                 <div className="mt-2 text-2xl font-semibold tabular-nums text-foreground">
                   {userProfile.dailyCalories}
                 </div>
-                <div className="text-sm text-muted-foreground">calories planned</div>
+                <div className="text-sm text-muted-foreground">kcal planned</div>
               </div>
               <div className="dashboard-kpi-tile">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -562,7 +559,7 @@ export function DailyView() {
                   {Math.abs(Math.round(calorieDifference))}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {calorieDifference >= 0 ? "calories left today" : "calories above target"}
+                  {calorieDifference >= 0 ? "kcal left today" : "kcal above target"}
                 </div>
               </div>
             </div>
@@ -658,7 +655,7 @@ export function DailyView() {
                     </div>
                     <div className="dashboard-kpi-tile shrink-0 px-3 py-2 text-right">
                       <div className="text-lg font-semibold tabular-nums text-foreground">{meal.calories}</div>
-                      <div className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">cal</div>
+                      <div className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">kcal</div>
                     </div>
                   </div>
 

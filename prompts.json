@@ -1,12 +1,18 @@
 {
-  "feature": "Fix meal-plan-config.tsx — complete hardcoded color replacement, single pass",
+  "feature": "daily-view: remove day numbers from selector, cal → kcal",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Replace all 6 hardcoded color classes in meal-plan-config.tsx",
-      "prompt": "In components/meal-plan-config.tsx, make exactly these find-and-replace changes. There are NO inline style={{ }} attributes in this file — all fixes are className replacements only.\n\n1. Daily Target card outer div (line ~106):\n   Find:    `rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-4`\n   Replace: `rounded-[22px] border border-border bg-card p-4`\n   Reason: bg-[#f8f2ea] is the cream background causing dark mode failure. bg-card renders correctly in both modes. The large calorie number on line ~112 already uses text-foreground — once the bg is bg-card, it will be readable.\n\n2. \"Daily target\" label (line ~109):\n   Find:    `text-[#7a5b41]`\n   Replace: `text-muted-foreground`\n\n3. Hero badge (line ~95):\n   Find:    `hero-badge bg-[#fff7ee] text-[#7a5b41]`\n   Replace: `hero-badge bg-secondary text-muted-foreground`\n\n4. Accent dot (line ~152):\n   Find:    `h-2.5 w-2.5 rounded-full bg-[#b77749]`\n   Replace: `h-2.5 w-2.5 rounded-full bg-muted-foreground`\n\n5. Meal rhythm card — selected state (line ~173):\n   Find:    `border-primary bg-[#edf4ec] shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]`\n   Replace: `border-primary bg-primary/15 shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]`\n\n6. Meal rhythm card — idle hover (line ~174):\n   Find:    `border-border bg-card hover:border-primary/35 hover:bg-[#fcf7ef]`\n   Replace: `border-border bg-card hover:border-primary/35 hover:bg-secondary`\n\nDo not add any inline style attributes. Do not change the calorie number className (already text-foreground on line ~112) or the meal count number (already text-foreground on line ~177). Do not touch any other files. Follow CLAUDE.md guidelines.",
-      "files_affected": ["components/meal-plan-config.tsx"]
+      "description": "Remove day number span from day selector chips",
+      "prompt": "In components/daily-view.tsx, inside the day selector map, remove the <span> that renders {idx + 1} below each day abbreviation.",
+      "files_affected": ["components/daily-view.tsx"]
+    },
+    {
+      "id": 2,
+      "description": "Replace cal unit labels with kcal",
+      "prompt": "In components/daily-view.tsx, replace all 'cal' unit labels with 'kcal': the 'of N cal' suffix, the per-meal >cal< label, and KPI tile labels 'calories planned', 'calories left today', 'calories above target'.",
+      "files_affected": ["components/daily-view.tsx"]
     }
   ]
 }
