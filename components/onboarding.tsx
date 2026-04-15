@@ -274,7 +274,7 @@ const onboardingUi = {
   progressTrack:
     "flex items-center gap-1.5 rounded-full border border-[#e2d6c5] bg-[#f7f1e8] px-2.5 py-1.5",
   boundedInputBase:
-    "h-12 rounded-2xl border border-[#C8BDB0] bg-white px-4 py-2.5 text-base text-[#1A1A1A] placeholder:text-[#8C8279] transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:border-[#4A7C59] focus-visible:ring-2 focus-visible:ring-[#4A7C59]/20",
+    "h-12 rounded-2xl border border-[#C8BDB0] dark:border-border bg-white dark:bg-card px-4 py-2.5 text-base text-[#1A1A1A] dark:text-foreground placeholder:text-[#8C8279] dark:placeholder:text-muted-foreground transition-[border-color,background-color,box-shadow,color] duration-150 focus-visible:outline-none focus-visible:border-[#4A7C59] dark:focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-[#4A7C59]/20 dark:focus-visible:ring-primary/20",
 } as const
 
 function OnboardingMainCard({ children, className }: { children: ReactNode; className?: string }) {
@@ -882,7 +882,7 @@ export function Onboarding() {
       "flex w-full items-center justify-between gap-3 rounded-[20px] border px-4 py-3.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f2ea]",
       active
         ? "border-[#5f7654] bg-[#edf3e8] shadow-[0_14px_28px_-24px_rgba(40,70,47,0.42)]"
-        : "border-[#d8ccb9] bg-[#fffdf9] hover:border-[#bfae95] hover:bg-white"
+        : "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card hover:border-[#bfae95] dark:hover:border-primary/40 hover:bg-white dark:hover:bg-secondary"
     )
 
   const goalOptionButtonClass = (active: boolean) =>
@@ -1033,10 +1033,10 @@ export function Onboarding() {
     return cn(
       onboardingUi.boundedInputBase,
       hasValue
-        ? "border-[#C8BDB0] border-b-[#C8BDB0] bg-white shadow-[0_5px_12px_-14px_rgba(40,49,43,0.25)]"
-        : "border-[#C8BDB0] border-b-[#C8BDB0] bg-white shadow-none",
-      isFocused && !hasError && "border-[#4A7C59] border-b-[#4A7C59] bg-white ring-2 ring-[#4A7C59]/20 shadow-[0_12px_24px_-18px_rgba(74,124,89,0.35)]",
-      hasError && "border-[#b77749] border-b-[#b77749] bg-[#fff6f0] text-[#7a4d2a] ring-2 ring-[#b77749]/12 shadow-none"
+        ? "border-[#C8BDB0] dark:border-border border-b-[#C8BDB0] dark:border-b-border bg-white dark:bg-card shadow-[0_5px_12px_-14px_rgba(40,49,43,0.25)]"
+        : "border-[#C8BDB0] dark:border-border border-b-[#C8BDB0] dark:border-b-border bg-white dark:bg-card shadow-none",
+      isFocused && !hasError && "border-[#4A7C59] dark:border-primary border-b-[#4A7C59] dark:border-b-primary bg-white dark:bg-card ring-2 ring-[#4A7C59]/20 dark:ring-primary/20 shadow-[0_12px_24px_-18px_rgba(74,124,89,0.35)]",
+      hasError && "border-[#b77749] border-b-[#b77749] bg-[#fff6f0] dark:bg-[#2a1a14] text-[#7a4d2a] dark:text-destructive-foreground ring-2 ring-[#b77749]/12 shadow-none"
     )
   }
 
@@ -1080,7 +1080,7 @@ export function Onboarding() {
   }
 
   return (
-    <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "quick-estimate" || step === "activity" || step === "goal" || step === "target-weight" || step === "cuisine" || step === "diet" || step === "ingredient-mode" || step === "ingredients" ? "bg-[#f5f1ea]" : "bg-background")} suppressHydrationWarning>
+    <div className={cn("app-shell px-4 py-6 md:px-8 md:py-9", step === "body" || step === "quick-estimate" || step === "activity" || step === "goal" || step === "target-weight" || step === "cuisine" || step === "diet" || step === "ingredient-mode" || step === "ingredients" ? "bg-[#f5f1ea] dark:bg-background" : "bg-background")} suppressHydrationWarning>
       <div className="page-column" suppressHydrationWarning>
         {step === "body" && (
           <OnboardingMainCard>
