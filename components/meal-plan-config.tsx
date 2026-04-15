@@ -103,10 +103,10 @@ export function MealPlanConfig() {
               </p>
             </div>
 
-            <div className="rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-4">
+            <div className="rounded-[22px] border border-border bg-card p-4">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5b41]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Daily target
                   </p>
                   <p className="mt-2 text-4xl font-semibold tabular-nums text-foreground sm:text-[2.75rem]">
@@ -170,8 +170,8 @@ export function MealPlanConfig() {
                   className={cn(
                     "min-h-[76px] rounded-[18px] border px-4 py-3.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
                     mealsPerDay === count
-                      ? "border-primary bg-[#edf4ec] shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]"
-                      : "border-border bg-card hover:border-primary/35 hover:bg-[#fcf7ef]"
+                      ? "border-primary bg-primary/15 shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]"
+                      : "border-border bg-card hover:border-primary/35 hover:bg-secondary"
                   )}
                 >
                   <span className="text-2xl font-semibold tabular-nums text-foreground">{count}</span>
