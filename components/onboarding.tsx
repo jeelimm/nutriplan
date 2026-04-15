@@ -1415,8 +1415,8 @@ export function Onboarding() {
                 <OnboardingPrimaryCta
                   className={cn(
                     weight && quickHeight && quickAge && quickBodyType
-                      ? "border border-[#536847] bg-[#5f7654] shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] hover:bg-[#516647] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
-                      : "border border-[#ccd2c5] bg-[#d9ded4] text-[#808876] shadow-none"
+                      ? "border border-[#536847] dark:border-primary bg-[#5f7654] dark:bg-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_20px_34px_-20px_rgba(40,70,47,0.74)] hover:border-[#4d6243] dark:hover:border-primary/90 hover:bg-[#516647] dark:hover:bg-primary/90 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_22px_36px_-20px_rgba(40,70,47,0.78)]"
+                      : "border border-[#ccd2c5] dark:border-border bg-[#d9ded4] dark:bg-secondary text-[#808876] dark:text-muted-foreground shadow-none"
                   )}
                   onClick={applyQuickEstimate}
                   disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
