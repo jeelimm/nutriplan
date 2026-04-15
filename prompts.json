@@ -1,12 +1,18 @@
 {
-  "feature": "Fix dark mode in meal-plan-config.tsx — additive dark: variant pass",
+  "feature": "Fix dark mode in daily-view.tsx — explicit dark: variant classes",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Add dark: variants to the 5 hardcoded light-mode color classes in meal-plan-config.tsx",
-      "prompt": "In components/meal-plan-config.tsx, make exactly these changes and nothing else. Do NOT alter any light-mode classes, spacing, shadows, or layout.\n\n1. Hero badge (line ~95):\n   Change: `hero-badge bg-[#fff7ee] text-[#7a5b41]`\n   To:     `hero-badge bg-[#fff7ee] dark:bg-secondary text-[#7a5b41] dark:text-muted-foreground`\n\n2. Daily Target card container (line ~106) — the div wrapping the calorie number and macro tiles:\n   Change: `rounded-[22px] border border-[#e5d7c7] bg-[#f8f2ea] p-4`\n   To:     `rounded-[22px] border border-[#e5d7c7] dark:border-border bg-[#f8f2ea] dark:bg-card p-4`\n\n3. \"Daily target\" label text (line ~109):\n   Change: `text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5b41]`\n   To:     `text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5b41] dark:text-muted-foreground`\n\n4. Accent dot span (line ~152):\n   Change: `h-2.5 w-2.5 rounded-full bg-[#b77749]`\n   To:     `h-2.5 w-2.5 rounded-full bg-[#b77749] dark:bg-muted-foreground`\n\n5. Meal rhythm card ternary (lines ~173-174) — the cn() call inside the button className:\n   Change:\n     `mealsPerDay === count`\n     `  ? \"border-primary bg-[#edf4ec] shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]\"`\n     `  : \"border-border bg-card hover:border-primary/35 hover:bg-[#fcf7ef]\"`\n   To:\n     `mealsPerDay === count`\n     `  ? \"border-primary bg-[#edf4ec] dark:bg-primary/20 shadow-[0_16px_30px_-28px_rgba(38,96,63,0.45)]\"`\n     `  : \"border-border bg-card hover:border-primary/35 hover:bg-[#fcf7ef] dark:hover:bg-secondary\"`\n\nLeave everything else unchanged — the calorie number (already text-foreground), the meal count number (already text-foreground), the description text (already text-muted-foreground), the macro tiles (already use bridge-stat-tile with semantic bg), and the \"Based on your profile\" badge (already uses border-border bg-card/70 text-muted-foreground).\n\nDo not touch any other files. Follow CLAUDE.md guidelines.",
-      "files_affected": ["components/meal-plan-config.tsx"]
+      "description": "Add dark:bg-card dark:text-foreground to loading step list items",
+      "prompt": "In components/daily-view.tsx, inside the isGeneratingMealPlan block, find the 3 bridge-note-strip divs in the loading message map. Add dark:bg-card dark:text-foreground to each.",
+      "files_affected": ["components/daily-view.tsx"]
+    },
+    {
+      "id": 2,
+      "description": "Add dark:border-border to all hero-badge instances; dark: variants to meal type badge, recipe/swap hover, and Cards",
+      "prompt": "In components/daily-view.tsx: (1) add dark:border-border to all hero-badge bg-secondary elements, (2) add dark:bg-secondary dark:text-secondary-foreground to the meal type dashboard-meta-pill, (3) add dark:hover:bg-secondary to Recipe/Swap buttons, (4) add dark:bg-card dark:border-border to all bridge-section Cards.",
+      "files_affected": ["components/daily-view.tsx"]
     }
   ]
 }

@@ -261,7 +261,7 @@ export function DailyView() {
       <div className="app-shell bg-background px-4 py-6 md:px-8 md:py-8">
         <div className="page-column flex min-h-[72vh] flex-col justify-center">
           <div className="bridge-status-panel">
-            <div className="hero-badge mx-auto bg-secondary text-secondary-foreground">Building your plan</div>
+            <div className="hero-badge mx-auto bg-secondary text-secondary-foreground dark:border-border">Building your plan</div>
             <div className="bridge-status-icon mt-4">
               <Spinner className="size-6 text-primary" />
             </div>
@@ -279,7 +279,7 @@ export function DailyView() {
                 "Working from the cuisines and ingredients you picked",
                 "Keeping the grocery list simpler for real life",
               ].map((message) => (
-                <div key={message} className="bridge-note-strip">
+                <div key={message} className="bridge-note-strip dark:bg-card dark:text-foreground">
                   <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary/70" />
                   <span>{message}</span>
                 </div>
@@ -304,7 +304,7 @@ export function DailyView() {
       <div className="app-shell bg-background px-4 py-6 md:px-8 md:py-8">
         <div className="page-column flex min-h-[72vh] flex-col justify-center">
           <div className="bridge-status-panel text-left sm:text-center">
-            <div className="hero-badge mx-auto bg-secondary text-secondary-foreground">Plan needs another try</div>
+            <div className="hero-badge mx-auto bg-secondary text-secondary-foreground dark:border-border">Plan needs another try</div>
             <div className="bridge-status-icon mt-4 border-border bg-muted text-muted-foreground">
               <Sparkles className="size-6" />
             </div>
@@ -458,7 +458,7 @@ export function DailyView() {
           <section className="dashboard-header-panel space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <div className="hero-badge bg-secondary text-secondary-foreground">Your meal plan</div>
+                <div className="hero-badge bg-secondary text-secondary-foreground dark:border-border">Your meal plan</div>
                 <h1 className="mt-3 break-words text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]">
                   {currentDay.day}
                 </h1>
@@ -526,7 +526,7 @@ export function DailyView() {
             {mealPlanValidation.warnings[0]}
           </div>
         )}
-        <Card className="bridge-section">
+        <Card className="bridge-section dark:bg-card dark:border-border">
           <CardHeader className="gap-3 px-5 pb-3 pt-5 sm:px-6">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
@@ -613,7 +613,7 @@ export function DailyView() {
         </Card>
 
         {goalTimeline.kind !== "none" && (
-          <Card className="bridge-section">
+          <Card className="bridge-section dark:bg-card dark:border-border">
             <CardContent className="space-y-2 px-5 py-4 text-sm sm:px-6">
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
@@ -651,7 +651,7 @@ export function DailyView() {
                 <CardContent className="px-5 py-5 sm:px-6">
                   <div className="flex min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <span className="dashboard-meta-pill bg-secondary text-secondary-foreground">
+                      <span className="dashboard-meta-pill bg-secondary text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground">
                         {getMealLabel(idx, currentDay.meals.length)}
                       </span>
                       <div className="mt-3 break-words text-lg font-semibold leading-snug text-foreground">{meal.name}</div>
@@ -681,7 +681,7 @@ export function DailyView() {
                     <button
                       type="button"
                       onClick={() => toggleMealExpanded(meal.id)}
-                      className="flex min-h-11 flex-1 items-center justify-between rounded-2xl border border-border bg-background/82 px-4 py-3 text-left text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-secondary"
+                      className="flex min-h-11 flex-1 items-center justify-between rounded-2xl border border-border bg-background/82 px-4 py-3 text-left text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-secondary dark:hover:bg-secondary"
                     >
                       <span>Recipe & details</span>
                       <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
@@ -689,7 +689,7 @@ export function DailyView() {
                     <button
                       type="button"
                       onClick={() => setSwapTarget({ meal, dayIndex: selectedDay, mealIndex: idx })}
-                      className="flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-background/82 px-4 py-3 text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-secondary"
+                      className="flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-background/82 px-4 py-3 text-sm font-medium text-foreground transition-[background-color,border-color] hover:border-primary/25 hover:bg-secondary dark:hover:bg-secondary"
                     >
                       <ArrowLeftRight className="h-4 w-4" />
                       <span>Swap</span>
@@ -744,7 +744,7 @@ export function DailyView() {
           })}
         </div>
 
-        <Card className="bridge-section">
+        <Card className="bridge-section dark:bg-card dark:border-border">
           <CardContent className="space-y-3 px-5 py-5 sm:px-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -781,7 +781,7 @@ export function DailyView() {
           <div className="settings-modal-shell max-w-lg">
             <div className="space-y-4">
               <div className="space-y-3">
-                <div className="hero-badge bg-secondary text-secondary-foreground">Profile editor</div>
+                <div className="hero-badge bg-secondary text-secondary-foreground dark:border-border">Profile editor</div>
                 <div className="space-y-2">
                   <h2 className="break-words text-[1.65rem] font-semibold leading-tight text-foreground">Update your profile</h2>
                   <p className="text-sm leading-6 text-muted-foreground">
@@ -990,7 +990,7 @@ export function DailyView() {
           <div className="settings-modal-shell max-w-md">
             <div className="space-y-4">
               <div className="space-y-3">
-                <div className="hero-badge bg-secondary text-secondary-foreground">Plan refresh</div>
+                <div className="hero-badge bg-secondary text-secondary-foreground dark:border-border">Plan refresh</div>
                 <div className="space-y-2">
                   <h3 className="break-words text-[1.5rem] font-semibold leading-tight text-foreground">Use these updates for a new meal plan?</h3>
                   <p className="text-sm leading-6 text-muted-foreground">
