@@ -589,6 +589,7 @@ export const useMealStore = create<MealStore>()(
         } as MealStore
       },
       partialize: (state) => ({
+        appPrefs: state.appPrefs,
         userProfile: state.userProfile,
         weekPlan: state.weekPlan,
       }),
