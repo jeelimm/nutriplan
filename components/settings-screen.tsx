@@ -43,6 +43,7 @@ export function SettingsScreen() {
     setUserProfile,
     setMealPlanConfig,
     setCurrentStep,
+    currentStep,
     generateMealPlan,
     clearAllData,
     calculateMacros,
@@ -57,6 +58,8 @@ export function SettingsScreen() {
   const [bodyStatsSaved, setBodyStatsSaved] = useState(false)
 
   if (!userProfile) return null
+
+  const onboardingComplete = currentStep !== 0
 
   const activeDiet = dietTypes.find((item) => item.id === userProfile.dietType)
   const activeGoal = goals.find((item) => item.id === userProfile.goal)
@@ -145,41 +148,53 @@ export function SettingsScreen() {
   return (
     <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
       <div className="page-column space-y-4">
-        <button type="button" onClick={() => setCurrentStep(2)} className="bridge-back-link">
+        <button
+          type="button"
+          onClick={() => setCurrentStep(onboardingComplete ? 2 : 0)}
+          className="bridge-back-link"
+        >
           <ChevronLeft className="h-4 w-4 shrink-0" />
-          <span>Back to dashboard</span>
+          <span>{onboardingComplete ? "Back to dashboard" : "Back to setup"}</span>
         </button>
 
         <section className="dashboard-header-panel space-y-4">
-          <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Profile & plan settings</div>
+          <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">
+            {onboardingComplete ? "Profile & plan settings" : "App settings"}
+          </div>
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-background/85 text-primary">
                 <Settings className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <h1 className="text-[1.9rem] font-semibold leading-tight text-foreground">Keep your plan aligned with real life</h1>
+                <h1 className="text-[1.9rem] font-semibold leading-tight text-foreground">
+                  {onboardingComplete ? "Keep your plan aligned with real life" : "App preferences"}
+                </h1>
               </div>
             </div>
             <p className="text-sm leading-6 text-muted-foreground">
-              Adjust your goals, preferences, and regeneration settings without losing the progress you&apos;ve already set up.
+              {onboardingComplete
+                ? "Adjust your goals, preferences, and regeneration settings without losing the progress you\u2019ve already set up."
+                : "Set your language and measurement system. Profile and meal plan settings become available once your setup is complete."}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bridge-stat-tile">
-              <div className="eyebrow">Daily target</div>
-              <div className="mt-1 text-lg font-semibold text-foreground">{userProfile.dailyCalories} kcal</div>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">{activeGoal?.label ?? "Current goal"} starting point</p>
+          {onboardingComplete && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bridge-stat-tile">
+                <div className="eyebrow">Daily target</div>
+                <div className="mt-1 text-lg font-semibold text-foreground">{userProfile.dailyCalories} kcal</div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{activeGoal?.label ?? "Current goal"} starting point</p>
+              </div>
+              <div className="bridge-stat-tile">
+                <div className="eyebrow">Plan setup</div>
+                <div className="mt-1 text-lg font-semibold text-foreground">{userProfile.mealsPerDay} meals / day</div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{activeDiet?.label ?? "Meal style"} with {Math.max(activeCuisines.length, 1)} cuisine preference{activeCuisines.length === 1 ? "" : "s"}</p>
+              </div>
             </div>
-            <div className="bridge-stat-tile">
-              <div className="eyebrow">Plan setup</div>
-              <div className="mt-1 text-lg font-semibold text-foreground">{userProfile.mealsPerDay} meals / day</div>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">{activeDiet?.label ?? "Meal style"} with {Math.max(activeCuisines.length, 1)} cuisine preference{activeCuisines.length === 1 ? "" : "s"}</p>
-            </div>
-          </div>
+          )}
         </section>
 
-        <Card className="bridge-section">
+        {onboardingComplete && <Card className="bridge-section">
           <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
             <CardTitle>Profile</CardTitle>
             <CardDescription>These choices shape calories, macros, and the meals we build around your week.</CardDescription>
@@ -309,9 +324,9 @@ export function SettingsScreen() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card>}
 
-        <Card className="bridge-section">
+        {onboardingComplete && <Card className="bridge-section">
           <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
             <CardTitle>Refine your targets</CardTitle>
             <CardDescription>
@@ -447,9 +462,9 @@ export function SettingsScreen() {
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card>}
 
-        <Card className="bridge-section">
+        {onboardingComplete && <Card className="bridge-section">
           <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
             <CardTitle>Meal plan</CardTitle>
             <CardDescription>These changes shape the next plan you generate, while keeping your current week available until then.</CardDescription>
@@ -500,7 +515,7 @@ export function SettingsScreen() {
               </Button>
             </div>
           </CardContent>
-        </Card>
+        </Card>}
 
         <Card className="bridge-section">
           <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
@@ -554,27 +569,29 @@ export function SettingsScreen() {
               </div>
             </div>
 
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Meals per day</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Use the meal rhythm that feels realistic for your workdays and weekends.</p>
+            {onboardingComplete && (
+              <div className="settings-section-panel space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-sm font-semibold text-foreground">Meals per day</Label>
+                  <p className="text-sm leading-6 text-muted-foreground">Use the meal rhythm that feels realistic for your workdays and weekends.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[2, 3, 4, 5].map((count) => (
+                    <button
+                      key={count}
+                      type="button"
+                      onClick={() => updatePreferences({ mealsPerDay: count })}
+                      className={cn(
+                        "settings-chip flex-1 sm:flex-none",
+                        userProfile.mealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
+                      )}
+                    >
+                      {count}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {[2, 3, 4, 5].map((count) => (
-                  <button
-                    key={count}
-                    type="button"
-                    onClick={() => updatePreferences({ mealsPerDay: count })}
-                    className={cn(
-                      "settings-chip flex-1 sm:flex-none",
-                      userProfile.mealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
-                    )}
-                  >
-                    {count}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
