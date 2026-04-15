@@ -110,11 +110,16 @@ function splitRemainingCarbsFatKcal(
  * When `bodyFat` is not provided (undefined), `bodyType` + `sex` are used to
  * estimate body fat % so that the Quick Estimate onboarding path can produce
  * valid targets without requiring detailed body composition inputs.
+ *
+ * When `heightCm` and `age` are provided, Mifflin-St Jeor BMR is used instead
+ * of Katch-McArdle, giving a more accurate baseline for Quick Estimate users.
  */
 export function calculateNutritionTargets(input: {
   weightKg: number
   bodyFat?: number
   bodyType?: BodyType
+  heightCm?: number
+  age?: number
   activityLevel: ActivityLevel
   goal: Goal
   dietType: DietType
@@ -133,8 +138,17 @@ export function calculateNutritionTargets(input: {
 
   const lbmForFormula = getLbmKgForNutrition(input.weightKg, resolvedBodyFat)
 
-  const bmrMultiplier = sex === "female" ? 0.9 : 1
-  const bmr = 370 + 21.6 * lbmForFormula * bmrMultiplier
+  // Use Mifflin-St Jeor when height + age are available (Quick Estimate path),
+  // otherwise fall back to Katch-McArdle (InBody / detailed stats path).
+  let bmr: number
+  if (input.heightCm != null && Number.isFinite(input.heightCm) &&
+      input.age != null && Number.isFinite(input.age) && input.age > 0) {
+    const sexOffset = sex === "female" ? -161 : 5
+    bmr = 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + sexOffset
+  } else {
+    const bmrMultiplier = sex === "female" ? 0.9 : 1
+    bmr = 370 + 21.6 * lbmForFormula * bmrMultiplier
+  }
   const tdee = bmr * ACTIVITY_MULTIPLIERS[input.activityLevel]
 
   let adjustedCalories: number
