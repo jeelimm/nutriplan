@@ -524,36 +524,39 @@ export function DailyView() {
           </div>
         )}
         <Card className="bridge-section dark:bg-card dark:border-border">
-          <CardHeader className="gap-3 px-5 pb-3 pt-5 sm:px-6">
+          <CardHeader className="gap-2 px-5 pb-3 pt-5 sm:px-6">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
               <span className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today at a glance</span>
             </div>
-            <CardTitle className="flex min-w-0 items-center gap-2 text-[1.35rem] leading-tight">
-              <Flame className="h-5 w-5 shrink-0 text-primary" />
-              <span className="break-words">Calories and macros</span>
-            </CardTitle>
+            <div className="flex min-w-0 items-end justify-between gap-3">
+              <CardTitle className="flex min-w-0 items-center gap-2 text-[1.35rem] leading-tight">
+                <Flame className="h-5 w-5 shrink-0 text-primary" />
+                <span className="break-words">Calories and macros</span>
+              </CardTitle>
+              <div className="shrink-0 text-right">
+                <div className="flex items-baseline justify-end gap-1.5">
+                  <span className="text-3xl font-semibold tabular-nums text-foreground">{currentDay.totalCalories}</span>
+                  <span className="text-sm font-medium text-muted-foreground">/ {userProfile.dailyCalories} kcal</span>
+                </div>
+                {calorieDifference !== 0 && (
+                  <span
+                    className={cn(
+                      "mt-0.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                      calorieDifference < 0
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+                    )}
+                  >
+                    {calorieDifference < 0
+                      ? `+${Math.abs(Math.round(calorieDifference))} kcal`
+                      : `-${Math.round(calorieDifference)} kcal`}
+                  </span>
+                )}
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4 px-5 pb-5 sm:px-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-2xl font-semibold tabular-nums text-foreground">
-                {currentDay.totalCalories} / {userProfile.dailyCalories} kcal
-              </span>
-              {calorieDifference !== 0 && (
-                <span
-                  className={cn(
-                    "rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                    calorieDifference < 0
-                      ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
-                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
-                  )}
-                >
-                  {calorieDifference < 0
-                    ? `+${Math.abs(Math.round(calorieDifference))} kcal`
-                    : `-${Math.round(calorieDifference)} kcal`}
-                </span>
-              )}
-            </div>
 
             <div className="bridge-note-strip">
               <Flame className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -565,7 +568,7 @@ export function DailyView() {
             <div className="relative h-3.5 w-full overflow-hidden rounded-full bg-secondary">
               <div
                 className={`absolute left-0 top-0 h-full rounded-full transition-all ${
-                  calorieProgress > 100 ? "bg-rose-400/70 dark:bg-rose-500/50" : "bg-primary"
+                  calorieProgress > 100 ? "bg-rose-700/60" : "bg-primary"
                 }`}
                 style={{ width: `${Math.min(calorieProgress, 100)}%` }}
               />
@@ -581,21 +584,21 @@ export function DailyView() {
               target={userProfile.macros.protein}
               label="Protein"
               icon={<Beef className="h-4 w-4 text-chart-1" />}
-              color="bg-emerald-400/70 dark:bg-emerald-500/50"
+              color="bg-emerald-700/60"
             />
             <MacroProgress
               current={currentDay.totalCarbs}
               target={userProfile.macros.carbs}
               label="Carbs"
               icon={<Wheat className="h-4 w-4 text-chart-3" />}
-              color="bg-amber-400/70 dark:bg-amber-500/50"
+              color="bg-amber-700/60"
             />
             <MacroProgress
               current={currentDay.totalFat}
               target={userProfile.macros.fat}
               label="Fat"
               icon={<Droplets className="h-4 w-4 text-chart-2" />}
-              color="bg-sky-400/70 dark:bg-sky-500/50"
+              color="bg-sky-700/60"
             />
           </CardContent>
         </Card>

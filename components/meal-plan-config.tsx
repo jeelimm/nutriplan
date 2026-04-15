@@ -92,7 +92,7 @@ export function MealPlanConfig() {
 
         {userProfile && (
           <section className="bridge-hero mb-5">
-            <div className="hero-badge bg-[#fff7ee] text-[#7a5b41]">Plan setup</div>
+            <div className="hero-badge bg-secondary text-secondary-foreground">Plan setup</div>
             <div className="space-y-2">
               <h1 className="text-[1.95rem] font-semibold leading-tight text-foreground sm:text-[2.15rem]">
                 Here&apos;s your daily starting point
@@ -106,13 +106,13 @@ export function MealPlanConfig() {
             <div className="rounded-[22px] border border-border bg-card p-4">
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     Daily target
                   </p>
                   <p className="mt-2 text-4xl font-semibold tabular-nums text-foreground sm:text-[2.75rem]">
                     {liveTargets?.calories ?? userProfile.dailyCalories}
                   </p>
-                  <p className="text-sm text-muted-foreground">calories per day</p>
+                  <p className="mt-1 text-sm text-muted-foreground">calories per day</p>
                 </div>
                 <div className="rounded-full border border-border bg-card/70 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
                   Based on your profile
@@ -174,8 +174,8 @@ export function MealPlanConfig() {
                       : "border-border bg-card hover:border-primary/35 hover:bg-secondary"
                   )}
                 >
-                  <span className="text-2xl font-semibold tabular-nums text-foreground">{count}</span>
-                  <span className="mt-1 text-sm text-muted-foreground">{mealCountDescriptions[count]}</span>
+                  <span className="mr-1.5 text-2xl font-semibold tabular-nums text-foreground">{count}</span>
+                  <span className="text-sm text-muted-foreground">{mealCountDescriptions[count]}</span>
                 </button>
               ))}
             </div>
