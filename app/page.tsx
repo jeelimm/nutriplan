@@ -11,7 +11,7 @@ import { Settings } from "lucide-react"
 
 export default function MealPlanApp() {
   const { currentStep, userProfile, setCurrentStep } = useMealStore()
-  const showSettingsFab = userProfile && currentStep !== 4
+  const showSettingsFab = currentStep !== 4
 
   return (
     <main className="min-h-screen w-full max-w-[100vw] overflow-x-hidden">
