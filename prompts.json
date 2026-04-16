@@ -1,21 +1,16 @@
 {
-  "feature": "UX Improvements - onboarding split, settings nav, edit profile expand",
+  "feature": "Settings quick fixes - button spacing and edit profile fields",
   "branch": "feature/ux-improvements",
   "prompts": [
     {
-      "id": "ux-01-onboarding-split",
-      "description": "Split onboarding entry into two clear paths: Quick Start vs Precise Setup",
-      "prompt": "In components/onboarding.tsx, improve the onboarding entry UX. The file already has a 'quick-estimate' step and a 'body' step as separate entry points (firstStep state). Make the following changes:\n1. When the user first lands on onboarding (step === 'quick-estimate' and firstStep === 'quick-estimate'), show a clean two-option card UI at the top: 'Quick Start (2 min)' and 'Precise Setup (5 min)'. Quick Start maps to the existing quick-estimate flow. Precise Setup jumps directly to the 'body' step (setFirstStep('body'), setStep('body')).\n2. Add a short subtitle under each option: Quick Start = 'Estimate your body type', Precise Setup = 'Enter exact measurements'.\n3. Keep all existing logic intact — only add the two-option entry UI above or replacing the current first-render of the quick-estimate step. Do not change any step logic, validation, or data flow.\n4. Use existing Tailwind classes and the app's color tokens (primary, muted, card, etc). No hardcoded hex values."
+      "id": "fix-01-button-spacing",
+      "description": "Add gap between Back to Plan and Reset & Start Over buttons in settings",
+      "prompt": "In components/settings-screen.tsx, find the top navigation area where the 'Back to Plan' button and 'Reset & Start Over' button are rendered side by side. Add a gap between them — use gap-3 or gap-4 on the parent flex container, or add mr-3 to the first button. Do not change anything else."
     },
     {
-      "id": "ux-02-settings-nav",
-      "description": "Add Back to Plan button and wrap Start Over in confirmation dialog",
-      "prompt": "In components/settings-screen.tsx, make two navigation improvements:\n1. At the very top of the SettingsScreen component (above all sections), add a visible 'Back to Plan' button that calls setCurrentStep(2). Use an arrow-left icon from lucide-react (ChevronLeft or ArrowLeft). Style it as a small ghost/text button aligned left.\n2. Find the existing 'bridge-back-link' button (onClick setCurrentStep(0)) — change its label to 'Reset & Start Over' and wrap it in an AlertDialog confirmation: title='Start Over?', description='This will clear your current meal plan and profile. Are you sure?', confirm button='Yes, start over' (destructive variant), cancel='Cancel'. Only call setCurrentStep(0) after confirmation.\n3. Do not change any other logic. Use the existing shadcn/ui AlertDialog component already in the project."
-    },
-    {
-      "id": "ux-03-edit-profile-expand",
-      "description": "Add diet type and meals-per-day fields to Edit Profile in settings",
-      "prompt": "In components/settings-screen.tsx, expand the Edit Profile section to include two additional editable fields:\n1. First, read the file to find the exact field names for diet type and meals per day in the Zustand store (check useMealStore types). Then add a Diet Type select/dropdown using the same diet options already defined in the onboarding flow (check components/onboarding.tsx for the diet options array).\n2. Add a Meals Per Day control — either a number input or three buttons (3, 4, 5) — mapped to the correct store field.\n3. Place these fields within the existing Edit Profile form after the body/activity fields. On save, call setUserProfile and calculateMacros the same way other fields do.\n4. Do not add new store fields — only use fields that already exist."
+      "id": "fix-02-edit-profile-fields",
+      "description": "Add Diet Type and Meals Per Day to Edit Profile section in settings",
+      "prompt": "In components/settings-screen.tsx, find the Edit Profile section (the form where users can update their body stats). Before making any changes, read both components/settings-screen.tsx and the Zustand store file (likely store/meal-store.ts or similar — find it with grep) to identify the exact field names for diet type and meals per day in the UserProfile type.\n\nThen add two fields to the Edit Profile form:\n1. Diet Type — a Select dropdown. Read components/onboarding.tsx to find the exact diet options array used there and reuse the same values. Map to the correct UserProfile field.\n2. Meals Per Day — a row of 3 toggle buttons: 3, 4, 5. Map to the correct UserProfile field.\n\nPlace both fields after the existing body/activity inputs, before the Save button. On save, include these fields in the setUserProfile call alongside the existing fields. Use existing Tailwind classes and shadcn/ui Select component. No hardcoded hex values."
     }
   ]
 }
