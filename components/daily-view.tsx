@@ -103,6 +103,8 @@ export function DailyView() {
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>("moderate")
   const [goal, setGoal] = useState<Goal>("recomposition")
   const [editCuisines, setEditCuisines] = useState<CuisinePreference[]>([])
+  const [editDietType, setEditDietType] = useState<DietType>("balanced")
+  const [editMealsPerDay, setEditMealsPerDay] = useState<number>(3)
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
   const [swapTarget, setSwapTarget] = useState<{ meal: Meal; dayIndex: number; mealIndex: number } | null>(null)
@@ -175,6 +177,8 @@ export function DailyView() {
         ? [...userProfile.cuisinePreference]
         : []
     )
+    setEditDietType(userProfile.dietType)
+    setEditMealsPerDay(userProfile.mealsPerDay)
     setShowEditProfileModal(true)
   }
 
@@ -192,7 +196,6 @@ export function DailyView() {
     const nextWeight = Number(weight)
     const nextBodyFat = Number(bodyFat)
     const nextMuscleMass = Number(muscleMass)
-    const mealsPerDay = userProfile.mealsPerDay
     if (!Number.isFinite(nextWeight) || !Number.isFinite(nextBodyFat) || !Number.isFinite(nextMuscleMass)) return
 
     const weightKg = unit === "lbs" ? nextWeight * 0.453592 : nextWeight
@@ -206,7 +209,7 @@ export function DailyView() {
       nextBodyFat,
       goal,
       activityLevel,
-      userProfile.dietType,
+      editDietType,
       userProfile.sex,
       targetKg,
       userProfile.weightLossPace ?? null
@@ -222,7 +225,8 @@ export function DailyView() {
       unit,
       goal,
       activityLevel,
-      mealsPerDay,
+      dietType: editDietType,
+      mealsPerDay: editMealsPerDay,
       cuisinePreference: editCuisines,
       dailyCalories: calories,
       macros,
@@ -955,6 +959,64 @@ export function DailyView() {
                       </button>
                     )
                   })}
+                </div>
+              </div>
+
+              <div className="settings-section-panel space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground">Diet type</span>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">Controls the type of meals generated in your plan.</p>
+                </div>
+                <div className="grid gap-2">
+                  {([
+                    { id: "keto", label: "Keto", description: "Fewer carbs, more fat—if that's how you like to eat" },
+                    { id: "high-protein", label: "High Protein", description: "Extra protein in each day's mix" },
+                    { id: "balanced", label: "Balanced", description: "Carbs, protein, and fat in an even split" },
+                    { id: "intermittent-fasting", label: "Intermittent Fasting", description: "Fewer, larger meals in a set eating window" },
+                  ] as { id: DietType; label: string; description: string }[]).map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setEditDietType(item.id)}
+                      className={cn(
+                        "settings-choice-card",
+                        editDietType === item.id ? "settings-choice-card-active" : "settings-choice-card-idle"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
+                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
+                        </div>
+                        {editDietType === item.id && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="settings-section-panel space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground">Meals per day</span>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">How many meals to split your daily calories across.</p>
+                </div>
+                <div className="flex gap-2">
+                  {[3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setEditMealsPerDay(n)}
+                      className={cn("settings-chip flex-1", editMealsPerDay === n ? "settings-chip-active" : "settings-chip-idle")}
+                    >
+                      {n}
+                    </button>
+                  ))}
                 </div>
               </div>
 
