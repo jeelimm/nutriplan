@@ -26,6 +26,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const activityLevels: { id: ActivityLevel; label: string; description: string }[] = [
   { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, with little planned exercise." },
@@ -68,6 +75,8 @@ export function SettingsScreen() {
   const [weightInput, setWeightInput] = useState("")
   const [bodyFatInput, setBodyFatInput] = useState("")
   const [muscleMassInput, setMuscleMassInput] = useState("")
+  const [editDietType, setEditDietType] = useState<DietType>("balanced")
+  const [editMealsPerDay, setEditMealsPerDay] = useState<number>(3)
   const [bodyStatsError, setBodyStatsError] = useState<string | null>(null)
   const [bodyStatsSaved, setBodyStatsSaved] = useState(false)
 
@@ -273,7 +282,7 @@ export function SettingsScreen() {
       setBodyStatsError("Enter a muscle mass greater than 0.")
       return
     }
-    updateNutritionTargets({ weight: w, bodyFat: bf, muscleMass: mm })
+    updateNutritionTargets({ weight: w, bodyFat: bf, muscleMass: mm, dietType: editDietType, mealsPerDay: editMealsPerDay })
     setBodyStatsOpen(false)
     setWeightInput("")
     setBodyFatInput("")
@@ -578,6 +587,8 @@ export function SettingsScreen() {
                       setWeightInput(userProfile.weight > 0 ? String(userProfile.weight) : "")
                       setBodyFatInput(userProfile.bodyFat > 0 ? String(userProfile.bodyFat) : "")
                       setMuscleMassInput(userProfile.muscleMass > 0 ? String(userProfile.muscleMass) : "")
+                      setEditDietType(userProfile.dietType)
+                      setEditMealsPerDay(userProfile.mealsPerDay)
                       setBodyStatsError(null)
                       setBodyStatsOpen(true)
                     }}
@@ -657,6 +668,41 @@ export function SettingsScreen() {
                       }}
                       className="settings-input"
                     />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="editDietType" className="text-sm font-medium text-foreground">
+                      Diet Type
+                    </Label>
+                    <Select value={editDietType} onValueChange={(v) => setEditDietType(v as DietType)}>
+                      <SelectTrigger id="editDietType" className="settings-input">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {dietTypes.map((item) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-foreground">Meals Per Day</Label>
+                    <div className="flex gap-2">
+                      {[3, 4, 5].map((count) => (
+                        <button
+                          key={count}
+                          type="button"
+                          onClick={() => setEditMealsPerDay(count)}
+                          className={cn(
+                            "settings-chip flex-1",
+                            editMealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
+                          )}
+                        >
+                          {count}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 {bodyStatsError && (
