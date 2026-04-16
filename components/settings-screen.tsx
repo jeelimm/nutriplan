@@ -445,6 +445,59 @@ export function SettingsScreen() {
 
             <div className="settings-section-panel space-y-3">
               <div className="space-y-1">
+                <Label className="text-sm font-semibold text-foreground">Diet type</Label>
+                <p className="text-sm leading-6 text-muted-foreground">Choose the rhythm that feels easiest to follow in daily life.</p>
+              </div>
+              <div className="grid gap-2">
+                {dietTypes.map((item) => {
+                  const selected = userProfile.dietType === item.id
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => updateNutritionTargets({ dietType: item.id })}
+                      className={cn(
+                        "settings-choice-card",
+                        selected ? "settings-choice-card-active" : "settings-choice-card-idle"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
+                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
+                        </div>
+                        {selected && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="settings-section-panel space-y-3">
+              <div className="space-y-1">
+                <Label className="text-sm font-semibold text-foreground">Meals per day</Label>
+                <p className="text-sm leading-6 text-muted-foreground">Use the meal rhythm that feels realistic for your workdays and weekends.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[3, 4, 5].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => updatePreferences({ mealsPerDay: count })}
+                    className={cn(
+                      "settings-chip flex-1 sm:flex-none",
+                      userProfile.mealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
+                    )}
+                  >
+                    {count}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="settings-section-panel space-y-3">
+              <div className="space-y-1">
                 <Label className="text-sm font-semibold text-foreground">Cuisine focus</Label>
                 <p className="text-sm leading-6 text-muted-foreground">Pick one or two cuisines to keep future plans realistic to shop for and repeat.</p>
               </div>
@@ -774,29 +827,7 @@ export function SettingsScreen() {
               </div>
             </div>
 
-            {onboardingComplete && (
-              <div className="settings-section-panel space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-sm font-semibold text-foreground">Meals per day</Label>
-                  <p className="text-sm leading-6 text-muted-foreground">Use the meal rhythm that feels realistic for your workdays and weekends.</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {[2, 3, 4, 5].map((count) => (
-                    <button
-                      key={count}
-                      type="button"
-                      onClick={() => updatePreferences({ mealsPerDay: count })}
-                      className={cn(
-                        "settings-chip flex-1 sm:flex-none",
-                        userProfile.mealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
-                      )}
-                    >
-                      {count}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </CardContent>
         </Card>
 
