@@ -63,6 +63,7 @@ export function SettingsScreen() {
   } = useMealStore()
 
   const [regenDialogOpen, setRegenDialogOpen] = useState(false)
+  const [startOverDialogOpen, setStartOverDialogOpen] = useState(false)
   const [bodyStatsOpen, setBodyStatsOpen] = useState(false)
   const [weightInput, setWeightInput] = useState("")
   const [bodyFatInput, setBodyFatInput] = useState("")
@@ -76,10 +77,29 @@ export function SettingsScreen() {
     return (
       <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
         <div className="page-column space-y-4">
-          <button type="button" onClick={() => setCurrentStep(0)} className="bridge-back-link">
+          <button type="button" onClick={() => setStartOverDialogOpen(true)} className="bridge-back-link">
             <ChevronLeft className="h-4 w-4 shrink-0" />
-            <span>Back to setup</span>
+            <span>Reset &amp; Start Over</span>
           </button>
+          <AlertDialog open={startOverDialogOpen} onOpenChange={setStartOverDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Start Over?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will clear your current meal plan and profile. Are you sure?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => setCurrentStep(0)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Yes, start over
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <section className="dashboard-header-panel space-y-4">
             <div className="hero-badge bg-secondary text-muted-foreground">App settings</div>
             <div className="flex items-center gap-3">
@@ -269,12 +289,39 @@ export function SettingsScreen() {
       <div className="page-column space-y-4">
         <button
           type="button"
-          onClick={() => setCurrentStep(onboardingComplete ? 2 : 0)}
+          onClick={() => setCurrentStep(2)}
           className="bridge-back-link"
         >
           <ChevronLeft className="h-4 w-4 shrink-0" />
-          <span>{onboardingComplete ? "Back to dashboard" : "Back to setup"}</span>
+          <span>Back to Plan</span>
         </button>
+        <button
+          type="button"
+          onClick={() => setStartOverDialogOpen(true)}
+          className="bridge-back-link"
+        >
+          <ChevronLeft className="h-4 w-4 shrink-0" />
+          <span>Reset &amp; Start Over</span>
+        </button>
+        <AlertDialog open={startOverDialogOpen} onOpenChange={setStartOverDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Start Over?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will clear your current meal plan and profile. Are you sure?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => setCurrentStep(0)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Yes, start over
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <section className="dashboard-header-panel space-y-4">
           <div className="hero-badge bg-secondary text-muted-foreground">
