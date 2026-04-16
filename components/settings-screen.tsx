@@ -287,22 +287,24 @@ export function SettingsScreen() {
   return (
     <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
       <div className="page-column space-y-4">
-        <button
-          type="button"
-          onClick={() => setCurrentStep(2)}
-          className="bridge-back-link"
-        >
-          <ChevronLeft className="h-4 w-4 shrink-0" />
-          <span>Back to Plan</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setStartOverDialogOpen(true)}
-          className="bridge-back-link"
-        >
-          <ChevronLeft className="h-4 w-4 shrink-0" />
-          <span>Reset &amp; Start Over</span>
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => setCurrentStep(2)}
+            className="bridge-back-link"
+          >
+            <ChevronLeft className="h-4 w-4 shrink-0" />
+            <span>Back to Plan</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStartOverDialogOpen(true)}
+            className="bridge-back-link"
+          >
+            <ChevronLeft className="h-4 w-4 shrink-0" />
+            <span>Reset &amp; Start Over</span>
+          </button>
+        </div>
         <AlertDialog open={startOverDialogOpen} onOpenChange={setStartOverDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
