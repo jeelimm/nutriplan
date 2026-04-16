@@ -1,18 +1,24 @@
 {
-  "feature": "daily-view: tighter calorie header + muted progress bar colors",
+  "feature": "settings-screen: confirm dialog before regenerate meal plan",
   "branch": "feature/onboarding-ux-overhaul",
   "prompts": [
     {
       "id": 1,
-      "description": "Move calorie numbers into CardHeader title row with large/small visual hierarchy",
-      "prompt": "In components/daily-view.tsx, restructure the Today at a Glance CardHeader/CardContent: pull the calorie display out of CardContent and into CardHeader alongside the title, formatted as large totalCalories + small muted target. Remove the calorie div from CardContent.",
-      "files_affected": ["components/daily-view.tsx"]
+      "description": "Import AlertDialog sub-components into settings-screen.tsx",
+      "prompt": "In components/settings-screen.tsx, add to the existing import list: import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from \"@/components/ui/alert-dialog\"",
+      "files_affected": ["components/settings-screen.tsx"]
     },
     {
       "id": 2,
-      "description": "Replace vivid progress bar colors with muted 700/60 tones",
-      "prompt": "In components/daily-view.tsx, replace bg-rose-400/70 dark:bg-rose-500/50 with bg-rose-700/60, bg-emerald-400/70 dark:bg-emerald-500/50 with bg-emerald-700/60, bg-amber-400/70 dark:bg-amber-500/50 with bg-amber-700/60, bg-sky-400/70 dark:bg-sky-500/50 with bg-sky-700/60.",
-      "files_affected": ["components/daily-view.tsx"]
+      "description": "Add regenDialogOpen state and split handleRegenerate into open + confirm",
+      "prompt": "In components/settings-screen.tsx, inside SettingsScreen(), after the existing useState declarations, add: const [regenDialogOpen, setRegenDialogOpen] = useState(false). Rename the current handleRegenerate body to handleConfirmRegenerate. Rewrite handleRegenerate to only call setRegenDialogOpen(true) (guarded by isGeneratingMealPlan check).",
+      "files_affected": ["components/settings-screen.tsx"]
+    },
+    {
+      "id": 3,
+      "description": "Wrap Regenerate plan button with controlled AlertDialog",
+      "prompt": "In components/settings-screen.tsx, wrap the 'Regenerate plan' Button inside an AlertDialog with open={regenDialogOpen} onOpenChange={setRegenDialogOpen}. AlertDialogContent should contain: title 'Regenerate meal plan?', description 'This will replace your current week plan with a new one based on your updated settings.', AlertDialogCancel 'Cancel', AlertDialogAction 'Yes, regenerate' that calls handleConfirmRegenerate().",
+      "files_affected": ["components/settings-screen.tsx"]
     }
   ]
 }
