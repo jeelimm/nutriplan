@@ -149,7 +149,7 @@ export function MealPlanConfig() {
         <Card className="bridge-section mb-5">
           <CardHeader className="gap-3 px-5 pb-3 pt-5 sm:px-6">
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-primary" />
               <span className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Meal rhythm</span>
             </div>
             <CardTitle className="flex min-w-0 items-center gap-2 text-[1.45rem] leading-tight">

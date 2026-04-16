@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { GroceryItemRow } from "@/components/grocery-item-row"
@@ -39,6 +39,12 @@ const categoryColors: Record<string, string> = {
   spices: "bg-muted text-muted-foreground",
 }
 
+const CHECKLIST_KEY = "nutriplan-grocery-checklist"
+
+function planFingerprint(weekPlan: { meals: { id: string }[] }[]): string {
+  return weekPlan.map((d) => d.meals.map((m) => m.id).join("-")).join("|")
+}
+
 interface GroceryListProps {
   selectedDay?: { dayName: string; dayIndex: number }
 }
@@ -47,6 +53,48 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
   const { weekPlan, setCurrentStep, userProfile } = useMealStore()
   const [copied, setCopied] = useState(false)
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
+  const prevFingerprintRef = useRef<string>("")
+
+  // Load persisted checklist on mount; discard if it belongs to a different plan
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(CHECKLIST_KEY)
+      if (!raw) return
+      const saved = JSON.parse(raw) as { fingerprint?: string; items?: string[] }
+      if (
+        typeof saved.fingerprint === "string" &&
+        saved.fingerprint === planFingerprint(weekPlan) &&
+        Array.isArray(saved.items)
+      ) {
+        setCheckedItems(new Set(saved.items))
+      } else {
+        window.localStorage.removeItem(CHECKLIST_KEY)
+      }
+    } catch {}
+    // intentionally run once on mount only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Clear checklist whenever the meal plan is replaced with a new one
+  useEffect(() => {
+    const fp = planFingerprint(weekPlan)
+    if (prevFingerprintRef.current && prevFingerprintRef.current !== fp) {
+      setCheckedItems(new Set())
+      try { window.localStorage.removeItem(CHECKLIST_KEY) } catch {}
+    }
+    prevFingerprintRef.current = fp
+  }, [weekPlan])
+
+  // Persist checklist to localStorage on every change
+  useEffect(() => {
+    if (!weekPlan.length) return
+    try {
+      window.localStorage.setItem(
+        CHECKLIST_KEY,
+        JSON.stringify({ fingerprint: planFingerprint(weekPlan), items: [...checkedItems] })
+      )
+    } catch {}
+  }, [checkedItems, weekPlan])
 
   if (!weekPlan.length) return null
 

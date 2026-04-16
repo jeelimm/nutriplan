@@ -10,6 +10,8 @@ and the Anthropic Claude API automatically generates a personalized 7-day meal p
 - Supports Korean and English, and multiple cuisine styles (Korean, Japanese, Western, etc.)
 - Designed and deployed on Vercel
 
+Refer to UX_FLOW.md in the project root for the complete screen inventory, user flows, navigation map, and known pain points before making any UI changes.
+
 ---
 
 ## Tech Stack

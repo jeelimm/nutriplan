@@ -1,24 +1,21 @@
 {
-  "feature": "settings-screen: confirm dialog before regenerate meal plan",
-  "branch": "feature/onboarding-ux-overhaul",
+  "feature": "UX Improvements - onboarding split, settings nav, edit profile expand",
+  "branch": "feature/ux-improvements",
   "prompts": [
     {
-      "id": 1,
-      "description": "Import AlertDialog sub-components into settings-screen.tsx",
-      "prompt": "In components/settings-screen.tsx, add to the existing import list: import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from \"@/components/ui/alert-dialog\"",
-      "files_affected": ["components/settings-screen.tsx"]
+      "id": "ux-01-onboarding-split",
+      "description": "Split onboarding entry into two clear paths: Quick Start vs Precise Setup",
+      "prompt": "In components/onboarding.tsx, improve the onboarding entry UX. The file already has a 'quick-estimate' step and a 'body' step as separate entry points (firstStep state). Make the following changes:\n1. When the user first lands on onboarding (step === 'quick-estimate' and firstStep === 'quick-estimate'), show a clean two-option card UI at the top: 'Quick Start (2 min)' and 'Precise Setup (5 min)'. Quick Start maps to the existing quick-estimate flow. Precise Setup jumps directly to the 'body' step (setFirstStep('body'), setStep('body')).\n2. Add a short subtitle under each option: Quick Start = 'Estimate your body type', Precise Setup = 'Enter exact measurements'.\n3. Keep all existing logic intact — only add the two-option entry UI above or replacing the current first-render of the quick-estimate step. Do not change any step logic, validation, or data flow.\n4. Use existing Tailwind classes and the app's color tokens (primary, muted, card, etc). No hardcoded hex values."
     },
     {
-      "id": 2,
-      "description": "Add regenDialogOpen state and split handleRegenerate into open + confirm",
-      "prompt": "In components/settings-screen.tsx, inside SettingsScreen(), after the existing useState declarations, add: const [regenDialogOpen, setRegenDialogOpen] = useState(false). Rename the current handleRegenerate body to handleConfirmRegenerate. Rewrite handleRegenerate to only call setRegenDialogOpen(true) (guarded by isGeneratingMealPlan check).",
-      "files_affected": ["components/settings-screen.tsx"]
+      "id": "ux-02-settings-nav",
+      "description": "Add Back to Plan button and wrap Start Over in confirmation dialog",
+      "prompt": "In components/settings-screen.tsx, make two navigation improvements:\n1. At the very top of the SettingsScreen component (above all sections), add a visible 'Back to Plan' button that calls setCurrentStep(2). Use an arrow-left icon from lucide-react (ChevronLeft or ArrowLeft). Style it as a small ghost/text button aligned left.\n2. Find the existing 'bridge-back-link' button (onClick setCurrentStep(0)) — change its label to 'Reset & Start Over' and wrap it in an AlertDialog confirmation: title='Start Over?', description='This will clear your current meal plan and profile. Are you sure?', confirm button='Yes, start over' (destructive variant), cancel='Cancel'. Only call setCurrentStep(0) after confirmation.\n3. Do not change any other logic. Use the existing shadcn/ui AlertDialog component already in the project."
     },
     {
-      "id": 3,
-      "description": "Wrap Regenerate plan button with controlled AlertDialog",
-      "prompt": "In components/settings-screen.tsx, wrap the 'Regenerate plan' Button inside an AlertDialog with open={regenDialogOpen} onOpenChange={setRegenDialogOpen}. AlertDialogContent should contain: title 'Regenerate meal plan?', description 'This will replace your current week plan with a new one based on your updated settings.', AlertDialogCancel 'Cancel', AlertDialogAction 'Yes, regenerate' that calls handleConfirmRegenerate().",
-      "files_affected": ["components/settings-screen.tsx"]
+      "id": "ux-03-edit-profile-expand",
+      "description": "Add diet type and meals-per-day fields to Edit Profile in settings",
+      "prompt": "In components/settings-screen.tsx, expand the Edit Profile section to include two additional editable fields:\n1. First, read the file to find the exact field names for diet type and meals per day in the Zustand store (check useMealStore types). Then add a Diet Type select/dropdown using the same diet options already defined in the onboarding flow (check components/onboarding.tsx for the diet options array).\n2. Add a Meals Per Day control — either a number input or three buttons (3, 4, 5) — mapped to the correct store field.\n3. Place these fields within the existing Edit Profile form after the body/activity fields. On save, call setUserProfile and calculateMacros the same way other fields do.\n4. Do not add new store fields — only use fields that already exist."
     }
   ]
 }

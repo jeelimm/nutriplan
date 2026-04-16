@@ -259,6 +259,72 @@ function adjustMacros(
   })
 }
 
+interface OFFNutrition {
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+}
+
+async function fetchOFFNutrition(mealName: string): Promise<OFFNutrition | null> {
+  const params = new URLSearchParams({
+    search_terms: mealName,
+    json: "true",
+    page_size: "1",
+    action: "process",
+  })
+
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?${params}`
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 3000)
+
+  try {
+    const res = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeoutId)
+
+    const data = (await res.json()) as {
+      products?: Array<{ nutriments?: Record<string, number>; serving_size?: string }>
+    }
+    const productCount = data.products?.length ?? 0
+    console.log(
+      `[OFF] meal="${mealName}" query="${mealName}" url="${url}" status=${res.status} products=${productCount}`
+    )
+
+    if (!res.ok) return null
+
+    const product = data.products?.[0]
+    if (!product?.nutriments) {
+      console.log(`[OFF] miss — no nutriments for "${mealName}"`)
+      return null
+    }
+
+    const n = product.nutriments
+    const kcalPer100 = n["energy-kcal_100g"]
+    if (!kcalPer100 || kcalPer100 <= 0) {
+      console.log(`[OFF] miss — zero/missing energy-kcal_100g for "${mealName}"`)
+      return null
+    }
+
+    const parsedServing = parseFloat(product.serving_size ?? "")
+    const servingGrams = !isNaN(parsedServing) && parsedServing > 0 ? parsedServing : 300
+    const ratio = servingGrams / 100
+
+    const result = {
+      calories: Math.round(kcalPer100 * ratio),
+      protein: Math.round((n["protein_100g"] ?? 0) * ratio),
+      carbs: Math.round((n["carbohydrates_100g"] ?? 0) * ratio),
+      fat: Math.round((n["fat_100g"] ?? 0) * ratio),
+    }
+    console.log(`[OFF] hit — "${mealName}" → cal=${result.calories} p=${result.protein} c=${result.carbs} f=${result.fat} (serving=${servingGrams}g)`)
+    return result
+  } catch (err) {
+    clearTimeout(timeoutId)
+    const reason = err instanceof Error ? err.message : String(err)
+    console.log(`[OFF] miss — "${mealName}" fetch error: ${reason}`)
+    return null
+  }
+}
+
 const CUISINE_STYLE_LABELS: Record<string, string> = {
   western: "Western",
   korean: "Korean",
@@ -325,11 +391,6 @@ export async function POST(req: Request) {
 
     const ingredientsSnippet = selectedIngredients.slice(0, 10).join(",")
 
-    const perMealCal = Math.round(dailyCalories / mealsPerDay)
-    const perMealP = Math.round(targetProtein / mealsPerDay)
-    const perMealC = Math.round(targetCarbs / mealsPerDay)
-    const perMealF = Math.round(targetFat / mealsPerDay)
-
     const isKoreanCuisine = /(^|,\s*)korean(\s*,|$)/i.test(cuisinePreference)
     const koreanStrictRule = isKoreanCuisine
       ? `
@@ -351,11 +412,9 @@ Generate exactly:
 ${cuisinePreference} cuisine.
 ${language === "ko" ? "Korean" : "English"} only.
 ${koreanStrictRule}
-Each meal targets:
-Cal:${perMealCal}
-P:${perMealP}g
-C:${perMealC}g
-F:${perMealF}g
+Daily nutrition targets: Cal:${dailyCalories} P:${targetProtein}g C:${targetCarbs}g F:${targetFat}g across ${mealsPerDay} meals per day.
+Distribute calories naturally by meal type — breakfast lighter, lunch moderate, dinner substantial. Each meal should have realistic, different nutrition based on its actual ingredients and portions.
+For each ingredient, estimate its calorie contribution (kcal field) based on the amount specified.
 Use only: ${ingredientsSnippet}
 
 Return JSON:
@@ -367,7 +426,7 @@ Return JSON:
 
 Each meal: {"name":"","type":"","calories":0,
 "protein":0,"carbs":0,"fat":0,
-"ingredients":[{"name":"","amount":"","category":""}],
+"ingredients":[{"name":"","amount":"","kcal":0,"category":""}],
 "recipe":{"prepTime":0,"cookTime":0,
 "instructions":[""]}}`
 
@@ -436,19 +495,57 @@ Each meal: {"name":"","type":"","calories":0,
         : [],
     }))
 
-    if (normalizedDays[0]?.meals?.[0]) {
+    // Enrich meals with Open Food Facts nutrition data
+    const uniqueMealNames = [
+      ...new Set(
+        normalizedDays
+          .flatMap((day: any) => (day.meals ?? []).map((m: any) => m.name as string))
+          .filter(Boolean)
+      ),
+    ]
+
+    const offResults = await Promise.all(
+      uniqueMealNames.map(async (name) => ({
+        name,
+        nutrition: await fetchOFFNutrition(name),
+      }))
+    )
+
+    const offMap = new Map(offResults.map((r) => [r.name, r.nutrition]))
+
+    let offCount = 0
+    let estimatedCount = 0
+
+    const enrichedDays = normalizedDays.map((day: any) => ({
+      ...day,
+      meals: (day.meals ?? []).map((meal: any) => {
+        const offData = offMap.get(meal.name)
+        if (offData) {
+          offCount++
+          return { ...meal, ...offData, isEstimated: false }
+        }
+        estimatedCount++
+        return { ...meal, isEstimated: true }
+      }),
+    }))
+
+    console.log(
+      `[generate-meal-plan] Nutrition source — OFF: ${offCount} meals, Claude fallback (estimated): ${estimatedCount} meals`
+    )
+
+    if (enrichedDays[0]?.meals?.[0]) {
       console.log(
         "[generate-meal-plan] Final first meal before return:",
-        JSON.stringify(normalizedDays[0].meals[0], null, 2)
+        JSON.stringify(enrichedDays[0].meals[0], null, 2)
       )
     }
     console.log(
       "[generate-meal-plan] Final object before return:",
-      JSON.stringify({ days: normalizedDays }, null, 2)
+      JSON.stringify({ days: enrichedDays }, null, 2)
     )
 
     return NextResponse.json({
-      days: normalizedDays,
+      days: enrichedDays,
     })
   } catch (err) {
     console.error("Full error:", JSON.stringify(err, null, 2))
