@@ -1,11 +1,11 @@
 {
-  "feature": "Add Diet Type and Meals Per Day to Edit Profile modal in daily-view",
-  "branch": "feature/ux-improvements",
+  "feature": "remove-off-api",
+  "branch": "feature/remove-off-api",
   "prompts": [
     {
-      "id": "fix-04-edit-profile-modal",
-      "description": "Add Diet Type and Meals Per Day panels to the Edit Profile modal in daily-view.tsx",
-      "prompt": "In components/daily-view.tsx, find the showEditProfileModal section (around line 770). It has three settings-section-panel blocks: 'Basics', 'Body stats', and 'Weekly context'. After the 'Weekly context' panel's closing tag and before the Save/Cancel buttons, add two new settings-section-panel blocks:\n\nPanel A — Diet Type:\n- Header dot + label: 'Diet type'\n- Description: 'Controls the type of meals generated in your plan.'\n- Read components/onboarding.tsx to find the dietTypes array and reuse the exact same values and labels\n- Render as choice cards using the same pattern as settings-screen.tsx Goal/Activity panels\n- selected = editDietType state variable (check if it exists in daily-view.tsx; if not, add useState initialized to userProfile.dietType)\n- onClick: setEditDietType(item.id)\n- Use settings-choice-card, settings-choice-card-active, settings-choice-card-idle classes\n\nPanel B — Meals Per Day:\n- Header dot + label: 'Meals per day'\n- Description: 'How many meals to split your daily calories across.'\n- Render [3, 4, 5] as a flex row of buttons\n- selected = editMealsPerDay state variable (check if it exists; if not, add useState initialized to userProfile.mealsPerDay)\n- onClick: setEditMealsPerDay(n)\n- Style: settings-chip + settings-chip-active/idle classes, flex-1\n\nAlso ensure that when the Save button is clicked, editDietType and editMealsPerDay are included in the setUserProfile call alongside the existing fields. Find the save handler in daily-view.tsx and add these two fields.\n\nDo not change any other logic."
+      "id": 1,
+      "description": "Remove OFF API integration and clean up related code",
+      "prompt": "Remove all Open Food Facts (OFF) API integration from the NutriPlan codebase. This includes: (1) Delete any API route files related to OFF (e.g. /api/food-search, /api/off-*, or similar). (2) Remove any OFF-related fetch calls, imports, or utility functions across the codebase. (3) Remove any OFF-related environment variables from .env.example or documentation (do NOT touch .env.local). (4) Clean up any components or hooks that reference OFF API results or loading states. (5) Ensure the Claude-based nutrition and meal plan generation remains fully intact and untouched. (6) Run a search for 'openfoodfacts' and 'OFF' across all files to make sure nothing is missed. After cleanup, verify the build passes with: npm run build."
     }
   ]
 }
