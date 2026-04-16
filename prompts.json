@@ -1,16 +1,11 @@
 {
-  "feature": "Settings quick fixes - button spacing and edit profile fields",
+  "feature": "Add Diet Type and Meals Per Day UI panels to Settings Profile section",
   "branch": "feature/ux-improvements",
   "prompts": [
     {
-      "id": "fix-01-button-spacing",
-      "description": "Add gap between Back to Plan and Reset & Start Over buttons in settings",
-      "prompt": "In components/settings-screen.tsx, find the top navigation area where the 'Back to Plan' button and 'Reset & Start Over' button are rendered side by side. Add a gap between them — use gap-3 or gap-4 on the parent flex container, or add mr-3 to the first button. Do not change anything else."
-    },
-    {
-      "id": "fix-02-edit-profile-fields",
-      "description": "Add Diet Type and Meals Per Day to Edit Profile section in settings",
-      "prompt": "In components/settings-screen.tsx, find the Edit Profile section (the form where users can update their body stats). Before making any changes, read both components/settings-screen.tsx and the Zustand store file (likely store/meal-store.ts or similar — find it with grep) to identify the exact field names for diet type and meals per day in the UserProfile type.\n\nThen add two fields to the Edit Profile form:\n1. Diet Type — a Select dropdown. Read components/onboarding.tsx to find the exact diet options array used there and reuse the same values. Map to the correct UserProfile field.\n2. Meals Per Day — a row of 3 toggle buttons: 3, 4, 5. Map to the correct UserProfile field.\n\nPlace both fields after the existing body/activity inputs, before the Save button. On save, include these fields in the setUserProfile call alongside the existing fields. Use existing Tailwind classes and shadcn/ui Select component. No hardcoded hex values."
+      "id": "fix-03-diet-meals-panels",
+      "description": "Add Diet Type and Meals Per Day inline selection panels to Settings Profile section",
+      "prompt": "In components/settings-screen.tsx, add two new settings-section-panel blocks to the Profile Card section, following the exact same pattern as the existing 'Goal' and 'Activity level' panels.\n\n1. Find the Activity level panel (search for 'Activity level'). After its closing </div> tag and before the next sibling section, insert two new panels:\n\nPanel A — Diet Type:\n- Label: 'Diet type'\n- Description: 'Controls the type of meals generated in your plan.'\n- Render dietTypes array as choice cards (same pattern as goals/activityLevels)\n- selected = userProfile.dietType === item.id\n- onClick: updatePreferences({ dietType: item.id })\n- Use dietTypes array that already exists in the file\n\nPanel B — Meals Per Day:\n- Label: 'Meals per day'\n- Description: 'How many meals to split your daily calories across.'\n- Render [3, 4, 5] as a row of 3 buttons (not a grid — use flex flex-row gap-2)\n- Each button: selected = userProfile.mealsPerDay === n, onClick: updatePreferences({ mealsPerDay: n })\n- Style: use the same settings-choice-card classes for selected/idle states, h-12 w-full\n\n2. Do not touch editDietType or editMealsPerDay state — those are for the body stats form. These new panels use updatePreferences() directly, same as Goal and Activity level.\n3. Do not change any other logic or sections."
     }
   ]
 }
