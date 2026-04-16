@@ -16,6 +16,16 @@ import {
 import { toKg } from "@/lib/nutrition"
 import { cn } from "@/lib/utils"
 import { Check, ChevronLeft, ChevronDown, Moon, Settings, Sun } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const activityLevels: { id: ActivityLevel; label: string; description: string }[] = [
   { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, with little planned exercise." },
@@ -52,6 +62,7 @@ export function SettingsScreen() {
     isGeneratingMealPlan,
   } = useMealStore()
 
+  const [regenDialogOpen, setRegenDialogOpen] = useState(false)
   const [bodyStatsOpen, setBodyStatsOpen] = useState(false)
   const [weightInput, setWeightInput] = useState("")
   const [bodyFatInput, setBodyFatInput] = useState("")
@@ -204,8 +215,12 @@ export function SettingsScreen() {
     })
   }
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = () => {
     if (isGeneratingMealPlan) return
+    setRegenDialogOpen(true)
+  }
+
+  const handleConfirmRegenerate = async () => {
     const profile = useMealStore.getState().userProfile
     if (!profile) return
     setCurrentStep(2)
@@ -614,9 +629,23 @@ export function SettingsScreen() {
               <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={() => setCurrentStep(0)}>
                 Update ingredients
               </Button>
-              <Button className="h-12 min-h-[44px] w-full" onClick={handleRegenerate} disabled={isGeneratingMealPlan}>
-                {isGeneratingMealPlan ? "Regenerating..." : "Regenerate plan"}
-              </Button>
+              <AlertDialog open={regenDialogOpen} onOpenChange={setRegenDialogOpen}>
+                <Button className="h-12 min-h-[44px] w-full" onClick={handleRegenerate} disabled={isGeneratingMealPlan}>
+                  {isGeneratingMealPlan ? "Regenerating..." : "Regenerate plan"}
+                </Button>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Regenerate meal plan?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will replace your current week plan with a new one based on your updated settings.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmRegenerate}>Yes, regenerate</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardContent>
         </Card>}
