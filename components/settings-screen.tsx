@@ -457,7 +457,7 @@ export function SettingsScreen() {
             <div className="settings-section-panel space-y-3">
               <div className="space-y-1">
                 <Label className="text-sm font-semibold text-foreground">Diet type</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Choose the rhythm that feels easiest to follow in daily life.</p>
+                <p className="text-sm leading-6 text-muted-foreground">Controls the type of meals generated in your plan.</p>
               </div>
               <div className="grid gap-2">
                 {dietTypes.map((item) => {
@@ -466,7 +466,7 @@ export function SettingsScreen() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => updateNutritionTargets({ dietType: item.id })}
+                      onClick={() => updatePreferences({ dietType: item.id })}
                       className={cn(
                         "settings-choice-card",
                         selected ? "settings-choice-card-active" : "settings-choice-card-idle"
@@ -488,20 +488,20 @@ export function SettingsScreen() {
             <div className="settings-section-panel space-y-3">
               <div className="space-y-1">
                 <Label className="text-sm font-semibold text-foreground">Meals per day</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Use the meal rhythm that feels realistic for your workdays and weekends.</p>
+                <p className="text-sm leading-6 text-muted-foreground">How many meals to split your daily calories across.</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {[3, 4, 5].map((count) => (
+              <div className="flex flex-row gap-2">
+                {[3, 4, 5].map((n) => (
                   <button
-                    key={count}
+                    key={n}
                     type="button"
-                    onClick={() => updatePreferences({ mealsPerDay: count })}
+                    onClick={() => updatePreferences({ mealsPerDay: n })}
                     className={cn(
-                      "settings-chip flex-1 sm:flex-none",
-                      userProfile.mealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
+                      "settings-choice-card h-12 w-full",
+                      userProfile.mealsPerDay === n ? "settings-choice-card-active" : "settings-choice-card-idle"
                     )}
                   >
-                    {count}
+                    {n}
                   </button>
                 ))}
               </div>
