@@ -63,6 +63,7 @@ export function SettingsScreen() {
   } = useMealStore()
 
   const [regenDialogOpen, setRegenDialogOpen] = useState(false)
+  const [startOverDialogOpen, setStartOverDialogOpen] = useState(false)
   const [bodyStatsOpen, setBodyStatsOpen] = useState(false)
   const [weightInput, setWeightInput] = useState("")
   const [bodyFatInput, setBodyFatInput] = useState("")
@@ -76,10 +77,29 @@ export function SettingsScreen() {
     return (
       <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
         <div className="page-column space-y-4">
-          <button type="button" onClick={() => setCurrentStep(0)} className="bridge-back-link">
+          <button type="button" onClick={() => setStartOverDialogOpen(true)} className="bridge-back-link">
             <ChevronLeft className="h-4 w-4 shrink-0" />
-            <span>Back to setup</span>
+            <span>Reset &amp; Start Over</span>
           </button>
+          <AlertDialog open={startOverDialogOpen} onOpenChange={setStartOverDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Start Over?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will clear your current meal plan and profile. Are you sure?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => setCurrentStep(0)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Yes, start over
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <section className="dashboard-header-panel space-y-4">
             <div className="hero-badge bg-secondary text-muted-foreground">App settings</div>
             <div className="flex items-center gap-3">
@@ -269,12 +289,39 @@ export function SettingsScreen() {
       <div className="page-column space-y-4">
         <button
           type="button"
-          onClick={() => setCurrentStep(onboardingComplete ? 2 : 0)}
+          onClick={() => setCurrentStep(2)}
           className="bridge-back-link"
         >
           <ChevronLeft className="h-4 w-4 shrink-0" />
-          <span>{onboardingComplete ? "Back to dashboard" : "Back to setup"}</span>
+          <span>Back to Plan</span>
         </button>
+        <button
+          type="button"
+          onClick={() => setStartOverDialogOpen(true)}
+          className="bridge-back-link"
+        >
+          <ChevronLeft className="h-4 w-4 shrink-0" />
+          <span>Reset &amp; Start Over</span>
+        </button>
+        <AlertDialog open={startOverDialogOpen} onOpenChange={setStartOverDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Start Over?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will clear your current meal plan and profile. Are you sure?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => setCurrentStep(0)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Yes, start over
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <section className="dashboard-header-panel space-y-4">
           <div className="hero-badge bg-secondary text-muted-foreground">
@@ -393,6 +440,59 @@ export function SettingsScreen() {
                     </button>
                   )
                 })}
+              </div>
+            </div>
+
+            <div className="settings-section-panel space-y-3">
+              <div className="space-y-1">
+                <Label className="text-sm font-semibold text-foreground">Diet type</Label>
+                <p className="text-sm leading-6 text-muted-foreground">Choose the rhythm that feels easiest to follow in daily life.</p>
+              </div>
+              <div className="grid gap-2">
+                {dietTypes.map((item) => {
+                  const selected = userProfile.dietType === item.id
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => updateNutritionTargets({ dietType: item.id })}
+                      className={cn(
+                        "settings-choice-card",
+                        selected ? "settings-choice-card-active" : "settings-choice-card-idle"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
+                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
+                        </div>
+                        {selected && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="settings-section-panel space-y-3">
+              <div className="space-y-1">
+                <Label className="text-sm font-semibold text-foreground">Meals per day</Label>
+                <p className="text-sm leading-6 text-muted-foreground">Use the meal rhythm that feels realistic for your workdays and weekends.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[3, 4, 5].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => updatePreferences({ mealsPerDay: count })}
+                    className={cn(
+                      "settings-chip flex-1 sm:flex-none",
+                      userProfile.mealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
+                    )}
+                  >
+                    {count}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -727,29 +827,7 @@ export function SettingsScreen() {
               </div>
             </div>
 
-            {onboardingComplete && (
-              <div className="settings-section-panel space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-sm font-semibold text-foreground">Meals per day</Label>
-                  <p className="text-sm leading-6 text-muted-foreground">Use the meal rhythm that feels realistic for your workdays and weekends.</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {[2, 3, 4, 5].map((count) => (
-                    <button
-                      key={count}
-                      type="button"
-                      onClick={() => updatePreferences({ mealsPerDay: count })}
-                      className={cn(
-                        "settings-chip flex-1 sm:flex-none",
-                        userProfile.mealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
-                      )}
-                    >
-                      {count}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </CardContent>
         </Card>
 
