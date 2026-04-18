@@ -1619,7 +1619,7 @@ export function Onboarding() {
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={moveToNextStep}
                   >
-                    Continue — {activityLevels.find(l => l.id === selectedActivityLevel)?.label} →
+                    Continue — {activityLevels.find(l => l.id === selectedActivityLevel)?.label}
                   </OnboardingPrimaryCta>
                 </div>
               </div>
@@ -1697,7 +1697,7 @@ export function Onboarding() {
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={moveToNextStep}
                   >
-                    Continue — {goals.find(g => g.id === selectedGoal)?.label} →
+                    Continue — {goals.find(g => g.id === selectedGoal)?.label}
                   </OnboardingPrimaryCta>
                 </div>
               </div>
@@ -2018,7 +2018,7 @@ export function Onboarding() {
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={moveToNextStep}
                   >
-                    Continue — {dietTypes.find(d => d.id === selectedDietType)?.label} →
+                    Continue — {dietTypes.find(d => d.id === selectedDietType)?.label}
                   </OnboardingPrimaryCta>
                 </div>
               </div>
