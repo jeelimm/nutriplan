@@ -8,7 +8,8 @@
       "mcp__claude_ai_Notion__notion-create-pages",
       "Bash(npx tsc *)",
       "Bash(git commit *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "WebFetch(domain:api.anthropic.com)"
     ]
   }
 }

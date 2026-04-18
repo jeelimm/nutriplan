@@ -1,21 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import {
   useMealStore,
   CUISINE_OPTIONS,
-  type ActivityLevel,
-  type CuisinePreference,
-  type DietType,
-  type Goal,
 } from "@/lib/meal-store"
 import { toKg } from "@/lib/nutrition"
-import { cn } from "@/lib/utils"
-import { Check, ChevronLeft, ChevronDown, Moon, Settings, Sun } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,884 +17,361 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
-const activityLevels: { id: ActivityLevel; label: string; description: string }[] = [
-  { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, with little planned exercise." },
-  { id: "light", label: "Light activity", description: "Easy walks, lighter workouts, or active days on your feet." },
-  { id: "moderate", label: "Moderate", description: "Regular workouts or a job that keeps you moving most weeks." },
-  { id: "very-active", label: "Very active", description: "Hard training or physically demanding days most of the week." },
-]
+const FONT_STACK = "'Avenir Next', 'Avenir', 'Segoe UI', 'Noto Sans KR', 'Apple SD Gothic Neo', -apple-system, sans-serif"
 
-const goals: { id: Goal; label: string; description: string }[] = [
-  { id: "lose-fat", label: "Lose Fat", description: "Creates a lighter starting point while keeping protein practical." },
-  { id: "gain-muscle", label: "Gain Muscle", description: "Adds steady fuel to support training and recovery." },
-  { id: "recomposition", label: "Lean Recomposition", description: "Keeps things balanced while body composition changes over time." },
-]
+const GOAL_LABELS: Record<string, string> = {
+  "lose-fat": "Lose Fat",
+  "gain-muscle": "Gain Muscle",
+  "recomposition": "Lean Recomposition",
+}
+const ACTIVITY_LABELS: Record<string, string> = {
+  sedentary: "Sedentary",
+  light: "Light",
+  moderate: "Moderate",
+  active: "Active",
+  "very-active": "Very Active",
+}
+const DIET_LABELS: Record<string, string> = {
+  keto: "Keto",
+  "high-protein": "High Protein",
+  balanced: "Balanced",
+  "intermittent-fasting": "Time-restricted",
+}
+const PACE_LABELS: Record<string, string> = {
+  steady: "Steady",
+  moderate: "Moderate",
+  aggressive: "Aggressive",
+}
 
-const dietTypes: { id: DietType; label: string; description: string }[] = [
-  { id: "keto", label: "Keto", description: "Lower carb, higher fat meals with simpler swaps." },
-  { id: "high-protein", label: "High Protein", description: "More protein-forward meals for fullness and recovery." },
-  { id: "balanced", label: "Balanced", description: "A practical mix of carbs, protein, and fats for everyday meals." },
-  { id: "intermittent-fasting", label: "Time-restricted", description: "Fewer eating windows with bigger meals inside them." },
-]
+function calcWeeksToGoal(
+  weight: number,
+  targetWeight: number | undefined,
+  unit: "kg" | "lbs",
+  pace: string | undefined
+): number | null {
+  if (!targetWeight) return null
+  const diff = Math.abs(toKg(weight, unit) - toKg(targetWeight, unit))
+  if (diff < 0.1) return 0
+  const rate = pace === "steady" ? 0.35 : pace === "aggressive" ? 0.75 : 0.5
+  return Math.ceil(diff / rate)
+}
+
+function SectionEyebrow({ label }: { label: string }) {
+  return (
+    <div style={{ paddingTop: 24, paddingLeft: 20, paddingRight: 20, paddingBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+      <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#b77749", flexShrink: 0 }} />
+      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.18em", color: "var(--muted-foreground)", textTransform: "uppercase", fontFamily: FONT_STACK }}>
+        {label}
+      </span>
+    </div>
+  )
+}
+
+function SettingsRow({
+  label,
+  value,
+  destructive = false,
+  onClick,
+  last = false,
+}: {
+  label: string
+  value?: string
+  destructive?: boolean
+  onClick?: () => void
+  last?: boolean
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          minHeight: 48,
+          padding: "12px 18px",
+          width: "100%",
+          background: "none",
+          border: "none",
+          cursor: onClick ? "pointer" : "default",
+          fontFamily: FONT_STACK,
+          textAlign: "left",
+        }}
+      >
+        <span style={{
+          flex: 1,
+          fontSize: 15,
+          fontWeight: 500,
+          letterSpacing: "-0.01em",
+          color: destructive ? "var(--destructive)" : "var(--foreground)",
+        }}>
+          {label}
+        </span>
+        {value && (
+          <span style={{
+            fontSize: 15,
+            fontWeight: 400,
+            color: "var(--muted-foreground)",
+            maxWidth: 220,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            fontVariantNumeric: "tabular-nums",
+            marginLeft: 8,
+          }}>
+            {value}
+          </span>
+        )}
+        {!destructive && (
+          <ChevronRight style={{ width: 16, height: 16, color: "var(--muted-foreground)", marginLeft: 6, flexShrink: 0 }} />
+        )}
+      </button>
+      {!last && (
+        <div style={{ height: 1, background: "var(--border)", marginLeft: 18 }} />
+      )}
+    </>
+  )
+}
+
+function BridgeCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      borderRadius: 24,
+      margin: "0 16px",
+      background: "var(--card)",
+      border: "1px solid var(--border)",
+      boxShadow: "0 18px 40px -28px rgba(18,33,23,0.38)",
+      overflow: "hidden",
+    }}>
+      {children}
+    </div>
+  )
+}
+
+function SectionFooter({ text }: { text: string }) {
+  return (
+    <p style={{ padding: "10px 20px 0 12px", fontSize: 12, color: "var(--muted-foreground)", lineHeight: 1.6, fontFamily: FONT_STACK }}>
+      {text}
+    </p>
+  )
+}
 
 export function SettingsScreen() {
-  const {
-    appPrefs,
-    setAppPrefs,
-    userProfile,
-    setUserProfile,
-    setMealPlanConfig,
-    setCurrentStep,
-    currentStep,
-    generateMealPlan,
-    clearAllData,
-    calculateMacros,
-    isGeneratingMealPlan,
-  } = useMealStore()
+  const { appPrefs, setAppPrefs, userProfile, setCurrentStep, clearAllData } = useMealStore()
 
-  const [regenDialogOpen, setRegenDialogOpen] = useState(false)
-  const [startOverDialogOpen, setStartOverDialogOpen] = useState(false)
-  const [bodyStatsOpen, setBodyStatsOpen] = useState(false)
-  const [weightInput, setWeightInput] = useState("")
-  const [bodyFatInput, setBodyFatInput] = useState("")
-  const [muscleMassInput, setMuscleMassInput] = useState("")
-  const [editDietType, setEditDietType] = useState<DietType>("balanced")
-  const [editMealsPerDay, setEditMealsPerDay] = useState<number>(3)
-  const [bodyStatsError, setBodyStatsError] = useState<string | null>(null)
-  const [bodyStatsSaved, setBodyStatsSaved] = useState(false)
-
-  const onboardingComplete = !!userProfile && currentStep !== 0
-
-  if (!userProfile) {
-    return (
-      <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
-        <div className="page-column space-y-4">
-          <button type="button" onClick={() => setStartOverDialogOpen(true)} className="bridge-back-link">
-            <ChevronLeft className="h-4 w-4 shrink-0" />
-            <span>Reset &amp; Start Over</span>
-          </button>
-          <AlertDialog open={startOverDialogOpen} onOpenChange={setStartOverDialogOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Start Over?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will clear your current meal plan and profile. Are you sure?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => setCurrentStep(0)}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  Yes, start over
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <section className="dashboard-header-panel space-y-4">
-            <div className="hero-badge bg-secondary text-muted-foreground">App settings</div>
-            <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-background/85 text-primary">
-                <Settings className="h-5 w-5" />
-              </span>
-              <h1 className="text-[1.9rem] font-semibold leading-tight text-foreground">App preferences</h1>
-            </div>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Profile and meal plan settings unlock after setup. Configure appearance, language, and units here anytime.
-            </p>
-          </section>
-
-          <Card className="bridge-section">
-            <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
-              <CardTitle>Preferences</CardTitle>
-              <CardDescription>These apply across the whole app and are saved immediately.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
-              <div className="settings-section-panel space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-sm font-semibold text-foreground">Appearance</Label>
-                  <p className="text-sm leading-6 text-muted-foreground">Switch between light and dark mode.</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setAppPrefs({ darkMode: false })}
-                    className={cn("settings-chip flex-1 sm:flex-none", !appPrefs.darkMode ? "settings-chip-active" : "settings-chip-idle")}
-                  >
-                    <Sun className="mr-1.5 inline h-3.5 w-3.5" />
-                    Light
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAppPrefs({ darkMode: true })}
-                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.darkMode ? "settings-chip-active" : "settings-chip-idle")}
-                  >
-                    <Moon className="mr-1.5 inline h-3.5 w-3.5" />
-                    Dark
-                  </button>
-                </div>
-              </div>
-
-              <div className="settings-section-panel space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-sm font-semibold text-foreground">Language</Label>
-                  <p className="text-sm leading-6 text-muted-foreground">Switch the interface language.</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setAppPrefs({ language: "en" })}
-                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.language !== "ko" ? "settings-chip-active" : "settings-chip-idle")}
-                  >
-                    English
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAppPrefs({ language: "ko" })}
-                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.language === "ko" ? "settings-chip-active" : "settings-chip-idle")}
-                  >
-                    한국어
-                  </button>
-                </div>
-              </div>
-
-              <div className="settings-section-panel space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-sm font-semibold text-foreground">Measurement system</Label>
-                  <p className="text-sm leading-6 text-muted-foreground">Applies to recipe measurements and grocery amounts.</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setAppPrefs({ unitSystem: "metric" })}
-                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.unitSystem !== "imperial" ? "settings-chip-active" : "settings-chip-idle")}
-                  >
-                    Metric
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAppPrefs({ unitSystem: "imperial" })}
-                    className={cn("settings-chip flex-1 sm:flex-none", appPrefs.unitSystem === "imperial" ? "settings-chip-active" : "settings-chip-idle")}
-                  >
-                    Imperial
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
-
-  const activeDiet = dietTypes.find((item) => item.id === userProfile.dietType)
-  const activeGoal = goals.find((item) => item.id === userProfile.goal)
-  const activeCuisines = userProfile.cuisinePreference ?? []
-
-  const updatePreferences = (patch: Partial<typeof userProfile>) => {
-    setUserProfile({
-      ...userProfile,
-      ...patch,
-      lastUpdatedAt: new Date().toISOString(),
-    })
-  }
-
-  const updateNutritionTargets = (patch: Partial<typeof userProfile>) => {
-    const next = { ...userProfile, ...patch }
-    const weightKg = toKg(next.weight, next.unit)
-    const targetKg =
-      next.targetWeight != null && Number.isFinite(next.targetWeight)
-        ? toKg(next.targetWeight, next.unit)
-        : null
-    const { calories, macros } = calculateMacros(
-      weightKg,
-      next.bodyFat,
-      next.goal,
-      next.activityLevel,
-      next.dietType,
-      next.sex ?? "male",
-      targetKg,
-      next.weightLossPace ?? null
-    )
-    setUserProfile({
-      ...next,
-      dailyCalories: calories,
-      macros,
-      lastUpdatedAt: new Date().toISOString(),
-    })
-  }
-
-  const handleRegenerate = () => {
-    if (isGeneratingMealPlan) return
-    setRegenDialogOpen(true)
-  }
-
-  const handleConfirmRegenerate = async () => {
-    const profile = useMealStore.getState().userProfile
-    if (!profile) return
-    setCurrentStep(2)
-    setMealPlanConfig({ dietType: profile.dietType, mealsPerDay: profile.mealsPerDay })
-    try {
-      await generateMealPlan()
-    } catch {}
-  }
+  const [clearDialogOpen, setClearDialogOpen] = useState(false)
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
 
   const handleClearAll = () => {
-    if (!window.confirm("Clear all saved data? This cannot be undone.")) return
     clearAllData()
     window.localStorage.removeItem("meal-plan-storage")
   }
 
-  const handleBodyStatsSave = () => {
-    setBodyStatsError(null)
-    const w = parseFloat(weightInput)
-    const bf = parseFloat(bodyFatInput)
-    const mm = parseFloat(muscleMassInput)
-    if (!Number.isFinite(w) || w <= 0) {
-      setBodyStatsError(`Enter a valid weight in ${userProfile.unit}.`)
-      return
-    }
-    if (!Number.isFinite(bf) || bf <= 0 || bf >= 100) {
-      setBodyStatsError("Enter a body fat % between 1 and 99.")
-      return
-    }
-    if (!Number.isFinite(mm) || mm <= 0) {
-      setBodyStatsError("Enter a muscle mass greater than 0.")
-      return
-    }
-    updateNutritionTargets({ weight: w, bodyFat: bf, muscleMass: mm, dietType: editDietType, mealsPerDay: editMealsPerDay, usedQuickEstimate: false })
-    setBodyStatsOpen(false)
-    setWeightInput("")
-    setBodyFatInput("")
-    setMuscleMassInput("")
-    setBodyStatsSaved(true)
-    setTimeout(() => setBodyStatsSaved(false), 3000)
+  // No-profile state: only show preferences
+  if (!userProfile) {
+    return (
+      <div className="app-shell bg-background pb-28" style={{ fontFamily: FONT_STACK }}>
+        <div className="page-column" style={{ paddingTop: 16 }}>
+          <div style={{ padding: "0 16px 8px" }}>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(2)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, borderRadius: 999, background: "#f8f2ea", padding: "0 14px", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: "var(--foreground)", fontFamily: FONT_STACK }}
+            >
+              <ChevronLeft style={{ width: 16, height: 16 }} />
+              Back to Plan
+            </button>
+          </div>
+
+          <SectionEyebrow label="PREFERENCES" />
+          <BridgeCard>
+            <SettingsRow
+              label="Measurement system"
+              value={appPrefs.unitSystem === "imperial" ? "Imperial" : "Metric"}
+              onClick={() => setAppPrefs({ unitSystem: appPrefs.unitSystem === "imperial" ? "metric" : "imperial" })}
+            />
+            <SettingsRow
+              label="Language"
+              value={appPrefs.language === "ko" ? "한국어" : "English"}
+              onClick={() => setAppPrefs({ language: appPrefs.language === "ko" ? "en" : "ko" })}
+            />
+            <SettingsRow
+              label="Appearance"
+              value={appPrefs.darkMode ? "Dark" : "Light"}
+              onClick={() => setAppPrefs({ darkMode: !appPrefs.darkMode })}
+              last
+            />
+          </BridgeCard>
+          <div style={{ height: 24 }} />
+        </div>
+      </div>
+    )
   }
 
-  const hasDetailedStats = userProfile.bodyFat > 0 && userProfile.muscleMass > 0
-  const isQuickEstimateUser = userProfile.usedQuickEstimate === true
+  const goalLabel = GOAL_LABELS[userProfile.goal] ?? userProfile.goal
+  const weeksToGoal = calcWeeksToGoal(userProfile.weight, userProfile.targetWeight, userProfile.unit, userProfile.weightLossPace)
+
+  const heightDisplay = userProfile.height
+    ? userProfile.unit === "kg"
+      ? `${userProfile.height} cm`
+      : `${userProfile.height} in`
+    : "—"
+  const weightDisplay = userProfile.weight > 0 ? `${userProfile.weight} ${userProfile.unit}` : "—"
+  const bodyFatDisplay = userProfile.bodyFat > 0 ? `${userProfile.bodyFat}%` : "—"
+  const muscleMassDisplay = userProfile.muscleMass > 0 ? `${userProfile.muscleMass} ${userProfile.unit}` : "—"
+  const targetWeightDisplay = userProfile.targetWeight ? `${userProfile.targetWeight} ${userProfile.unit}` : "—"
+
+  const cuisineNames = (userProfile.cuisinePreference ?? [])
+    .map(id => CUISINE_OPTIONS.find(c => c.id === id)?.title ?? id)
+    .join(", ") || "—"
 
   return (
-    <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
-      <div className="page-column space-y-4">
-        <div className="flex gap-3">
+    <div className="app-shell bg-background pb-28" style={{ fontFamily: FONT_STACK }}>
+      <div className="page-column" style={{ paddingTop: 16 }}>
+
+        {/* Back to Plan pill */}
+        <div style={{ padding: "0 16px 8px" }}>
           <button
             type="button"
             onClick={() => setCurrentStep(2)}
-            className="bridge-back-link"
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, borderRadius: 999, background: "#f8f2ea", padding: "0 14px", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: "var(--foreground)", fontFamily: FONT_STACK }}
           >
-            <ChevronLeft className="h-4 w-4 shrink-0" />
-            <span>Back to Plan</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setStartOverDialogOpen(true)}
-            className="bridge-back-link"
-          >
-            <ChevronLeft className="h-4 w-4 shrink-0" />
-            <span>Reset &amp; Start Over</span>
+            <ChevronLeft style={{ width: 16, height: 16 }} />
+            Back to Plan
           </button>
         </div>
-        <AlertDialog open={startOverDialogOpen} onOpenChange={setStartOverDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Start Over?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will clear your current meal plan and profile. Are you sure?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => setCurrentStep(0)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Yes, start over
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
 
-        <section className="dashboard-header-panel space-y-4">
-          <div className="hero-badge bg-secondary text-muted-foreground">
-            {onboardingComplete ? "Profile & plan settings" : "App settings"}
+        {/* Header panel */}
+        <div style={{ margin: "0 16px 8px", borderRadius: 28, border: "1px solid var(--border)", boxShadow: "0 4px 24px -8px rgba(18,33,23,0.12)", padding: 18, background: "var(--card)" }}>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.18em", color: "var(--muted-foreground)", textTransform: "uppercase", marginBottom: 8, fontFamily: FONT_STACK }}>
+            PROFILE &amp; PLAN SETTINGS
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-background/85 text-primary">
-                <Settings className="h-5 w-5" />
-              </span>
-              <div className="min-w-0">
-                <h1 className="text-[1.9rem] font-semibold leading-tight text-foreground">
-                  {onboardingComplete ? "Keep your plan aligned with real life" : "App preferences"}
-                </h1>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 600, color: "var(--foreground)", margin: "0 0 4px", lineHeight: 1.2, fontFamily: FONT_STACK }}>
+            Keep your plan aligned
+          </h1>
+          <p style={{ fontSize: 14, color: "var(--muted-foreground)", margin: "0 0 16px", fontFamily: FONT_STACK }}>
+            {goalLabel}{weeksToGoal !== null ? ` · ${weeksToGoal} weeks to goal` : ""}
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ background: "var(--background)", borderRadius: 14, padding: "12px 14px", border: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", color: "var(--muted-foreground)", textTransform: "uppercase", marginBottom: 4, fontFamily: FONT_STACK }}>
+                DAILY TARGET
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "var(--foreground)", fontVariantNumeric: "tabular-nums", fontFamily: FONT_STACK }}>
+                {userProfile.dailyCalories} kcal
               </div>
             </div>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {onboardingComplete
-                ? "Adjust your goals, preferences, and regeneration settings without losing the progress you\u2019ve already set up."
-                : "Set your language and measurement system. Profile and meal plan settings become available once your setup is complete."}
-            </p>
+            <div style={{ background: "var(--background)", borderRadius: 14, padding: "12px 14px", border: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", color: "var(--muted-foreground)", textTransform: "uppercase", marginBottom: 4, fontFamily: FONT_STACK }}>
+                PLAN SETUP
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "var(--foreground)", fontVariantNumeric: "tabular-nums", fontFamily: FONT_STACK }}>
+                {userProfile.mealsPerDay} meals / day
+              </div>
+            </div>
           </div>
-          {onboardingComplete && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bridge-stat-tile">
-                <div className="eyebrow">Daily target</div>
-                <div className="mt-1 text-lg font-semibold text-foreground">{userProfile.dailyCalories} kcal</div>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{activeGoal?.label ?? "Current goal"} starting point</p>
-              </div>
-              <div className="bridge-stat-tile">
-                <div className="eyebrow">Plan setup</div>
-                <div className="mt-1 text-lg font-semibold text-foreground">{userProfile.mealsPerDay} meals / day</div>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{activeDiet?.label ?? "Meal style"} with {Math.max(activeCuisines.length, 1)} cuisine preference{activeCuisines.length === 1 ? "" : "s"}</p>
-              </div>
-            </div>
-          )}
-        </section>
+        </div>
 
-        {onboardingComplete && <Card className="bridge-section">
-          <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>These choices shape calories, macros, and the meals we build around your week.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
-            <div className="settings-section-panel space-y-3.5">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
-                  <span className="text-sm font-semibold text-foreground">Detailed profile editor</span>
-                </div>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Re-enter your body stats to recalculate your calorie and macro targets. This will take you back to update your profile.
-                </p>
-              </div>
-              <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={() => setCurrentStep(0)}>
-                Update my profile
-              </Button>
-            </div>
+        {/* PROFILE section */}
+        <SectionEyebrow label="PROFILE" />
+        <BridgeCard>
+          <SettingsRow label="Profile name" value={userProfile.profileName || "—"} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Age" value={userProfile.age ? String(userProfile.age) : "—"} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Sex" value={userProfile.sex ? (userProfile.sex === "male" ? "Male" : "Female") : "—"} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Height" value={heightDisplay} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Weight" value={weightDisplay} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Body fat" value={bodyFatDisplay} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Muscle mass" value={muscleMassDisplay} onClick={() => setCurrentStep(0)} last />
+        </BridgeCard>
+        <SectionFooter text="Shapes calories, macros, and the meals we build around your week." />
 
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Goal</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Update the direction of your plan without redoing onboarding.</p>
-              </div>
-              <div className="grid gap-2">
-                {goals.map((item) => {
-                  const selected = userProfile.goal === item.id
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => updateNutritionTargets({ goal: item.id })}
-                      className={cn(
-                        "settings-choice-card",
-                        selected ? "settings-choice-card-active" : "settings-choice-card-idle"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
-                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
-                        </div>
-                        {selected && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+        {/* GOALS section */}
+        <SectionEyebrow label="GOALS" />
+        <BridgeCard>
+          <SettingsRow label="Goal" value={goalLabel} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Goal weight" value={targetWeightDisplay} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Pace" value={PACE_LABELS[userProfile.weightLossPace ?? ""] ?? "—"} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Activity level" value={ACTIVITY_LABELS[userProfile.activityLevel] ?? userProfile.activityLevel} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Diet type" value={DIET_LABELS[userProfile.dietType] ?? userProfile.dietType} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Meals per day" value={String(userProfile.mealsPerDay)} onClick={() => setCurrentStep(0)} last />
+        </BridgeCard>
+        <SectionFooter text="Changes show up the next time you regenerate your plan." />
 
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Activity level</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Choose the week that feels most normal, not the most ideal.</p>
-              </div>
-              <div className="grid gap-2">
-                {activityLevels.map((item) => {
-                  const selected = userProfile.activityLevel === item.id
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => updateNutritionTargets({ activityLevel: item.id })}
-                      className={cn(
-                        "settings-choice-card",
-                        selected ? "settings-choice-card-active" : "settings-choice-card-idle"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
-                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
-                        </div>
-                        {selected && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+        {/* PREFERENCES section */}
+        <SectionEyebrow label="PREFERENCES" />
+        <BridgeCard>
+          <SettingsRow label="Cuisine focus" value={cuisineNames} onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Budget" value="—" onClick={() => setCurrentStep(0)} />
+          <SettingsRow label="Ingredient exclusions" value="—" onClick={() => setCurrentStep(0)} />
+          <SettingsRow
+            label="Measurement system"
+            value={appPrefs.unitSystem === "imperial" ? "Imperial" : "Metric"}
+            onClick={() => setAppPrefs({ unitSystem: appPrefs.unitSystem === "imperial" ? "metric" : "imperial" })}
+          />
+          <SettingsRow
+            label="Language"
+            value={appPrefs.language === "ko" ? "한국어" : "English"}
+            onClick={() => setAppPrefs({ language: appPrefs.language === "ko" ? "en" : "ko" })}
+          />
+          <SettingsRow
+            label="Appearance"
+            value={appPrefs.darkMode ? "Dark" : "Light"}
+            onClick={() => setAppPrefs({ darkMode: !appPrefs.darkMode })}
+            last
+          />
+        </BridgeCard>
 
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Diet type</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Controls the type of meals generated in your plan.</p>
-              </div>
-              <div className="grid gap-2">
-                {dietTypes.map((item) => {
-                  const selected = userProfile.dietType === item.id
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => updatePreferences({ dietType: item.id })}
-                      className={cn(
-                        "settings-choice-card",
-                        selected ? "settings-choice-card-active" : "settings-choice-card-idle"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
-                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
-                        </div>
-                        {selected && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+        {/* ACCOUNT section */}
+        <SectionEyebrow label="ACCOUNT" />
+        <BridgeCard>
+          <SettingsRow label="Clear all data" destructive onClick={() => setClearDialogOpen(true)} />
+          <SettingsRow label="Reset &amp; start over" destructive onClick={() => setResetDialogOpen(true)} last />
+        </BridgeCard>
+        <SectionFooter text={'Destructive actions are permanent. "Clear all data" keeps your profile; "Reset" removes it.'} />
 
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Meals per day</Label>
-                <p className="text-sm leading-6 text-muted-foreground">How many meals to split your daily calories across.</p>
-              </div>
-              <div className="flex flex-row gap-2">
-                {[3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => updatePreferences({ mealsPerDay: n })}
-                    className={cn(
-                      "settings-choice-card h-12 w-full",
-                      userProfile.mealsPerDay === n ? "settings-choice-card-active" : "settings-choice-card-idle"
-                    )}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Cuisine focus</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Pick one or two cuisines to keep future plans realistic to shop for and repeat.</p>
-              </div>
-              <div className="grid gap-2">
-                {CUISINE_OPTIONS.map((c) => {
-                  const selected = activeCuisines.includes(c.id)
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => {
-                        if (activeCuisines.includes(c.id)) {
-                          if (activeCuisines.length <= 1) return
-                          updatePreferences({ cuisinePreference: activeCuisines.filter((x) => x !== c.id) })
-                          return
-                        }
-                        const next: CuisinePreference[] =
-                          activeCuisines.length < 2 ? [...activeCuisines, c.id] : [activeCuisines[1], c.id]
-                        updatePreferences({ cuisinePreference: next })
-                      }}
-                      className={cn(
-                        "settings-choice-card",
-                        selected ? "settings-choice-card-active" : "settings-choice-card-idle"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-foreground">{c.title}</div>
-                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{c.hint}</div>
-                        </div>
-                        <span
-                          className={cn(
-                            "rounded-full px-2.5 py-1 text-[11px] font-medium",
-                            selected ? "bg-primary/12 text-primary" : "bg-background/85 text-muted-foreground"
-                          )}
-                        >
-                          {selected ? "Included" : "Add"}
-                        </span>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>}
-
-        {onboardingComplete && <Card className="bridge-section">
-          <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
-            <CardTitle>{isQuickEstimateUser && !hasDetailedStats ? "Update Body Stats" : "Refine your targets"}</CardTitle>
-            <CardDescription>
-              {isQuickEstimateUser && !hasDetailedStats
-                ? "Your calorie and macro targets are based on estimates. Enter your precise measurements to get more accurate results."
-                : "Your current targets are a solid starting point. Detailed body stats can fine-tune them further."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
-            {isQuickEstimateUser && !hasDetailedStats && !bodyStatsOpen && (
-              <div className="bridge-note-strip">
-                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#b77749]" />
-                <span>You used Quick Estimate during setup. Enter measurements from an InBody scan or smart scale to unlock more accurate targets.</span>
-              </div>
-            )}
-            {!bodyStatsOpen ? (
-              <div className="settings-section-panel space-y-3.5">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
-                    <span className="text-sm font-semibold text-foreground">
-                      {hasDetailedStats ? "Update body metrics" : "Enter Detailed Measurements"}
-                    </span>
-                  </div>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    {hasDetailedStats
-                      ? `Currently using ${userProfile.weight}${userProfile.unit}, ${userProfile.bodyFat}% body fat, ${userProfile.muscleMass}${userProfile.unit} muscle mass. Enter new measurements to recalculate your targets.`
-                      : isQuickEstimateUser
-                        ? "Enter your weight, body fat %, and muscle mass from an InBody scan or smart scale to replace your estimated targets with precise ones."
-                        : "Enter your weight, body fat %, and muscle mass from an InBody scan, smart scale, or your best estimate to get more accurate calorie and macro targets."}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant={isQuickEstimateUser && !hasDetailedStats ? "default" : "outline"}
-                    className="h-12 min-h-[44px] flex-1"
-                    onClick={() => {
-                      setWeightInput(userProfile.weight > 0 ? String(userProfile.weight) : "")
-                      setBodyFatInput(userProfile.bodyFat > 0 ? String(userProfile.bodyFat) : "")
-                      setMuscleMassInput(userProfile.muscleMass > 0 ? String(userProfile.muscleMass) : "")
-                      setEditDietType(userProfile.dietType)
-                      setEditMealsPerDay(userProfile.mealsPerDay)
-                      setBodyStatsError(null)
-                      setBodyStatsOpen(true)
-                    }}
-                  >
-                    <ChevronDown className="mr-2 h-4 w-4" />
-                    {hasDetailedStats ? "Update metrics" : isQuickEstimateUser ? "Enter precise measurements" : "Add detailed metrics"}
-                  </Button>
-                  {bodyStatsSaved && (
-                    <span className="flex items-center gap-1 text-sm text-primary">
-                      <Check className="h-4 w-4" /> Saved
-                    </span>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="settings-section-panel space-y-4">
-                <div className="space-y-1">
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    Enter your current measurements to recalculate calorie and macro targets. Use an InBody scan, smart scale, or your best estimate.
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="weightInput" className="text-sm font-medium text-foreground">
-                      Weight ({userProfile.unit})
-                    </Label>
-                    <Input
-                      id="weightInput"
-                      type="number"
-                      inputMode="decimal"
-                      min={0.1}
-                      step={0.1}
-                      placeholder={userProfile.unit === "kg" ? "e.g. 80" : "e.g. 176"}
-                      value={weightInput}
-                      onChange={(e) => {
-                        setWeightInput(e.target.value)
-                        setBodyStatsError(null)
-                      }}
-                      className="settings-input"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="bodyFatInput" className="text-sm font-medium text-foreground">
-                      Body Fat (%)
-                    </Label>
-                    <Input
-                      id="bodyFatInput"
-                      type="number"
-                      inputMode="decimal"
-                      min={1}
-                      max={99}
-                      step={0.1}
-                      placeholder="e.g. 18.5"
-                      value={bodyFatInput}
-                      onChange={(e) => {
-                        setBodyFatInput(e.target.value)
-                        setBodyStatsError(null)
-                      }}
-                      className="settings-input"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="muscleMassInput" className="text-sm font-medium text-foreground">
-                      Muscle Mass ({userProfile.unit})
-                    </Label>
-                    <Input
-                      id="muscleMassInput"
-                      type="number"
-                      inputMode="decimal"
-                      min={0.1}
-                      step={0.1}
-                      placeholder={userProfile.unit === "kg" ? "e.g. 32.5" : "e.g. 71.6"}
-                      value={muscleMassInput}
-                      onChange={(e) => {
-                        setMuscleMassInput(e.target.value)
-                        setBodyStatsError(null)
-                      }}
-                      className="settings-input"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="editDietType" className="text-sm font-medium text-foreground">
-                      Diet Type
-                    </Label>
-                    <Select value={editDietType} onValueChange={(v) => setEditDietType(v as DietType)}>
-                      <SelectTrigger id="editDietType" className="settings-input">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {dietTypes.map((item) => (
-                          <SelectItem key={item.id} value={item.id}>
-                            {item.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-sm font-medium text-foreground">Meals Per Day</Label>
-                    <div className="flex gap-2">
-                      {[3, 4, 5].map((count) => (
-                        <button
-                          key={count}
-                          type="button"
-                          onClick={() => setEditMealsPerDay(count)}
-                          className={cn(
-                            "settings-chip flex-1",
-                            editMealsPerDay === count ? "settings-chip-active" : "settings-chip-idle"
-                          )}
-                        >
-                          {count}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                {bodyStatsError && (
-                  <p className="text-sm text-destructive">{bodyStatsError}</p>
-                )}
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    className="h-12 min-h-[44px]"
-                    onClick={() => {
-                      setBodyStatsOpen(false)
-                      setBodyStatsError(null)
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="h-12 min-h-[44px]"
-                    onClick={handleBodyStatsSave}
-                  >
-                    Save &amp; recalculate
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>}
-
-        {onboardingComplete && <Card className="bridge-section">
-          <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
-            <CardTitle>Meal plan</CardTitle>
-            <CardDescription>These changes shape the next plan you generate, while keeping your current week available until then.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Diet style</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Choose the rhythm that feels easiest to follow in daily life.</p>
-              </div>
-              <div className="grid gap-2">
-                {dietTypes.map((item) => {
-                  const selected = userProfile.dietType === item.id
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => updateNutritionTargets({ dietType: item.id })}
-                      className={cn(
-                        "settings-choice-card",
-                        selected ? "settings-choice-card-active" : "settings-choice-card-idle"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
-                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
-                        </div>
-                        {selected && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div className="bridge-note-strip">
-              <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary/70" />
-              <span>Goal, activity, cuisine, and diet changes will show up the next time you regenerate your plan.</span>
-            </div>
-
-            <div className="grid gap-3">
-              <Button variant="outline" className="h-12 min-h-[44px] w-full" onClick={() => setCurrentStep(0)}>
-                Update ingredients
-              </Button>
-              <AlertDialog open={regenDialogOpen} onOpenChange={setRegenDialogOpen}>
-                <Button className="h-12 min-h-[44px] w-full" onClick={handleRegenerate} disabled={isGeneratingMealPlan}>
-                  {isGeneratingMealPlan ? "Regenerating..." : "Regenerate plan"}
-                </Button>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Regenerate meal plan?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will replace your current week plan with a new one based on your updated settings.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirmRegenerate}>Yes, regenerate</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </CardContent>
-        </Card>}
-
-        <Card className="bridge-section">
-          <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>Smaller app-level choices that keep reading and shopping comfortable day to day.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Appearance</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Switch between light and dark mode.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setAppPrefs({ darkMode: false })}
-                  className={cn("settings-chip flex-1 sm:flex-none", !appPrefs.darkMode ? "settings-chip-active" : "settings-chip-idle")}
-                >
-                  <Sun className="mr-1.5 inline h-3.5 w-3.5" />
-                  Light
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAppPrefs({ darkMode: true })}
-                  className={cn("settings-chip flex-1 sm:flex-none", appPrefs.darkMode ? "settings-chip-active" : "settings-chip-idle")}
-                >
-                  <Moon className="mr-1.5 inline h-3.5 w-3.5" />
-                  Dark
-                </button>
-              </div>
-            </div>
-
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Measurement system</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Applies to recipe measurements and grocery amounts throughout the app.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => updatePreferences({ unitSystem: "metric" })}
-                  className={cn("settings-chip flex-1 sm:flex-none", userProfile.unitSystem === "metric" ? "settings-chip-active" : "settings-chip-idle")}
-                >
-                  Metric
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updatePreferences({ unitSystem: "imperial" })}
-                  className={cn("settings-chip flex-1 sm:flex-none", userProfile.unitSystem === "imperial" ? "settings-chip-active" : "settings-chip-idle")}
-                >
-                  Imperial
-                </button>
-              </div>
-            </div>
-
-            <div className="settings-section-panel space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold text-foreground">Language</Label>
-                <p className="text-sm leading-6 text-muted-foreground">Switch the interface language without affecting your saved profile data.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => updatePreferences({ language: "en" })}
-                  className={cn("settings-chip flex-1 sm:flex-none", userProfile.language !== "ko" ? "settings-chip-active" : "settings-chip-idle")}
-                >
-                  English
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updatePreferences({ language: "ko" })}
-                  className={cn("settings-chip flex-1 sm:flex-none", userProfile.language === "ko" ? "settings-chip-active" : "settings-chip-idle")}
-                >
-                  한국어
-                </button>
-              </div>
-            </div>
-
-
-          </CardContent>
-        </Card>
-
-        <Card className="bridge-section">
-          <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
-            <CardTitle>Data</CardTitle>
-            <CardDescription>App version: v0.1.0</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
-            <div className="bridge-note-strip">
-              <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#b77749]" />
-              <span>Clearing data removes your saved profile, plan, shopping lists, and ingredient setup from this device.</span>
-            </div>
-            <Button variant="destructive" className="h-12 min-h-[44px] w-full" onClick={handleClearAll}>
-              Clear all data
-            </Button>
-          </CardContent>
-        </Card>
+        <div style={{ height: 24 }} />
       </div>
+
+      <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear all data?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove your saved meal plan, grocery list, and ingredient setup from this device. Your profile will be kept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClearAll}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Clear all data
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset &amp; start over?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will clear your current meal plan and profile completely. You&apos;ll go back to onboarding.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => setCurrentStep(0)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Yes, reset everything
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
