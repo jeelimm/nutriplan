@@ -9,7 +9,8 @@
       "Bash(npx tsc *)",
       "Bash(git commit *)",
       "Bash(git *)",
-      "WebFetch(domain:api.anthropic.com)"
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(grep *)"
     ]
   }
 }

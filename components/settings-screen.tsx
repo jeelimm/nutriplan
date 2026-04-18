@@ -17,8 +17,8 @@ import {
 } from "@/lib/meal-store"
 import { toKg } from "@/lib/nutrition"
 
-const PRIMARY = "#48845f"
-const PRIMARY_BG = "#edf4ec"
+const PRIMARY = "var(--primary)"
+const PRIMARY_BG = "color-mix(in srgb, var(--primary) 10%, var(--card))"
 const FONT_STACK = "'Avenir Next', 'Avenir', 'Segoe UI', 'Noto Sans KR', 'Apple SD Gothic Neo', -apple-system, sans-serif"
 
 const GOAL_OPTIONS: { value: Goal; label: string; hint: string }[] = [
@@ -141,7 +141,7 @@ function EditButtons({ onCancel, onSave }: { onCancel: () => void; onSave: () =>
           flex: 1, height: 44, borderRadius: 16,
           border: "none",
           background: PRIMARY,
-          color: "#fff",
+          color: "var(--primary-foreground)",
           fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: FONT_STACK,
         }}
       >
@@ -233,7 +233,7 @@ function ChoiceCard({
           display: "flex", alignItems: "center", justifyContent: "center",
           marginLeft: 10, flexShrink: 0,
         }}>
-          <span style={{ color: "#fff", fontSize: 11, lineHeight: 1 }}>✓</span>
+          <span style={{ color: "var(--primary-foreground)", fontSize: 11, lineHeight: 1 }}>✓</span>
         </div>
       ) : null}
     </button>
@@ -274,10 +274,10 @@ function ExpandableRow({
           position: "relative",
           zIndex: isActive ? 1 : 0,
           ...(isActive ? {
-            background: destructive ? "#fdecea" : PRIMARY_BG,
-            borderTop: `1px solid ${destructive ? "rgba(220,38,38,0.35)" : PRIMARY}`,
-            borderBottom: `1px solid ${destructive ? "rgba(220,38,38,0.35)" : PRIMARY}`,
-            boxShadow: "inset 0 0 0 1px rgba(72,132,95,0.08)",
+            background: destructive ? "color-mix(in srgb, var(--destructive) 10%, var(--card))" : PRIMARY_BG,
+            borderTop: destructive ? "1px solid color-mix(in srgb, var(--destructive) 35%, transparent)" : `1px solid ${PRIMARY}`,
+            borderBottom: destructive ? "1px solid color-mix(in srgb, var(--destructive) 35%, transparent)" : `1px solid ${PRIMARY}`,
+            boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--primary) 8%, transparent)",
             margin: "-1px 0",
           } : {}),
         }}
@@ -1001,7 +1001,7 @@ function DestructiveConfirm({
   onConfirm: () => void
 }) {
   return (
-    <div style={{ borderRadius: 14, background: "#fdecea", padding: 14, border: "1px solid rgba(220,38,38,0.2)" }}>
+    <div style={{ borderRadius: 14, background: "color-mix(in srgb, var(--destructive) 10%, var(--card))", padding: 14, border: "1px solid color-mix(in srgb, var(--destructive) 20%, transparent)" }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
         <div style={{
           width: 18, height: 18, borderRadius: "50%",
@@ -1009,7 +1009,7 @@ function DestructiveConfirm({
           display: "flex", alignItems: "center", justifyContent: "center",
           flexShrink: 0, marginTop: 2,
         }}>
-          <span style={{ color: "#fff", fontSize: 11, fontWeight: 700, lineHeight: 1 }}>!</span>
+          <span style={{ color: "var(--destructive-foreground)", fontSize: 11, fontWeight: 700, lineHeight: 1 }}>!</span>
         </div>
         <div>
           <div style={{ fontSize: 15, fontWeight: 600, color: "var(--foreground)", marginBottom: 4, fontFamily: "'Avenir Next', 'Avenir', 'Segoe UI', -apple-system, sans-serif" }}>{title}</div>
@@ -1038,7 +1038,7 @@ function DestructiveConfirm({
             flex: 1, height: 44, borderRadius: 16,
             border: "none",
             background: "var(--destructive)",
-            color: "#fff",
+            color: "var(--destructive-foreground)",
             fontSize: 15, fontWeight: 600, cursor: "pointer",
             fontFamily: "'Avenir Next', 'Avenir', 'Segoe UI', -apple-system, sans-serif",
           }}
