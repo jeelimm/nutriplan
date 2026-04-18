@@ -13,7 +13,8 @@
       "Bash(grep *)",
       "Bash(git fetch *)",
       "mcp__claude_ai_Notion__notion-search",
-      "Bash(./run-prompts.sh *)"
+      "Bash(./run-prompts.sh *)",
+      "mcp__claude_ai_Notion__notion-fetch"
     ]
   }
 }

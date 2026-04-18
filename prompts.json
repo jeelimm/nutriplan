@@ -1,5 +1,5 @@
 {
-  "feature": "fix-day-selector-dark-mode-highlight",
+  "feature": "fix-day-selector",
   "branch": "feature/fix-day-selector-dark-mode-highlight",
   "prompts": [
     "In `components/daily-view.tsx`, locate the `cn()` call for the active day chip button (around line 497–502). The current active state class string is: `\"border-primary bg-primary/15 text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.5)]\"`.\n\nChange it to: `\"border-primary bg-primary/15 dark:bg-primary/30 text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.5)] dark:shadow-none\"`.\n\nDo NOT change any other part of the file. Do NOT change the unselected chip styles, layout, or any other component.\n\nVerify: `npm run build` passes with no TypeScript errors."
