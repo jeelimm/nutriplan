@@ -798,7 +798,7 @@ export function Onboarding() {
       })
       if (!response.ok) throw new Error("Request failed")
       const data = (await response.json()) as Partial<IngredientOption>
-      if (!data.name || !data.category || !data.cost) throw new Error("Invalid response")
+      if (typeof data.name !== "string" || !data.name.trim() || typeof data.category !== "string" || !data.category.trim()) throw new Error("Invalid response")
 
       ingredientCatalog.push({
         name: data.name,
@@ -807,7 +807,7 @@ export function Onboarding() {
         protein: Number(data.protein) || 0,
         carbs: Number(data.carbs) || 0,
         fat: Number(data.fat) || 0,
-        cost: data.cost,
+        cost: Number(data.cost) || 0,
       })
       addIngredientFromSearch(data.name)
     } catch {
