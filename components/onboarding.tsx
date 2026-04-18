@@ -1682,18 +1682,20 @@ export function Onboarding() {
                 You can fine-tune your target weight and pace on the next step.
               </OnboardingFieldNote>
 
-              <div className="space-y-2.5 pt-0.5">
-                <OnboardingPrimaryCta
-                  className={cn(
-                    selectedGoal
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                  )}
-                  onClick={moveToNextStep}
-                  disabled={!selectedGoal}
-                >
-                  Continue with this goal
-                </OnboardingPrimaryCta>
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-200",
+                  selectedGoal ? "max-h-[72px] opacity-100" : "max-h-0 opacity-0"
+                )}
+              >
+                <div className="space-y-2.5 pt-0.5">
+                  <OnboardingPrimaryCta
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={moveToNextStep}
+                  >
+                    Continue — {goals.find(g => g.id === selectedGoal)?.label} →
+                  </OnboardingPrimaryCta>
+                </div>
               </div>
             </CardContent>
           </OnboardingMainCard>
