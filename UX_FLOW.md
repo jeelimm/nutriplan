@@ -287,9 +287,9 @@ Persisted to `localStorage` via `zustand/middleware/persist`. Only a subset is p
 | **Caller** | `generateMealPlan()` in `lib/meal-store.ts` |
 | **Triggered from** | `MealPlanConfig.handleComplete()`, `DailyView.handleRegenerateFromProfile()`, `SettingsScreen.handleRegenerate()`, "Try again" error button in `DailyView` |
 | **Payload** | `weight`, `bodyFat`, `muscleMass`, `unit`, `goal`, `dietType`, `activityLevel`, `mealsPerDay`, `dailyCalories`, `macros`, `selectedIngredients`, `unitSystem`, `language`, `cuisinePreference` |
-| **What it does** | Calls Claude (`claude-haiku-4-5-20251001`) to generate 3 breakfast + 3 lunch + 3 dinner options, then enriches with Open Food Facts nutrition data (parallel lookups, 3000ms timeout), then builds a 7-day rotation |
-| **Returns** | `{ days: DayPlan[] }` — each day has `day` (name), `meals[]` (name, calories, protein, carbs, fat, ingredients, recipe, `isEstimated: boolean`) |
-| **Timeout** | Claude: 35s; OFF per lookup: 3s |
+| **What it does** | Calls Claude (`claude-haiku-4-5-20251001`) to generate 3 breakfast + 3 lunch + 3 dinner options, then builds a 7-day rotation |
+| **Returns** | `{ days: DayPlan[] }` — each day has `day` (name), `meals[]` (name, calories, protein, carbs, fat, ingredients, recipe) |
+| **Timeout** | Claude: 35s |
 | **Error handling** | Returns `{ error, details }` with status 500 |
 
 ### `POST /api/swap-meal`

@@ -1,11 +1,26 @@
 {
-  "feature": "Add Diet Type and Meals Per Day to Edit Profile modal in daily-view",
-  "branch": "feature/ux-improvements",
+  "feature": "Onboarding UX improvements",
+  "branch": "feature/onboarding-ux",
   "prompts": [
     {
-      "id": "fix-04-edit-profile-modal",
-      "description": "Add Diet Type and Meals Per Day panels to the Edit Profile modal in daily-view.tsx",
-      "prompt": "In components/daily-view.tsx, find the showEditProfileModal section (around line 770). It has three settings-section-panel blocks: 'Basics', 'Body stats', and 'Weekly context'. After the 'Weekly context' panel's closing tag and before the Save/Cancel buttons, add two new settings-section-panel blocks:\n\nPanel A — Diet Type:\n- Header dot + label: 'Diet type'\n- Description: 'Controls the type of meals generated in your plan.'\n- Read components/onboarding.tsx to find the dietTypes array and reuse the exact same values and labels\n- Render as choice cards using the same pattern as settings-screen.tsx Goal/Activity panels\n- selected = editDietType state variable (check if it exists in daily-view.tsx; if not, add useState initialized to userProfile.dietType)\n- onClick: setEditDietType(item.id)\n- Use settings-choice-card, settings-choice-card-active, settings-choice-card-idle classes\n\nPanel B — Meals Per Day:\n- Header dot + label: 'Meals per day'\n- Description: 'How many meals to split your daily calories across.'\n- Render [3, 4, 5] as a flex row of buttons\n- selected = editMealsPerDay state variable (check if it exists; if not, add useState initialized to userProfile.mealsPerDay)\n- onClick: setEditMealsPerDay(n)\n- Style: settings-chip + settings-chip-active/idle classes, flex-1\n\nAlso ensure that when the Save button is clicked, editDietType and editMealsPerDay are included in the setUserProfile call alongside the existing fields. Find the save handler in daily-view.tsx and add these two fields.\n\nDo not change any other logic."
+      "id": 1,
+      "description": "Fix onboarding input field visibility",
+      "prompt": "In the onboarding flow, update all input fields to improve visibility. Apply these exact styles: border color #C8BDB0, text color #1A1A1A, placeholder color #8C8279, focus border color #4A7C59. Search for all input elements within the onboarding components (look in components/onboarding/ or similar) and apply consistent styling. Do not change any logic or layout — style only."
+    },
+    {
+      "id": 2,
+      "description": "Make Quick Estimate the default onboarding path",
+      "prompt": "In the onboarding flow, make Quick Estimate (body type estimation) the default selected path instead of InBody precision mode. The Quick Estimate option should be visually selected/highlighted by default when the user first sees the onboarding method selection screen. InBody mode should still be accessible but not the default. Do not remove any existing functionality."
+    },
+    {
+      "id": 3,
+      "description": "Enable calorie and macro calculation from Quick Estimate inputs",
+      "prompt": "Ensure that when a user completes the Quick Estimate onboarding path, their inputs (body type, height, weight, age, gender, activity level, goal) are used to calculate estimated calories and macros using the Katch-McArdle formula with LBM-based protein targets. If this calculation is currently only triggered by InBody inputs, extend it to also handle Quick Estimate inputs. The output should populate the same calorie and macro targets used for meal plan generation."
+    },
+    {
+      "id": 4,
+      "description": "Add option to enter detailed stats later from Settings",
+      "prompt": "In the Settings screen, add a section that allows users who completed Quick Estimate onboarding to optionally enter precise body composition data later (e.g. body fat percentage, muscle mass from InBody). This should update their calorie and macro targets when saved. Label it something like 'Update Body Stats' or 'Enter Detailed Measurements'. Keep it visually consistent with the existing settings UI."
     }
   ]
 }

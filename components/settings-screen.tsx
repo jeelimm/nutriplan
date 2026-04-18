@@ -232,9 +232,7 @@ export function SettingsScreen() {
       next.dietType,
       next.sex ?? "male",
       targetKg,
-      next.weightLossPace ?? null,
-      next.height ?? null,
-      next.age ?? null
+      next.weightLossPace ?? null
     )
     setUserProfile({
       ...next,
@@ -282,7 +280,7 @@ export function SettingsScreen() {
       setBodyStatsError("Enter a muscle mass greater than 0.")
       return
     }
-    updateNutritionTargets({ weight: w, bodyFat: bf, muscleMass: mm, dietType: editDietType, mealsPerDay: editMealsPerDay })
+    updateNutritionTargets({ weight: w, bodyFat: bf, muscleMass: mm, dietType: editDietType, mealsPerDay: editMealsPerDay, usedQuickEstimate: false })
     setBodyStatsOpen(false)
     setWeightInput("")
     setBodyFatInput("")
@@ -292,6 +290,7 @@ export function SettingsScreen() {
   }
 
   const hasDetailedStats = userProfile.bodyFat > 0 && userProfile.muscleMass > 0
+  const isQuickEstimateUser = userProfile.usedQuickEstimate === true
 
   return (
     <div className="app-shell bg-background px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-28">
@@ -558,30 +557,40 @@ export function SettingsScreen() {
 
         {onboardingComplete && <Card className="bridge-section">
           <CardHeader className="space-y-1 px-5 pt-5 pb-0 sm:px-6">
-            <CardTitle>Refine your targets</CardTitle>
+            <CardTitle>{isQuickEstimateUser && !hasDetailedStats ? "Update Body Stats" : "Refine your targets"}</CardTitle>
             <CardDescription>
-              Your current targets are a solid starting point. Detailed body stats can fine-tune them further.
+              {isQuickEstimateUser && !hasDetailedStats
+                ? "Your calorie and macro targets are based on estimates. Enter your precise measurements to get more accurate results."
+                : "Your current targets are a solid starting point. Detailed body stats can fine-tune them further."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3.5 px-5 py-5 sm:px-6">
+            {isQuickEstimateUser && !hasDetailedStats && !bodyStatsOpen && (
+              <div className="bridge-note-strip">
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#b77749]" />
+                <span>You used Quick Estimate during setup. Enter measurements from an InBody scan or smart scale to unlock more accurate targets.</span>
+              </div>
+            )}
             {!bodyStatsOpen ? (
               <div className="settings-section-panel space-y-3.5">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#b77749]" />
                     <span className="text-sm font-semibold text-foreground">
-                      {hasDetailedStats ? "Update body metrics" : "Add detailed body metrics"}
+                      {hasDetailedStats ? "Update body metrics" : "Enter Detailed Measurements"}
                     </span>
                   </div>
                   <p className="text-sm leading-6 text-muted-foreground">
                     {hasDetailedStats
                       ? `Currently using ${userProfile.weight}${userProfile.unit}, ${userProfile.bodyFat}% body fat, ${userProfile.muscleMass}${userProfile.unit} muscle mass. Enter new measurements to recalculate your targets.`
-                      : "Enter your weight, body fat %, and muscle mass from an InBody scan, smart scale, or your best estimate to get more accurate calorie and macro targets."}
+                      : isQuickEstimateUser
+                        ? "Enter your weight, body fat %, and muscle mass from an InBody scan or smart scale to replace your estimated targets with precise ones."
+                        : "Enter your weight, body fat %, and muscle mass from an InBody scan, smart scale, or your best estimate to get more accurate calorie and macro targets."}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Button
-                    variant="outline"
+                    variant={isQuickEstimateUser && !hasDetailedStats ? "default" : "outline"}
                     className="h-12 min-h-[44px] flex-1"
                     onClick={() => {
                       setWeightInput(userProfile.weight > 0 ? String(userProfile.weight) : "")
@@ -594,7 +603,7 @@ export function SettingsScreen() {
                     }}
                   >
                     <ChevronDown className="mr-2 h-4 w-4" />
-                    {hasDetailedStats ? "Update metrics" : "Add detailed metrics"}
+                    {hasDetailedStats ? "Update metrics" : isQuickEstimateUser ? "Enter precise measurements" : "Add detailed metrics"}
                   </Button>
                   {bodyStatsSaved && (
                     <span className="flex items-center gap-1 text-sm text-primary">
