@@ -1,11 +1,11 @@
 {
-  "feature": "fix-cost-validation",
-  "branch": "feature/fix-cost-validation",
+  "feature": "fix-duplicate-ingredient",
+  "branch": "feature/fix-duplicate-ingredient",
   "prompts": [
     {
       "id": "1",
-      "description": "Fix cost: 0 validation bug in fetchIngredientViaClaude",
-      "prompt": "In components/onboarding.tsx, make exactly two changes inside the fetchIngredientViaClaude function:\n\n1. Find this exact line:\n   `if (!data.name || !data.category || !data.cost) throw new Error(\"Invalid response\")`\n   Replace it with:\n   `if (typeof data.name !== \"string\" || !data.name.trim() || typeof data.category !== \"string\" || !data.category.trim()) throw new Error(\"Invalid response\")`\n\n2. Find this exact line inside the ingredientCatalog.push block:\n   `cost: data.cost,`\n   Replace it with:\n   `cost: Number(data.cost) || 0,`\n\nDo NOT change any other line in the file. Do NOT modify app/api/claude-nutrition/route.ts or any other file.\n\nVerify: npm run build passes with no TypeScript errors."
+      "description": "Guard ingredientCatalog.push with dedup check in fetchIngredientViaClaude",
+      "prompt": "In components/onboarding.tsx, inside the fetchIngredientViaClaude function, find the ingredientCatalog.push({...}) block (around line 803). Wrap ONLY the push call with a dedup guard. The result should look like:\n\n```\nif (!ingredientCatalog.some((item) => item.name === data.name)) {\n  ingredientCatalog.push({\n    name: data.name,\n    category: data.category,\n    calories: Number(data.calories) || 0,\n    protein: Number(data.protein) || 0,\n    carbs: Number(data.carbs) || 0,\n    fat: Number(data.fat) || 0,\n    cost: Number(data.cost) || 0,\n  })\n}\naddIngredientFromSearch(data.name)\n```\n\nThe addIngredientFromSearch(data.name) call must remain OUTSIDE the if block so it always runs.\n\nDo NOT change any other line in the file. Do NOT modify app/api/claude-nutrition/route.ts or any other file. Do NOT refactor ingredientCatalog to useState.\n\nVerify: npm run build passes with no TypeScript errors."
     }
   ]
 }
