@@ -1,11 +1,26 @@
 {
-  "feature": "remove-off-api",
-  "branch": "feature/remove-off-api",
+  "feature": "Onboarding UX improvements",
+  "branch": "feature/onboarding-ux",
   "prompts": [
     {
       "id": 1,
-      "description": "Remove OFF API integration and clean up related code",
-      "prompt": "Remove all Open Food Facts (OFF) API integration from the NutriPlan codebase. This includes: (1) Delete any API route files related to OFF (e.g. /api/food-search, /api/off-*, or similar). (2) Remove any OFF-related fetch calls, imports, or utility functions across the codebase. (3) Remove any OFF-related environment variables from .env.example or documentation (do NOT touch .env.local). (4) Clean up any components or hooks that reference OFF API results or loading states. (5) Ensure the Claude-based nutrition and meal plan generation remains fully intact and untouched. (6) Run a search for 'openfoodfacts' and 'OFF' across all files to make sure nothing is missed. After cleanup, verify the build passes with: npm run build."
+      "description": "Fix onboarding input field visibility",
+      "prompt": "In the onboarding flow, update all input fields to improve visibility. Apply these exact styles: border color #C8BDB0, text color #1A1A1A, placeholder color #8C8279, focus border color #4A7C59. Search for all input elements within the onboarding components (look in components/onboarding/ or similar) and apply consistent styling. Do not change any logic or layout — style only."
+    },
+    {
+      "id": 2,
+      "description": "Make Quick Estimate the default onboarding path",
+      "prompt": "In the onboarding flow, make Quick Estimate (body type estimation) the default selected path instead of InBody precision mode. The Quick Estimate option should be visually selected/highlighted by default when the user first sees the onboarding method selection screen. InBody mode should still be accessible but not the default. Do not remove any existing functionality."
+    },
+    {
+      "id": 3,
+      "description": "Enable calorie and macro calculation from Quick Estimate inputs",
+      "prompt": "Ensure that when a user completes the Quick Estimate onboarding path, their inputs (body type, height, weight, age, gender, activity level, goal) are used to calculate estimated calories and macros using the Katch-McArdle formula with LBM-based protein targets. If this calculation is currently only triggered by InBody inputs, extend it to also handle Quick Estimate inputs. The output should populate the same calorie and macro targets used for meal plan generation."
+    },
+    {
+      "id": 4,
+      "description": "Add option to enter detailed stats later from Settings",
+      "prompt": "In the Settings screen, add a section that allows users who completed Quick Estimate onboarding to optionally enter precise body composition data later (e.g. body fat percentage, muscle mass from InBody). This should update their calorie and macro targets when saved. Label it something like 'Update Body Stats' or 'Enter Detailed Measurements'. Keep it visually consistent with the existing settings UI."
     }
   ]
 }
