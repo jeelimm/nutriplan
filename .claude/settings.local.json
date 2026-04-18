@@ -10,7 +10,10 @@
       "Bash(git commit *)",
       "Bash(git *)",
       "WebFetch(domain:api.anthropic.com)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(git fetch *)",
+      "mcp__claude_ai_Notion__notion-search",
+      "Bash(./run-prompts.sh *)"
     ]
   }
 }
