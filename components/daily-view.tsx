@@ -497,7 +497,7 @@ export function DailyView() {
                     className={cn(
                       "dashboard-day-chip",
                       idx === selectedDay
-                        ? "border-primary bg-primary/15 text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.5)]"
+                        ? "border-primary bg-primary/15 dark:bg-primary/30 text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.5)] dark:shadow-none"
                         : ""
                     )}
                     aria-label={`View ${dayPlan.day}`}

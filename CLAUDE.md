@@ -77,7 +77,7 @@ hooks/
 .claude/commands/
 ├── prd.md                          # /project:prd slash command
 ├── implement.md                    # /project:implement slash command
-└── ship.md                         # /project:ship slash command
+└── pipeline.md                     # /pipeline full automation command (PRD → prompts.json → execute)
 
 prompts.json                        # Current feature prompts consumed by run-prompts.sh
 run-prompts.sh                      # Automation script: runs prompts → build check → commit
@@ -264,17 +264,17 @@ This project uses a Claude Code automation pipeline for all feature development.
 ### How It Works
 
 ```
-/project:prd "feature description"
+/pipeline [--major] "feature description"
         ↓
-Product Agent generates PRD → saved to Notion
+Product Agent generates PRD → saved to Notion (NutriPlan_PRD_v{X.Y})
         ↓
-/project:implement (uses PRD output)
+Engineering Agent generates prompts.json (feature/branch/prompts wrapper)
         ↓
-Engineering Agent generates Cursor prompts → updates prompts.json
+User checkpoint: yes / edit / no
         ↓
 ./run-prompts.sh
         ↓
-Build check → auto commit → push
+Claude Code implements → build check → commit → push
 ```
 
 ### `run-prompts.sh` Behavior
@@ -291,9 +291,11 @@ Build check → auto commit → push
 
 | Command | What it does |
 |---------|-------------|
-| `/project:prd` | Generate a PRD from a feature request and save to Notion |
-| `/project:implement` | Generate ordered Cursor prompts from a PRD, write to prompts.json |
-| `/project:ship` | Run prd + implement end-to-end in one command |
+| `/pipeline` | **Full end-to-end: PRD → Notion → prompts.json → run-prompts.sh** (primary command) |
+| `/project:prd` | Generate a PRD only (no prompts.json, no execution) |
+| `/project:implement` | Generate prompts.json from an existing PRD (no execution) |
+
+Use `/pipeline` for the normal feature loop. Use the other two only when you need to split the flow (e.g. draft a PRD today, implement tomorrow).
 
 ### Git Rules for Automation
 - Always `git commit` before running any automation script.
@@ -317,91 +319,32 @@ Build check → auto commit → push
 
 ---
 
+## Pipeline Command
+
+Full automation pipeline is available via Claude Code custom command:
+
+```
+/pipeline [--major] "<feature or bug description>"
+```
+
+**Flow:**
+1. **Product Agent** — generates PRD, saves to Notion (Private → NutriPlan page) as `NutriPlan_PRD_v{X.Y}`, also saves local copy at `docs/prd/`.
+2. **Engineering Agent** — reads PRD, generates `prompts.json` (wrapper structure: `{ feature, branch, prompts: [...] }`), overwrites root file.
+3. **Execute** — runs `./run-prompts.sh` after user confirms.
+
+**Versioning:**
+- Minor (+0.1) auto-incremented by scanning Notion for latest `NutriPlan_PRD_v*`.
+- Major (+1.0) requires explicit `--major` flag.
+- Always creates a new Notion page — never overwrites existing PRDs.
+
+**Checkpoint:** After Step 2, user must confirm `yes` / `edit` / `no` before execution.
+
+**Source:** `.claude/commands/pipeline.md`
+
+---
+
 ## Agent System Prompts
 
-These prompts define how the Product Agent and Engineering Agent behave.
-They are used internally by the slash commands below.
+The Product Agent and Engineering Agent prompts are defined inline inside `.claude/commands/pipeline.md`. That file is the single source of truth — do not duplicate the prompts here. If you need to adjust agent behavior, edit `pipeline.md` directly.
 
-### Product Agent
-
-```
-You are a senior Product Manager at a fast-moving startup.
-Convert raw feature requests, bug reports, or ideas into concise, actionable PRDs.
-
-Stack context: Next.js app, React, Tailwind CSS, Zustand for state,
-Anthropic API for AI features, deployed on Vercel.
-App: NutriPlan — AI-powered calorie and meal planning app.
-Users: health-conscious individuals tracking calories, macros, and meal plans.
-
-Output format (plain text, no markdown # headers):
-
-OVERVIEW
-One sentence: what this is and why it matters to the user.
-
-USER STORY
-As a [user], I want to [action] so that [outcome].
-
-ACCEPTANCE CRITERIA
-- [specific, testable criterion]
-- [3-5 criteria total]
-
-SCOPE (IN)
-- [what is included, 2-4 bullets]
-
-SCOPE (OUT)
-- [explicitly excluded to keep scope tight, 2-3 bullets]
-
-OPEN QUESTIONS
-- [unknowns the engineer needs to resolve, 1-3 items]
-
-Rules:
-- No fluff. PM-first: user value over technical details.
-- Keep it tight. If scope creeps, cut it.
-- Think MVP. Flag overbuilding risks in SCOPE (OUT).
-```
-
-### Engineering Agent
-
-```
-You are a senior frontend engineer specializing in precise,
-copy-paste ready prompts for Cursor AI IDE.
-
-Stack: Next.js 16.2, React 19, TypeScript, Tailwind v4, shadcn/ui,
-Zustand v5, Anthropic SDK, deployed on Vercel.
-
-File structure reference:
-- app/page.tsx — root, controls currentStep
-- app/api/generate-meal-plan/route.ts — generates 7-day meal plan via Claude
-- app/api/swap-meal/route.ts — generates 3 swap candidates for a meal via Claude
-- app/api/claude-nutrition/route.ts — looks up nutrition data for a custom ingredient
-- components/onboarding.tsx, meal-plan-config.tsx, daily-view.tsx,
-  grocery-list.tsx, meal-swap-sheet.tsx, settings-screen.tsx
-- lib/meal-store.ts — all global state and types
-- lib/nutrition.ts — calorie/macro calculations (Katch-McArdle)
-
-Given a PRD, output 3-5 ordered Cursor prompts implementing it incrementally.
-Each prompt must be small, safe, and independently executable.
-
-Output format:
-
-PROMPT 1 — [what it does in 5 words]
-[Exact prompt to paste into Cursor. Start with "In [filepath], ...".
-Mention exact component names, prop names, and behavior.
-Never bundle UI + logic + state in one prompt.]
-
-PROMPT 2 — [what it does]
-[prompt text]
-
-(continue for all prompts)
-
-VERIFICATION STEPS
-After running all prompts, check:
-- [specific thing to verify in browser]
-- [specific thing to verify in code/console]
-
-Rules:
-- One concern per prompt. Atomic changes only.
-- Reference exact file paths from the file structure above.
-- If a new file is needed, that is its own prompt.
-- Flag any risk of breaking existing state or components.
-```
+Legacy standalone commands (`/project:prd`, `/project:implement`) share the same agent prompts via their own command files in `.claude/commands/`.
