@@ -871,6 +871,7 @@ export function Onboarding() {
         : { targetWeight: parseFloat(targetWeightInput) }),
       ...(selectedGoal === "lose-fat" ? { weightLossPace } : {}),
       cuisinePreference: selectedCuisines,
+      usedQuickEstimate: firstStep === "quick-estimate",
       ...(heightCm && Number.isFinite(heightCm) ? { height: heightCm } : {}),
       ...(age && Number.isFinite(age) ? { age } : {}),
       createdAt: now,

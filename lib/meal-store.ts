@@ -32,6 +32,7 @@ export interface UserProfile {
   cuisinePreference?: CuisinePreference[]
   height?: number
   age?: number
+  usedQuickEstimate?: boolean
   weight: number
   bodyFat: number
   muscleMass: number
@@ -226,6 +227,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
     weightLossPace: ensureWeightLossPace(profile.weightLossPace),
     bodyType: ensureBodyType(profile.bodyType),
     cuisinePreference: ensureCuisinePreference(profile.cuisinePreference),
+    usedQuickEstimate: profile.usedQuickEstimate === true ? true : undefined,
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
     muscleMass: toNumber(profile.muscleMass, 0),
