@@ -1,6 +1,6 @@
 ---
 description: "Full pipeline: idea → PRD (Notion) → prompts.json → run-prompts.sh"
-argument-hint: "[--major] <feature or bug description>"
+argument-hint: "[--major] [--yes] <feature or bug description>"
 allowed-tools: ["Bash", "Read", "Write", "Edit", "mcp__notion__*"]
 ---
 
@@ -8,14 +8,16 @@ allowed-tools: ["Bash", "Read", "Write", "Edit", "mcp__notion__*"]
 
 Input: **$ARGUMENTS**
 
-Parse the input:
-- If it starts with `--major`, set `VERSION_BUMP=major` and strip the flag from the description.
+Parse the input flags:
+- If contains `--major`, set `VERSION_BUMP=major`. Strip flag from description.
 - Otherwise, set `VERSION_BUMP=minor`.
+- If contains `--yes`, set `AUTO_CONFIRM=true`. Strip flag from description.
+- Otherwise, set `AUTO_CONFIRM=false`.
 - The remaining text is the **feature description**.
 
 Before starting, state in one sentence: *"This solves: ___"*. If the description is too vague to answer that, STOP and ask the user one clarifying question.
 
-Execute the 3 steps below **in order**. Do not skip.
+Execute the 4 steps below **in order**. Do not skip.
 
 ---
 
@@ -47,30 +49,87 @@ You are a senior product manager writing a PRD for a vibe-coded Next.js app (Nut
 
 **Action:**
 
-1. **Determine version number:**
-   - Use Notion MCP to search the "NutriPlan" page in the user's Private workspace for child pages matching `NutriPlan_PRD_v*`.
+1. **Determine version number and feature slug:**
+   - Use Notion MCP to search the "NutriPlan" page in the user's Private workspace for child pages matching `NutriPlan_PRD_v*` (exclude `NutriPlan_Master_PRD`).
    - Parse all version numbers, find the highest (e.g. `v1.3`).
    - If `VERSION_BUMP=minor`: new version = highest + 0.1 (e.g. `v1.3 → v1.4`).
    - If `VERSION_BUMP=major`: new version = floor(highest) + 1.0 (e.g. `v1.3 → v2.0`).
    - If no existing PRD found, start at `v1.0`.
-   - State the version decision clearly: *"Previous: v1.3 | Bump: minor | New: v1.4"*.
+   - **Generate feature slug** from the description:
+     - kebab-case, max 3 words
+     - Capture the core feature/fix, not verbs (e.g. `onboarding-ux`, `meal-swap`, `settings-redesign`)
+     - For bug fixes, prefix with `fix-` (e.g. `fix-day-selector`)
+   - State the decision clearly: *"Previous: v1.3 | Bump: minor | New: v1.4 | Slug: onboarding-ux"*.
 
 2. **Generate the PRD** per the output contract above.
 
-3. **Save to Notion:**
+3. **Save version snapshot to Notion:**
    - Parent: the "NutriPlan" page inside the user's Private workspace.
-   - Title format: `NutriPlan_PRD_v{X.Y}` — exactly this format. No date, no feature name, no extra suffix.
-   - Always create as a NEW child page. Never overwrite an existing PRD.
+   - Title format: `NutriPlan_PRD_v{X.Y}_{slug}` — exactly this format.
+     - Example: `NutriPlan_PRD_v1.4_onboarding-ux`
+   - Always create as a NEW child page. Never overwrite.
 
-4. **Save local copy** at `docs/prd/NutriPlan_PRD_v{X.Y}.md` for Step 2 to read.
+4. **Save local copy** at `docs/prd/NutriPlan_PRD_v{X.Y}_{slug}.md` for Step 2 to read.
 
-5. **Print** the Notion page URL, the version number, and a one-line PRD summary.
+5. **Print** the Notion page URL, version, slug, and a one-line PRD summary.
 
-If Notion MCP fails: save locally only, print a warning, continue to Step 2. Do NOT abort.
+If Notion MCP fails: save locally only, print a warning, continue. Do NOT abort.
 
 ---
 
-## STEP 2 — Engineering Agent
+## STEP 2 — Master PRD Update
+
+Update or create the master PRD document that tracks the app's cumulative state.
+
+**Action:**
+
+1. **Check if master exists:**
+   - Use Notion MCP to search the "NutriPlan" page for a child page titled exactly `NutriPlan_Master_PRD`.
+
+2. **If master does NOT exist — create it:**
+   - Title: `NutriPlan_Master_PRD`
+   - Initial content template:
+     ```markdown
+     # NutriPlan — Master PRD
+
+     Last updated: {today's date YYYY-MM-DD}
+     Latest version: v{X.Y}_{slug}
+
+     ## Current App State
+     {one-paragraph summary of what the app does today, derived from the current version PRD}
+
+     ## Shipped Features (by version)
+     - v{X.Y} {slug} — {one-line summary from the current PRD}
+
+     ## Architecture (pinned)
+     - Stack: Next.js 16.2, React 19, TypeScript, Tailwind v4, shadcn/ui, Zustand, Anthropic SDK
+     - Key flows: Onboarding → Meal Plan Config → Daily View → Grocery List
+     - Entry points:
+       - Generate meal plan: `app/api/generate-meal-plan/route.ts`
+       - Swap meal: `app/api/swap-meal/route.ts`
+       - Nutrition lookup: `app/api/claude-nutrition/route.ts`
+     - Global state: `lib/meal-store.ts` (Zustand with persist)
+     ```
+
+3. **If master exists — update it:**
+   - Fetch current content.
+   - Update `Last updated:` to today's date.
+   - Update `Latest version:` to the new `v{X.Y}_{slug}`.
+   - Add a new line to `## Shipped Features` section at the top (most recent first):
+     ```
+     - v{X.Y} {slug} — {one-line summary}
+     ```
+   - If `## Current App State` section's summary is outdated due to this change (e.g. core flow altered, new major feature), rewrite that paragraph. Otherwise leave it.
+   - Do NOT touch `## Architecture (pinned)` unless the stack itself changed.
+   - Overwrite the Notion page with the updated content.
+
+4. **Print** "Master PRD updated: {notion_url}" or "Master PRD created: {notion_url}".
+
+If Notion MCP fails: print a warning but continue. The version snapshot from Step 1 is the source of truth; master is a convenience layer.
+
+---
+
+## STEP 3 — Engineering Agent
 
 Adopt this role for this step only:
 
@@ -119,37 +178,37 @@ A plain array at the top level BREAKS the pipeline. The wrapper object is non-ne
 - Every prompt maps to at least one PRD Acceptance Criterion? If not, justify or delete.
 - Every AC has at least one covering prompt? If not, add one.
 - Wrapper object correct (`feature` / `branch` / `prompts`)?
-- Branch name matches the feature name?
+- `feature` matches the slug from Step 1 (e.g. `onboarding-ux`)?
+- `branch` is `feature/{slug}`?
 </engineering_agent_system_prompt>
 
 **Action:**
 
-1. Read the PRD from `docs/prd/NutriPlan_PRD_v{X.Y}.md` (from Step 1).
-2. Generate `prompts.json` per the contract.
+1. Read the PRD from `docs/prd/NutriPlan_PRD_v{X.Y}_{slug}.md` (from Step 1).
+2. Generate `prompts.json` per the contract. Use the slug from Step 1 as the `feature` value.
 3. **Overwrite** the existing `prompts.json` at the project root.
 4. Print:
    - The full generated `prompts.json`.
    - A numbered one-line summary of each prompt.
    - Total prompt count.
 
-**Checkpoint — ask the user:**
-> "prompts.json 생성 완료. {N}개 프롬프트. 실행할까? (yes / edit / no)"
-
-- `yes` → go to Step 3.
-- `edit` → stop, let user modify manually, then user re-runs `./run-prompts.sh` themselves.
-- `no` → stop.
+**Checkpoint:**
+- If `AUTO_CONFIRM=true`: skip checkpoint. Print "Auto-confirm enabled — proceeding to execution." Go to Step 4.
+- If `AUTO_CONFIRM=false`: ask the user:
+  > "prompts.json 생성 완료. {N}개 프롬프트. 실행할까? (yes / edit / no)"
+  - `yes` → go to Step 4.
+  - `edit` → stop, let user modify manually, then user re-runs `./run-prompts.sh` themselves.
+  - `no` → stop.
 
 ---
 
-## STEP 3 — Execute
-
-After user confirms `yes`:
+## STEP 4 — Execute
 
 1. Run `./run-prompts.sh` via Bash. Stream output.
 2. When done, report:
    - Feature branch name.
    - Last commit SHA.
    - Push status.
-3. Remind user: *"PR 만들고 main에 머지하면 끝. Notion PRD 링크: {url from Step 1}"*.
+3. Remind user: *"PR 만들고 main에 머지하면 끝. Notion PRD: {version snapshot url from Step 1} | Master: {master url from Step 2}"*.
 
 If `run-prompts.sh` fails mid-execution, stop and print the error. Do NOT retry automatically.
