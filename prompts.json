@@ -1,7 +1,11 @@
 {
-  "feature": "fix-day-selector",
-  "branch": "feature/fix-day-selector-dark-mode-highlight",
+  "feature": "fix-onboarding-arrows",
+  "branch": "feature/onboarding-flow",
   "prompts": [
-    "In `components/daily-view.tsx`, locate the `cn()` call for the active day chip button (around line 497–502). The current active state class string is: `\"border-primary bg-primary/15 text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.5)]\"`.\n\nChange it to: `\"border-primary bg-primary/15 dark:bg-primary/30 text-foreground shadow-[0_14px_26px_-24px_rgba(38,96,63,0.5)] dark:shadow-none\"`.\n\nDo NOT change any other part of the file. Do NOT change the unselected chip styles, layout, or any other component.\n\nVerify: `npm run build` passes with no TypeScript errors."
+    {
+      "id": "1",
+      "description": "Remove trailing → arrows from onboarding CTA labels",
+      "prompt": "In `components/onboarding.tsx`, remove the trailing ` →` from three CTA button labels.\n\nMake exactly these three replacements:\n\n1. Find: `Continue — {activityLevels.find(l => l.id === selectedActivityLevel)?.label} →`\n   Replace with: `Continue — {activityLevels.find(l => l.id === selectedActivityLevel)?.label}`\n\n2. Find: `Continue — {goals.find(g => g.id === selectedGoal)?.label} →`\n   Replace with: `Continue — {goals.find(g => g.id === selectedGoal)?.label}`\n\n3. Find: `Continue — {dietTypes.find(d => d.id === selectedDietType)?.label} →`\n   Replace with: `Continue — {dietTypes.find(d => d.id === selectedDietType)?.label}`\n\nDo NOT change anything else in the file.\n\nVerify: `npm run build` passes with no TypeScript errors."
+    }
   ]
 }
