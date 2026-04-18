@@ -595,6 +595,7 @@ export const useMealStore = create<MealStore>()(
         appPrefs: state.appPrefs,
         userProfile: state.userProfile,
         weekPlan: state.weekPlan,
+        selectedDay: state.selectedDay,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return
