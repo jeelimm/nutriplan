@@ -1604,18 +1604,20 @@ export function Onboarding() {
                 This helps us match your meal plan to how your week actually feels, not a perfect routine.
               </OnboardingFieldNote>
 
-              <div className="space-y-2.5 pt-0.5">
-                <OnboardingPrimaryCta
-                  className={cn(
-                    selectedActivityLevel
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                  )}
-                  onClick={moveToNextStep}
-                  disabled={!selectedActivityLevel}
-                >
-                  Continue with this activity
-                </OnboardingPrimaryCta>
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-200",
+                  selectedActivityLevel ? "max-h-[72px] opacity-100" : "max-h-0 opacity-0"
+                )}
+              >
+                <div className="space-y-2.5 pt-0.5">
+                  <OnboardingPrimaryCta
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={moveToNextStep}
+                  >
+                    Continue — {activityLevels.find(l => l.id === selectedActivityLevel)?.label} →
+                  </OnboardingPrimaryCta>
+                </div>
               </div>
             </CardContent>
           </OnboardingMainCard>
