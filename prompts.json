@@ -1,11 +1,11 @@
 {
-  "feature": "fix-onboarding-arrows",
-  "branch": "feature/onboarding-flow",
+  "feature": "fix-duplicate-ingredient",
+  "branch": "feature/fix-duplicate-ingredient",
   "prompts": [
     {
       "id": "1",
-      "description": "Remove trailing → arrows from onboarding CTA labels",
-      "prompt": "In `components/onboarding.tsx`, remove the trailing ` →` from three CTA button labels.\n\nMake exactly these three replacements:\n\n1. Find: `Continue — {activityLevels.find(l => l.id === selectedActivityLevel)?.label} →`\n   Replace with: `Continue — {activityLevels.find(l => l.id === selectedActivityLevel)?.label}`\n\n2. Find: `Continue — {goals.find(g => g.id === selectedGoal)?.label} →`\n   Replace with: `Continue — {goals.find(g => g.id === selectedGoal)?.label}`\n\n3. Find: `Continue — {dietTypes.find(d => d.id === selectedDietType)?.label} →`\n   Replace with: `Continue — {dietTypes.find(d => d.id === selectedDietType)?.label}`\n\nDo NOT change anything else in the file.\n\nVerify: `npm run build` passes with no TypeScript errors."
+      "description": "Guard ingredientCatalog.push with dedup check in fetchIngredientViaClaude",
+      "prompt": "In components/onboarding.tsx, inside the fetchIngredientViaClaude function, find the ingredientCatalog.push({...}) block (around line 803). Wrap ONLY the push call with a dedup guard. The result should look like:\n\n```\nif (!ingredientCatalog.some((item) => item.name === data.name)) {\n  ingredientCatalog.push({\n    name: data.name,\n    category: data.category,\n    calories: Number(data.calories) || 0,\n    protein: Number(data.protein) || 0,\n    carbs: Number(data.carbs) || 0,\n    fat: Number(data.fat) || 0,\n    cost: Number(data.cost) || 0,\n  })\n}\naddIngredientFromSearch(data.name)\n```\n\nThe addIngredientFromSearch(data.name) call must remain OUTSIDE the if block so it always runs.\n\nDo NOT change any other line in the file. Do NOT modify app/api/claude-nutrition/route.ts or any other file. Do NOT refactor ingredientCatalog to useState.\n\nVerify: npm run build passes with no TypeScript errors."
     }
   ]
 }

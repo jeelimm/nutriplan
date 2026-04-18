@@ -798,17 +798,19 @@ export function Onboarding() {
       })
       if (!response.ok) throw new Error("Request failed")
       const data = (await response.json()) as Partial<IngredientOption>
-      if (!data.name || !data.category || !data.cost) throw new Error("Invalid response")
+      if (typeof data.name !== "string" || !data.name.trim() || typeof data.category !== "string" || !data.category.trim()) throw new Error("Invalid response")
 
-      ingredientCatalog.push({
-        name: data.name,
-        category: data.category,
-        calories: Number(data.calories) || 0,
-        protein: Number(data.protein) || 0,
-        carbs: Number(data.carbs) || 0,
-        fat: Number(data.fat) || 0,
-        cost: data.cost,
-      })
+      if (!ingredientCatalog.some((item) => item.name === data.name)) {
+        ingredientCatalog.push({
+          name: data.name,
+          category: data.category,
+          calories: Number(data.calories) || 0,
+          protein: Number(data.protein) || 0,
+          carbs: Number(data.carbs) || 0,
+          fat: Number(data.fat) || 0,
+          cost: Number(data.cost) || 0,
+        })
+      }
       addIngredientFromSearch(data.name)
     } catch {
       window.alert("We couldn’t look up that ingredient right now. Try another name or pick from the list.")
