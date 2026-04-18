@@ -1329,13 +1329,13 @@ export function Onboarding() {
                 onClick={() => setEntryChosen(true)}
                 className={cn(
                   "group w-full rounded-[20px] border px-5 py-4 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
-                  "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#bfae95] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
+                  "border-[#5f7654] dark:border-primary bg-[#eef4e8] dark:bg-primary/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_30px_-24px_rgba(40,70,47,0.48)] hover:border-[#526847] dark:hover:border-primary hover:bg-[#f2f6ee] dark:hover:bg-primary/20"
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">Quick Start</div>
-                    <div className="mt-0.5 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">Estimate your body type</div>
+                    <div className="text-[15px] font-semibold text-[#243128] dark:text-foreground">Quick Start</div>
+                    <div className="mt-0.5 text-sm leading-5 text-[#4f5e56] dark:text-muted-foreground">Estimate your body type</div>
                   </div>
                   <span className={cn(onboardingUi.stepChip, "shrink-0 mt-0.5")}>2 min</span>
                 </div>
@@ -1346,13 +1346,13 @@ export function Onboarding() {
                 onClick={() => { setFirstStep("body"); setStep("body") }}
                 className={cn(
                   "group w-full rounded-[20px] border px-5 py-4 text-left transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px",
-                  "border-[#5f7654] dark:border-primary bg-[#eef4e8] dark:bg-primary/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_30px_-24px_rgba(40,70,47,0.48)] hover:border-[#526847] dark:hover:border-primary hover:bg-[#f2f6ee] dark:hover:bg-primary/20"
+                  "border-[#d8ccb9] dark:border-border bg-[#fffdf9] dark:bg-card shadow-[0_10px_22px_-26px_rgba(40,49,43,0.28)] hover:border-[#bfae95] dark:hover:border-primary/40 hover:bg-[#fffaf4] dark:hover:bg-secondary hover:shadow-[0_14px_28px_-24px_rgba(40,49,43,0.32)]"
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-semibold text-[#243128] dark:text-foreground">Precise Setup</div>
-                    <div className="mt-0.5 text-sm leading-5 text-[#4f5e56] dark:text-muted-foreground">Enter exact measurements</div>
+                    <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">Precise Setup</div>
+                    <div className="mt-0.5 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">Enter exact measurements</div>
                   </div>
                   <span className={cn(onboardingUi.stepChip, "shrink-0 mt-0.5")}>5 min</span>
                 </div>
