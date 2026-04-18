@@ -30,6 +30,7 @@ export interface UserProfile {
   weightLossPace?: WeightLossPace
   bodyType?: BodyType
   cuisinePreference?: CuisinePreference[]
+  budget?: 'low' | 'medium' | 'high'
   height?: number
   age?: number
   usedQuickEstimate?: boolean
@@ -209,6 +210,11 @@ function ensureBodyType(value: unknown): BodyType | undefined {
   return undefined
 }
 
+function ensureBudget(value: unknown): 'low' | 'medium' | 'high' | undefined {
+  if (value === 'low' || value === 'medium' || value === 'high') return value
+  return undefined
+}
+
 function normalizeUserProfile(raw: unknown): UserProfile | null {
   if (!raw || typeof raw !== 'object') return null
   const profile = raw as Partial<UserProfile> & { bodyFatPercentage?: number }
@@ -227,6 +233,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
     weightLossPace: ensureWeightLossPace(profile.weightLossPace),
     bodyType: ensureBodyType(profile.bodyType),
     cuisinePreference: ensureCuisinePreference(profile.cuisinePreference),
+    budget: ensureBudget(profile.budget),
     usedQuickEstimate: profile.usedQuickEstimate === true ? true : undefined,
     weight: toNumber(profile.weight, 0),
     bodyFat: toNumber(profile.bodyFat ?? profile.bodyFatPercentage, 0),
