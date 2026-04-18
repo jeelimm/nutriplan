@@ -630,10 +630,6 @@ export function Onboarding() {
         ? getWeightInKg(targetWeightInput)
         : undefined
     const twArg = tw != null && Number.isFinite(tw) ? tw : null
-    const heightCm = quickHeight
-      ? (unit === "lbs" ? parseFloat(quickHeight) * 2.54 : parseFloat(quickHeight))
-      : null
-    const age = quickAge ? parseFloat(quickAge) : null
     return useMealStore.getState().calculateMacros(
       weightKg,
       parseFloat(bodyFat),
@@ -642,9 +638,7 @@ export function Onboarding() {
       selectedDietType,
       sex,
       twArg,
-      selectedGoal === "lose-fat" ? weightLossPace : null,
-      heightCm && Number.isFinite(heightCm) ? heightCm : null,
-      age && Number.isFinite(age) ? age : null
+      selectedGoal === "lose-fat" ? weightLossPace : null
     )
   }, [
     weight,
@@ -657,8 +651,6 @@ export function Onboarding() {
     targetWeightSkipped,
     targetWeightInput,
     weightLossPace,
-    quickHeight,
-    quickAge,
   ])
 
   const handleDietTypeSelect = (newDietType: DietType) => {
@@ -856,9 +848,7 @@ export function Onboarding() {
       selectedDietType,
       sex,
       targetKg != null && Number.isFinite(targetKg) ? targetKg : null,
-      selectedGoal === "lose-fat" ? weightLossPace : null,
-      heightCm && Number.isFinite(heightCm) ? heightCm : null,
-      age && Number.isFinite(age) ? age : null
+      selectedGoal === "lose-fat" ? weightLossPace : null
     )
 
     const now = new Date().toISOString()

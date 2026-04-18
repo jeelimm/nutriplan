@@ -104,22 +104,20 @@ function splitRemainingCarbsFatKcal(
 }
 
 /**
- * LBM-based protein; remaining calories split by diet (after protein).
+ * Katch-McArdle BMR with LBM-based protein targets; remaining calories split by diet.
  * Calorie floor: male 1500, female 1200.
  *
- * When `bodyFat` is not provided (undefined), `bodyType` + `sex` are used to
- * estimate body fat % so that the Quick Estimate onboarding path can produce
- * valid targets without requiring detailed body composition inputs.
+ * Both the Quick Estimate path (body type → estimated body fat → LBM) and the
+ * InBody path (measured body fat → LBM) use Katch-McArdle so that protein and
+ * calorie targets are driven by lean body mass in all cases.
  *
- * When `heightCm` and `age` are provided, Mifflin-St Jeor BMR is used instead
- * of Katch-McArdle, giving a more accurate baseline for Quick Estimate users.
+ * When `bodyFat` is not provided, `bodyType` + `sex` are used to estimate body
+ * fat % via midpoint lookup tables.
  */
 export function calculateNutritionTargets(input: {
   weightKg: number
   bodyFat?: number
   bodyType?: BodyType
-  heightCm?: number
-  age?: number
   activityLevel: ActivityLevel
   goal: Goal
   dietType: DietType
@@ -138,17 +136,10 @@ export function calculateNutritionTargets(input: {
 
   const lbmForFormula = getLbmKgForNutrition(input.weightKg, resolvedBodyFat)
 
-  // Use Mifflin-St Jeor when height + age are available (Quick Estimate path),
-  // otherwise fall back to Katch-McArdle (InBody / detailed stats path).
-  let bmr: number
-  if (input.heightCm != null && Number.isFinite(input.heightCm) &&
-      input.age != null && Number.isFinite(input.age) && input.age > 0) {
-    const sexOffset = sex === "female" ? -161 : 5
-    bmr = 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + sexOffset
-  } else {
-    const bmrMultiplier = sex === "female" ? 0.9 : 1
-    bmr = 370 + 21.6 * lbmForFormula * bmrMultiplier
-  }
+  // Katch-McArdle: BMR = 370 + 21.6 × LBM(kg). Female multiplier (0.9) corrects
+  // for the slight tendency of the formula to overestimate for women.
+  const bmrMultiplier = sex === "female" ? 0.9 : 1
+  const bmr = 370 + 21.6 * lbmForFormula * bmrMultiplier
   const tdee = bmr * ACTIVITY_MULTIPLIERS[input.activityLevel]
 
   let adjustedCalories: number
