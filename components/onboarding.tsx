@@ -1507,23 +1507,27 @@ export function Onboarding() {
                 </div>
               </div>
 
-              <div className="space-y-2.5 pt-0.5">
-                <OnboardingPrimaryCta
-                  className={cn(
-                    weight && quickHeight && quickAge && quickBodyType
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                  )}
-                  onClick={applyQuickEstimate}
-                  disabled={!weight || !quickHeight || !quickAge || !quickBodyType}
-                >
-                  Set my targets
-                </OnboardingPrimaryCta>
-
-                <p className="text-center text-[11px] leading-[1.45] text-[#7a8079] dark:text-muted-foreground">
-                  You can refine this later with detailed stats.
-                </p>
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-200",
+                  weight && quickHeight && quickAge && quickBodyType
+                    ? "max-h-[72px] opacity-100"
+                    : "max-h-0 opacity-0"
+                )}
+              >
+                <div className="space-y-2.5 pt-0.5">
+                  <OnboardingPrimaryCta
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={applyQuickEstimate}
+                  >
+                    Set my targets
+                  </OnboardingPrimaryCta>
+                </div>
               </div>
+
+              <p className="text-center text-[11px] leading-[1.45] text-[#7a8079] dark:text-muted-foreground">
+                You can refine this later with detailed stats.
+              </p>
 
               <div className="border-t border-[#eadfce] dark:border-border pt-4 text-center">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Use detailed body stats</p>
@@ -2003,18 +2007,20 @@ export function Onboarding() {
                 </div>
               )}
 
-              <div className="space-y-2.5 pt-0.5">
-                <OnboardingPrimaryCta
-                  className={cn(
-                    selectedDietType
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                  )}
-                  onClick={moveToNextStep}
-                  disabled={!selectedDietType}
-                >
-                  Continue with this style
-                </OnboardingPrimaryCta>
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-200",
+                  selectedDietType ? "max-h-[72px] opacity-100" : "max-h-0 opacity-0"
+                )}
+              >
+                <div className="space-y-2.5 pt-0.5">
+                  <OnboardingPrimaryCta
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={moveToNextStep}
+                  >
+                    Continue — {dietTypes.find(d => d.id === selectedDietType)?.label} →
+                  </OnboardingPrimaryCta>
+                </div>
               </div>
             </CardContent>
           </OnboardingMainCard>
@@ -2104,22 +2110,24 @@ export function Onboarding() {
                     : "You can start simple with a preset or build the list yourself. Both lead to the same plan generator."}
               </OnboardingFieldNote>
 
-              <div className="space-y-2.5 pt-0.5">
-                <OnboardingPrimaryCta
-                  className={cn(
-                    ingredientMode
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                  )}
-                  onClick={moveToNextStep}
-                  disabled={!ingredientMode}
-                >
-                  {ingredientMode === "recommend"
-                    ? "Continue with a starter list"
-                    : ingredientMode === "custom"
-                      ? "Continue with custom ingredients"
-                      : "Continue with this setup"}
-                </OnboardingPrimaryCta>
+              <div
+                className={cn(
+                  "overflow-hidden transition-all duration-200",
+                  ingredientMode ? "max-h-[72px] opacity-100" : "max-h-0 opacity-0"
+                )}
+              >
+                <div className="space-y-2.5 pt-0.5">
+                  <OnboardingPrimaryCta
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={moveToNextStep}
+                  >
+                    {ingredientMode === "recommend"
+                      ? "Continue with a starter list"
+                      : ingredientMode === "custom"
+                        ? "Continue with custom ingredients"
+                        : "Continue with this setup"}
+                  </OnboardingPrimaryCta>
+                </div>
               </div>
             </CardContent>
           </OnboardingMainCard>
