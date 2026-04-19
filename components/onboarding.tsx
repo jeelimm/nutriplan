@@ -425,6 +425,8 @@ export function Onboarding() {
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState<IngredientCategory>("protein")
   const [fetchingIngredient, setFetchingIngredient] = useState(false)
+  const [pendingClaudeIngredient, setPendingClaudeIngredient] = useState<{ name: string; calories: number; protein: number; carbs: number; fat: number; cost: number } | null>(null)
+  const [selectedClaudeCategory, setSelectedClaudeCategory] = useState<string | null>(null)
   const [focusedBodyField, setFocusedBodyField] = useState<BodyField | null>(null)
   const [touchedBodyFields, setTouchedBodyFields] = useState<Record<BodyField, boolean>>({
     weight: false,
@@ -798,25 +800,38 @@ export function Onboarding() {
       })
       if (!response.ok) throw new Error("Request failed")
       const data = (await response.json()) as Partial<IngredientOption>
-      if (typeof data.name !== "string" || !data.name.trim() || typeof data.category !== "string" || !data.category.trim()) throw new Error("Invalid response")
+      if (typeof data.name !== "string" || !data.name.trim()) throw new Error("Invalid response")
 
-      if (!ingredientCatalog.some((item) => item.name === data.name)) {
-        ingredientCatalog.push({
+      if (ingredientCatalog.some((item) => item.name === data.name)) {
+        addIngredientFromSearch(data.name)
+      } else {
+        setPendingClaudeIngredient({
           name: data.name,
-          category: data.category,
           calories: Number(data.calories) || 0,
           protein: Number(data.protein) || 0,
           carbs: Number(data.carbs) || 0,
           fat: Number(data.fat) || 0,
           cost: Number(data.cost) || 0,
         })
+        setSelectedClaudeCategory(null)
       }
-      addIngredientFromSearch(data.name)
     } catch {
       window.alert("We couldn’t look up that ingredient right now. Try another name or pick from the list.")
     } finally {
       setFetchingIngredient(false)
     }
+  }
+
+  const confirmClaudeIngredient = (category: string) => {
+    ingredientCatalog.unshift({ ...pendingClaudeIngredient!, category: category as IngredientCategory })
+    addIngredientFromSearch(pendingClaudeIngredient!.name)
+    setPendingClaudeIngredient(null)
+    setSelectedClaudeCategory(null)
+  }
+
+  const cancelClaudeIngredient = () => {
+    setPendingClaudeIngredient(null)
+    setSelectedClaudeCategory(null)
   }
 
   const handleComplete = () => {
@@ -2244,6 +2259,45 @@ export function Onboarding() {
                             <Search className="mr-2 h-4 w-4 shrink-0 text-[#7a5b41] dark:text-muted-foreground" />
                             {fetchingIngredient ? "Looking that up…" : "Can’t find it? Look up with AI"}
                           </Button>
+                          {pendingClaudeIngredient !== null && (
+                            <div className="mt-3 flex flex-col gap-2">
+                              <p className="text-xs font-medium text-[#5e665f] dark:text-muted-foreground">
+                                What category is <span className="font-semibold text-[#28312b] dark:text-foreground">{pendingClaudeIngredient.name}</span>?
+                              </p>
+                              <div className="grid grid-cols-4 gap-2">
+                                {([["Protein", "protein"], ["Carb", "carbs"], ["Fat", "fats"], ["Vegetable", "vegetables"]] as const).map(([label, value]) => (
+                                  <button
+                                    key={value}
+                                    type="button"
+                                    onClick={() => setSelectedClaudeCategory(value)}
+                                    className={cn(
+                                      "min-h-[44px] rounded-[14px] text-xs font-medium transition-colors",
+                                      selectedClaudeCategory === value
+                                        ? "bg-primary text-primary-foreground"
+                                        : "border border-input bg-background text-foreground"
+                                    )}
+                                  >
+                                    {label}
+                                  </button>
+                                ))}
+                              </div>
+                              <Button
+                                type="button"
+                                className="w-full min-h-[44px] rounded-[14px]"
+                                disabled={!selectedClaudeCategory}
+                                onClick={() => confirmClaudeIngredient(selectedClaudeCategory!)}
+                              >
+                                Add {pendingClaudeIngredient.name}
+                              </Button>
+                              <button
+                                type="button"
+                                onClick={cancelClaudeIngredient}
+                                className="text-xs text-[#7a8079] dark:text-muted-foreground underline underline-offset-2 self-center"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
