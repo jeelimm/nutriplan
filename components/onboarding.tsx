@@ -823,7 +823,7 @@ export function Onboarding() {
   }
 
   const confirmClaudeIngredient = (category: string) => {
-    ingredientCatalog.push({ ...pendingClaudeIngredient!, category: category as IngredientCategory })
+    ingredientCatalog.unshift({ ...pendingClaudeIngredient!, category: category as IngredientCategory })
     addIngredientFromSearch(pendingClaudeIngredient!.name)
     setPendingClaudeIngredient(null)
     setSelectedClaudeCategory(null)
