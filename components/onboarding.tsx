@@ -425,6 +425,7 @@ export function Onboarding() {
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState<IngredientCategory>("protein")
   const [fetchingIngredient, setFetchingIngredient] = useState(false)
+  const [pendingClaudeIngredient, setPendingClaudeIngredient] = useState<{ name: string; calories: number; protein: number; carbs: number; fat: number; cost: number } | null>(null)
   const [focusedBodyField, setFocusedBodyField] = useState<BodyField | null>(null)
   const [touchedBodyFields, setTouchedBodyFields] = useState<Record<BodyField, boolean>>({
     weight: false,
@@ -798,12 +799,13 @@ export function Onboarding() {
       })
       if (!response.ok) throw new Error("Request failed")
       const data = (await response.json()) as Partial<IngredientOption>
-      if (typeof data.name !== "string" || !data.name.trim() || typeof data.category !== "string" || !data.category.trim()) throw new Error("Invalid response")
+      if (typeof data.name !== "string" || !data.name.trim()) throw new Error("Invalid response")
 
-      if (!ingredientCatalog.some((item) => item.name === data.name)) {
-        ingredientCatalog.push({
+      if (ingredientCatalog.some((item) => item.name === data.name)) {
+        addIngredientFromSearch(data.name)
+      } else {
+        setPendingClaudeIngredient({
           name: data.name,
-          category: data.category,
           calories: Number(data.calories) || 0,
           protein: Number(data.protein) || 0,
           carbs: Number(data.carbs) || 0,
@@ -811,7 +813,6 @@ export function Onboarding() {
           cost: Number(data.cost) || 0,
         })
       }
-      addIngredientFromSearch(data.name)
     } catch {
       window.alert("We couldn’t look up that ingredient right now. Try another name or pick from the list.")
     } finally {
