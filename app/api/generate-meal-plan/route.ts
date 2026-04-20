@@ -339,6 +339,8 @@ ALL meal names must be Korean dishes.
 
     const prompt = `CRITICAL LANGUAGE RULE: Generate ALL meal names, ingredient names, and recipe instructions in English. Do NOT use Korean, Japanese, or any other non-English language for food names. For example, use "Egg Roll" not "계란말이", use "Bibimbap" not "비빔밥". The only exception is if the user has explicitly set their language preference to Korean (language: "ko").${language === "ko" ? ' This user has language set to "ko", so Korean names are allowed.' : ' This user does NOT have language set to "ko" — strictly use English for all food names, ingredient names, and instructions.'}
 
+CRITICAL: Every ingredient mentioned in the recipe.instructions array MUST appear in the meal.ingredients array with a quantity. If a recipe step mentions kimchi, onion, soy sauce, or any other food item, that exact item must be listed in ingredients. Do not reference ingredients in instructions that are not in the ingredients array.${language === "ko" ? "\n중요: recipe.instructions 배열에 언급된 모든 재료는 반드시 meal.ingredients 배열에 수량과 함께 포함되어야 합니다. 조리 단계에서 김치, 양파, 간장 등 어떤 식재료를 언급하든 해당 재료는 반드시 ingredients 목록에 있어야 합니다. ingredients 목록에 없는 재료를 instructions에서 참조하지 마십시오." : ""}
+
 Generate exactly:
 - 3 breakfast options
 - 3 lunch options
