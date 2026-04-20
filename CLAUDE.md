@@ -146,6 +146,7 @@ All three API routes live in `app/api/` and are server-side only. All use `proce
 - Returns `{ days: DayPlan[] }`. Each day has `meals[]` with name, calories, protein, carbs, fat, ingredients, recipe (prepTime, cookTime, instructions).
 - Applies `adjustMacros()` post-processing: if fat or carbs are <80% of target, it adds olive oil or white rice as correction ingredients.
 - **Language rule:** defaults to English; switches to Korean only when `language === "ko"`. Korean cuisine style adds a strict rule disallowing Western meal names.
+- **Ingredient consistency:** Prompt explicitly requires every ingredient mentioned in `recipe.instructions` to appear in `meal.ingredients[]`. After `adjustMacros()`, each meal runs through `validateIngredientConsistency()` from `lib/meal-validator.ts`. If any meal fails, a single retry call regenerates only the failing meals. If retry still fails, the original meal is kept and a `console.warn` is logged — the request never hard-fails on this check.
 
 ### `POST /api/swap-meal`
 
@@ -153,6 +154,7 @@ All three API routes live in `app/api/` and are server-side only. All use `proce
 - Generates 3 alternative meals for a given slot (breakfast / lunch / dinner), each within ±15% of the current meal's macros.
 - Candidates are filtered through `validateSwapCandidate()` in `lib/meal-validator.ts` before being returned.
 - Returns `{ candidates: SwapCandidate[] }` (up to 3).
+- After `validateSwapCandidate()` filtering, each remaining candidate also runs through `validateIngredientConsistency()`. Invalid candidates are dropped (no retry). If all candidates are dropped, the response returns an empty array so the client can surface a "no valid swaps" state.
 
 ### `POST /api/claude-nutrition`
 
@@ -166,6 +168,7 @@ All three API routes live in `app/api/` and are server-side only. All use `proce
 - Claude is called with `system: "Output strict JSON only."` — no markdown, no explanation.
 - A `Promise.race` wraps every Claude call with a hard timeout that rejects before Vercel's limit.
 - Response parsing defensively handles alternate Claude output shapes (e.g. `foods` vs `ingredients`, `macros.protein` vs `protein`, camelCase vs snake_case field names).
+- `validateIngredientConsistency(meal)` in `lib/meal-validator.ts` scans `recipe.instructions` against a common food dictionary (EN + KO) and cross-references `meal.ingredients[]`. Used by both `generate-meal-plan` and `swap-meal`.
 
 ---
 
