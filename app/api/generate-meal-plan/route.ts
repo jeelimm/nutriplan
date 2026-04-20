@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { NextResponse } from "next/server"
+import { validateIngredientConsistency } from "@/lib/meal-validator"
 
 export const maxDuration = 60
 
@@ -339,6 +340,8 @@ ALL meal names must be Korean dishes.
 
     const prompt = `CRITICAL LANGUAGE RULE: Generate ALL meal names, ingredient names, and recipe instructions in English. Do NOT use Korean, Japanese, or any other non-English language for food names. For example, use "Egg Roll" not "계란말이", use "Bibimbap" not "비빔밥". The only exception is if the user has explicitly set their language preference to Korean (language: "ko").${language === "ko" ? ' This user has language set to "ko", so Korean names are allowed.' : ' This user does NOT have language set to "ko" — strictly use English for all food names, ingredient names, and instructions.'}
 
+CRITICAL: Every ingredient mentioned in the recipe.instructions array MUST appear in the meal.ingredients array with a quantity. If a recipe step mentions kimchi, onion, soy sauce, or any other food item, that exact item must be listed in ingredients. Do not reference ingredients in instructions that are not in the ingredients array.${language === "ko" ? "\n중요: recipe.instructions 배열에 언급된 모든 재료는 반드시 meal.ingredients 배열에 수량과 함께 포함되어야 합니다. 조리 단계에서 김치, 양파, 간장 등 어떤 식재료를 언급하든 해당 재료는 반드시 ingredients 목록에 있어야 합니다. ingredients 목록에 없는 재료를 instructions에서 참조하지 마십시오." : ""}
+
 Generate exactly:
 - 3 breakfast options
 - 3 lunch options
@@ -429,6 +432,97 @@ Each meal: {"name":"","type":"","calories":0,
           })
         : [],
     }))
+
+    // Ingredient consistency check: find any meals whose instructions reference
+    // ingredients not listed in their ingredients array.
+    type FailingMealRef = { dayIdx: number; mealIdx: number; mealName: string; missing: string[] }
+    const failingMeals: FailingMealRef[] = []
+
+    for (let dayIdx = 0; dayIdx < normalizedDays.length; dayIdx++) {
+      const day = normalizedDays[dayIdx]
+      for (let mealIdx = 0; mealIdx < (day.meals ?? []).length; mealIdx++) {
+        const meal = day.meals[mealIdx]
+        // validateIngredientConsistency expects meal.instructions at top level
+        const checkResult = validateIngredientConsistency({
+          ...meal,
+          id: meal.id ?? "",
+          instructions: meal.recipe?.instructions ?? [],
+          prepTime: meal.recipe?.prepTime ?? 0,
+          cookTime: meal.recipe?.cookTime ?? 0,
+        })
+        if (!checkResult.valid) {
+          console.warn(
+            `[generate-meal-plan] Ingredient consistency failed for "${meal.name}": missing [${checkResult.missing.join(", ")}]`
+          )
+          failingMeals.push({ dayIdx, mealIdx, mealName: meal.name, missing: checkResult.missing })
+        }
+      }
+    }
+
+    if (failingMeals.length > 0) {
+      try {
+        const failingList = failingMeals
+          .map((f) => `- "${f.mealName}": missing ingredients ${f.missing.join(", ")}`)
+          .join("\n")
+
+        const retryPrompt = `The following meals have recipe instructions that reference ingredients not in their ingredients array. Regenerate ONLY these meals so that every ingredient mentioned in instructions is also in the ingredients array with a quantity:\n${failingList}\n\nReturn a JSON array of the fixed meals:\n[{"name":"","type":"","calories":0,"protein":0,"carbs":0,"fat":0,"ingredients":[{"name":"","amount":"","category":""}],"recipe":{"prepTime":0,"cookTime":0,"instructions":[""]}}]`
+
+        const retryResponse = await Promise.race([
+          anthropic.messages.create({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 2000,
+            system: "Output strict JSON only.",
+            messages: [{ role: "user", content: retryPrompt }],
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("Claude retry timeout")), 35000)
+          ),
+        ])
+
+        const retryText = firstTextFromMessageContent(
+          retryResponse.content as Array<{ type: string; text?: string }>
+        )
+        if (retryText) {
+          const retryMeals = JSON.parse(extractJSON(retryText)) as unknown[]
+          if (Array.isArray(retryMeals)) {
+            for (const failRef of failingMeals) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const fixed = retryMeals.find((m: any) =>
+                typeof m?.name === "string" &&
+                m.name.toLowerCase() === failRef.mealName.toLowerCase()
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ) as any | undefined
+              if (fixed) {
+                const normalizedFixed = normalizeClaudeMealAlternatives(fixed)
+                const fixedRecipe = normalizeRecipeForResponse(normalizedFixed)
+                const fixedIngredients = normalizeIngredientsForResponse(normalizedFixed).map(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (ingredient: any) => ({
+                    name: String(ingredient?.name ?? "").trim(),
+                    amount: String(ingredient?.amount ?? "").trim(),
+                    category: normalizeCategory(String(ingredient?.category ?? "")),
+                  })
+                )
+                normalizedDays[failRef.dayIdx].meals[failRef.mealIdx] = {
+                  ...normalizedDays[failRef.dayIdx].meals[failRef.mealIdx],
+                  ingredients: fixedIngredients,
+                  recipe: fixedRecipe,
+                }
+              } else {
+                console.warn(
+                  `[generate-meal-plan] Retry did not return a fixed meal for "${failRef.mealName}" — keeping original.`
+                )
+              }
+            }
+          }
+        }
+      } catch (retryErr) {
+        console.warn(
+          "[generate-meal-plan] Ingredient consistency retry failed — keeping originals:",
+          retryErr instanceof Error ? retryErr.message : String(retryErr)
+        )
+      }
+    }
 
     if (normalizedDays[0]?.meals?.[0]) {
       console.log(

@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { NextResponse } from "next/server"
 import type { Meal, UserProfile } from "@/lib/meal-store"
-import { validateSwapCandidate } from "@/lib/meal-validator"
+import { validateSwapCandidate, validateIngredientConsistency } from "@/lib/meal-validator"
 
 export const maxDuration = 60
 
@@ -229,12 +229,26 @@ Return JSON array only. Each recipe.instructions MUST be an array of separate st
       .filter((c) => {
         const validation = validateSwapCandidate(c, originalMacros, mealSlot, userProfile)
         if (!validation.isValid) {
-          console.log(`[swap-meal] Candidate "${c.name}" rejected:`, validation.reasons)
+          console.log(`[swap-meal] Candidate "${c.name}" rejected by validateSwapCandidate:`, validation.reasons)
         }
         return validation.isValid
       })
+      .filter((c) => {
+        const consistency = validateIngredientConsistency(c as unknown as Meal)
+        if (!consistency.valid) {
+          console.log(`[swap-meal] Candidate "${c.name}" rejected by validateIngredientConsistency:`, consistency.missing)
+        }
+        return consistency.valid
+      })
 
     console.log(`[swap-meal] Returning ${candidates.length} candidates for slot: ${mealSlot}`)
+
+    if (candidates.length === 0) {
+      return NextResponse.json({
+        candidates: [],
+        error: "No valid swaps found, try again.",
+      })
+    }
 
     return NextResponse.json({ candidates })
   } catch (err) {
