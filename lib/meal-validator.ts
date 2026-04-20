@@ -1,3 +1,5 @@
+import type { Meal } from "./meal-store"
+
 type IngredientLike = { name: string; category?: string }
 type MealLike = {
   calories: number
@@ -232,6 +234,37 @@ const rules: ValidationRule[] = [
   ruleDailyCaloriesAndProtein,
   ruleGroceryAndComplexity,
 ]
+
+const FOOD_DICTIONARY: string[] = [
+  // English
+  "kimchi", "rice", "egg", "eggs", "tuna", "chicken", "beef", "pork", "tofu",
+  "onion", "garlic", "soy sauce", "sesame oil", "olive oil", "salt", "pepper",
+  "butter", "cheese", "milk", "yogurt", "oats", "bread", "pasta", "noodles",
+  "broccoli", "spinach", "carrot", "potato", "tomato", "cucumber", "lettuce",
+  "avocado", "banana", "apple",
+  // Korean
+  "김치", "밥", "계란", "참치", "닭", "소고기", "돼지고기", "두부",
+  "양파", "마늘", "간장", "참기름",
+]
+
+export function validateIngredientConsistency(meal: Meal): { valid: boolean; missing: string[] } {
+  const normalized = meal.instructions.join(" ").toLowerCase()
+
+  const ingredientNames = meal.ingredients.map((i) => i.name.toLowerCase())
+
+  const missing: string[] = []
+  for (const food of FOOD_DICTIONARY) {
+    const foodLower = food.toLowerCase()
+    if (!normalized.includes(foodLower)) continue
+    // food appears in instructions — check it is covered by at least one ingredient
+    const covered = ingredientNames.some(
+      (n) => n.includes(foodLower) || foodLower.includes(n)
+    )
+    if (!covered) missing.push(food)
+  }
+
+  return { valid: missing.length === 0, missing }
+}
 
 export function validateMealPlan(context: ValidationContext): MealPlanValidationResult {
   console.log("[meal-validator] Raw Claude response before validation:", context.rawClaudeResponse)
