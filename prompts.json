@@ -1,11 +1,21 @@
 {
-  "feature": "fix-ghost-grocery-items",
-  "branch": "fix/ghost-grocery-items",
+  "feature": "fix-ingredient-pool-enforcement",
+  "branch": "fix/ingredient-pool-enforcement",
   "prompts": [
     {
       "id": "1",
-      "description": "Filter checkedItems rendering to only show current weekPlan ingredients",
-      "prompt": "In components/grocery-list.tsx, locate where checkedItems from Zustand is used to determine checkbox checked state. The bug: checkedItems persists across meal plan regenerations, so stale ingredient keys from old plans (e.g. 'mackerel') appear as phantom checked items in the current grocery list. Fix: the grocery list items must be derived solely from the current weekPlan (do not change this logic). Only use checkedItems to determine the checked/unchecked state for items that already exist in the rendered list — do NOT render any item based on a checkedItems key alone. In other words, if an ingredient name exists in checkedItems but is NOT in the current weekPlan grocery list, it must be invisible and have no effect on the UI. Do NOT call clearCheckedItems() on mount. Do NOT modify lib/meal-store.ts, settings-screen.tsx, or any toggle logic. Do NOT change the grocery list grouping, sorting, or layout. Verify: npm run build passes with no TypeScript errors."
+      "description": "Harden generate-meal-plan prompt to forbid ingredients outside user's selected pool",
+      "prompt": "In app/api/generate-meal-plan/route.ts, locate the Claude prompt string. Add an explicit hard rule immediately after the instruction to use the user's ingredient list: 'STRICT RULE: Use ONLY the ingredients provided in the user's ingredient list below. Do NOT add any ingredient that is not in this list — this includes cooking oils, vegetables, grains, sauces, seasonings, or any other item not explicitly listed. Every ingredient that appears in meal.ingredients[] and in recipe.instructions must come from the provided list only.' Apply this rule to both the English and Korean prompt variants if they exist separately. Do NOT change any other prompt logic, the rotation pattern, or the response parsing. Verify: npm run build passes."
+    },
+    {
+      "id": "2",
+      "description": "Remove or guard adjustMacros() auto-insertion of olive oil and white rice",
+      "prompt": "Building on prompt #1. In app/api/generate-meal-plan/route.ts, locate the adjustMacros() function (or inline logic) that automatically inserts olive oil or white rice when fat or carbs fall below 80% of target. Change this logic: instead of unconditionally inserting olive oil or white rice, first check if that ingredient already exists in the user's selected ingredient list (the same list passed to the Claude prompt). Only insert the correction ingredient if it is present in the user's list. If it is not in the list, skip the correction silently — do NOT insert unlisted ingredients. Do NOT change the macro calculation logic or the 80% threshold check itself. Do NOT touch any other part of the file. Verify: npm run build passes with no TypeScript errors."
+    },
+    {
+      "id": "3",
+      "description": "Apply same ingredient pool constraint to swap-meal prompt",
+      "prompt": "Building on prompts #1 and #2. In app/api/swap-meal/route.ts, locate the Claude prompt string. Add the same hard rule as in generate-meal-plan: 'STRICT RULE: Use ONLY the ingredients from the user's original ingredient list. Do NOT introduce any ingredient not in that list, including oils, vegetables, grains, or seasonings.' The user's ingredient list is already available in the request payload — reference it in the prompt the same way generate-meal-plan does. Do NOT change the ±15% macro tolerance logic, the candidate validation, or the response parsing. Verify: npm run build passes."
     }
   ]
 }

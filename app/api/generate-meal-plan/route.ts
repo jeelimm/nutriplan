@@ -354,6 +354,7 @@ Daily nutrition targets: Cal:${dailyCalories} P:${targetProtein}g C:${targetCarb
 Distribute calories naturally by meal type — breakfast lighter, lunch moderate, dinner substantial. Each meal should have realistic, different nutrition based on its actual ingredients and portions.
 For each ingredient, estimate its calorie contribution (kcal field) based on the amount specified.
 Use only: ${ingredientsSnippet}
+STRICT RULE: Use ONLY the ingredients provided in the user's ingredient list below. Do NOT add any ingredient that is not in this list — this includes cooking oils, vegetables, grains, sauces, seasonings, or any other item not explicitly listed. Every ingredient that appears in meal.ingredients[] and in recipe.instructions must come from the provided list only.
 
 Return JSON:
 {
