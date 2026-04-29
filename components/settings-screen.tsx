@@ -16,6 +16,19 @@ import {
   type UserProfile,
 } from "@/lib/meal-store"
 import { toKg } from "@/lib/nutrition"
+import { Switch } from "@/components/ui/switch"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { buttonVariants } from "@/components/ui/button"
 
 const PRIMARY = "var(--primary)"
 const PRIMARY_BG = "color-mix(in srgb, var(--primary) 10%, var(--card))"
@@ -346,7 +359,7 @@ function ExpandableRow({
 }
 
 export function SettingsScreen() {
-  const { appPrefs, setAppPrefs, userProfile, setUserProfile, calculateMacros, setCurrentStep, clearAllData } = useMealStore()
+  const { appPrefs, setAppPrefs, userProfile, setUserProfile, calculateMacros, setCurrentStep, clearAllData, setResetGroceryOnRegen, generateMealPlan } = useMealStore()
 
   // Row open/close state
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
@@ -528,6 +541,8 @@ export function SettingsScreen() {
               </div>
               <EditButtons onCancel={closeRow} onSave={() => saveRow("language")} />
             </ExpandableRow>
+
+            <ResetGroceryRow enabled={appPrefs.resetGroceryOnRegen} onChange={setResetGroceryOnRegen} />
 
             {/* Appearance — inline segmented control, no expansion */}
             <AppearanceRow appPrefs={appPrefs} setAppPrefs={setAppPrefs} isLast />
@@ -838,6 +853,49 @@ export function SettingsScreen() {
         </BridgeCard>
         <SectionFooter text="Changes show up the next time you regenerate your plan." />
 
+        {/* PLAN */}
+        <SectionEyebrow label="PLAN" />
+        <BridgeCard>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                type="button"
+                style={{
+                  display: "flex", alignItems: "center",
+                  minHeight: 48, padding: "12px 18px",
+                  width: "100%", background: "none", border: "none",
+                  cursor: "pointer", fontFamily: FONT_STACK, textAlign: "left",
+                }}
+              >
+                <span style={{
+                  flex: 1, fontSize: 15, fontWeight: 500,
+                  letterSpacing: "-0.01em", color: "var(--foreground)",
+                }}>
+                  Regenerate plan
+                </span>
+                <ChevronRight style={{ width: 16, height: 16, color: "var(--muted-foreground)", marginLeft: 6, flexShrink: 0 }} />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Regenerate your plan?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Your current week will be replaced with a new AI-generated plan. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className={buttonVariants({ variant: "default" })}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => { void generateMealPlan() }}
+                  className={buttonVariants({ variant: "destructive" })}
+                >
+                  Regenerate
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </BridgeCard>
+
         {/* PREFERENCES */}
         <SectionEyebrow label="PREFERENCES" />
         <BridgeCard>
@@ -900,6 +958,8 @@ export function SettingsScreen() {
             <EditButtons onCancel={closeRow} onSave={() => saveRow("language")} />
           </ExpandableRow>
 
+          <ResetGroceryRow enabled={appPrefs.resetGroceryOnRegen} onChange={setResetGroceryOnRegen} />
+
           {/* Appearance — inline segmented control, no expansion */}
           <AppearanceRow appPrefs={appPrefs} setAppPrefs={setAppPrefs} isLast />
         </BridgeCard>
@@ -932,6 +992,28 @@ export function SettingsScreen() {
         <div style={{ height: 24 }} />
       </div>
     </div>
+  )
+}
+
+function ResetGroceryRow({
+  enabled,
+  onChange,
+  isLast = false,
+}: {
+  enabled: boolean
+  onChange: (value: boolean) => void
+  isLast?: boolean
+}) {
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", minHeight: 48, padding: "10px 18px" }}>
+        <span style={{ flex: 1, fontSize: 15, fontWeight: 500, letterSpacing: "-0.01em", color: "var(--foreground)", fontFamily: FONT_STACK }}>
+          Reset grocery checklist when plan regenerates
+        </span>
+        <Switch checked={enabled} onCheckedChange={onChange} />
+      </div>
+      {!isLast && <div style={{ height: 1, background: "var(--border)", marginLeft: 18 }} />}
+    </>
   )
 }
 

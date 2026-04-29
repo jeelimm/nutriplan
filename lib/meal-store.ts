@@ -102,11 +102,13 @@ interface AppPrefs {
   language: Language
   unitSystem: RecipeUnitSystem
   darkMode: boolean
+  resetGroceryOnRegen: boolean
 }
 
 interface MealStore {
   appPrefs: AppPrefs
   setAppPrefs: (patch: Partial<AppPrefs>) => void
+  setResetGroceryOnRegen: (value: boolean) => void
   currentStep: number
   setCurrentStep: (step: number) => void
   userProfile: UserProfile | null
@@ -121,6 +123,9 @@ interface MealStore {
   isGeneratingMealPlan: boolean
   selectedDay: number
   setSelectedDay: (day: number) => void
+  checkedItems: Record<string, boolean>
+  toggleCheckedItem: (ingredientName: string) => void
+  clearCheckedItems: () => void
   calculateMacros: (
     weightKg: number,
     bodyFat: number,
@@ -138,7 +143,7 @@ interface MealStore {
   clearSwapCandidates: () => void
 }
 
-const PROFILE_VERSION = 2
+const PROFILE_VERSION = 3
 
 const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'moderate'
 const DEFAULT_DIET_TYPE: DietType = 'balanced'
@@ -334,8 +339,10 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 export const useMealStore = create<MealStore>()(
   persist(
     (set, get) => ({
-      appPrefs: { language: DEFAULT_LANGUAGE, unitSystem: DEFAULT_RECIPE_UNIT_SYSTEM, darkMode: false },
+      appPrefs: { language: DEFAULT_LANGUAGE, unitSystem: DEFAULT_RECIPE_UNIT_SYSTEM, darkMode: false, resetGroceryOnRegen: false },
       setAppPrefs: (patch) => set((state) => ({ appPrefs: { ...state.appPrefs, ...patch } })),
+      setResetGroceryOnRegen: (value) =>
+        set((state) => ({ appPrefs: { ...state.appPrefs, resetGroceryOnRegen: value } })),
       currentStep: 0,
       setCurrentStep: (step) => set({ currentStep: step }),
       userProfile: null,
@@ -394,6 +401,15 @@ export const useMealStore = create<MealStore>()(
       isGeneratingMealPlan: false,
       selectedDay: 0,
       setSelectedDay: (day) => set({ selectedDay: day }),
+      checkedItems: {},
+      toggleCheckedItem: (ingredientName) =>
+        set((state) => ({
+          checkedItems: {
+            ...state.checkedItems,
+            [ingredientName]: !state.checkedItems[ingredientName],
+          },
+        })),
+      clearCheckedItems: () => set({ checkedItems: {} }),
       
       calculateMacros: (
         weightKg,
@@ -575,6 +591,9 @@ export const useMealStore = create<MealStore>()(
         }
 
         set({ weekPlan: mappedPlan, mealPlanValidation: validation })
+        if (get().appPrefs.resetGroceryOnRegen) {
+          get().clearCheckedItems()
+        }
         } finally {
           set({ isGeneratingMealPlan: false })
         }
@@ -585,10 +604,22 @@ export const useMealStore = create<MealStore>()(
       version: PROFILE_VERSION,
       migrate: (persistedState) => {
         const state = persistedState as Partial<MealStore> | undefined
-        if (!state) return state as MealStore
+        if (!state) return state as unknown as MealStore
+        const persistedPrefs = (state.appPrefs ?? {}) as Partial<AppPrefs>
+        const persistedChecked =
+          state.checkedItems && typeof state.checkedItems === 'object'
+            ? (state.checkedItems as Record<string, boolean>)
+            : {}
         return {
           ...state,
           userProfile: normalizeUserProfile(state.userProfile),
+          appPrefs: {
+            language: ensureLanguage(persistedPrefs.language),
+            unitSystem: ensureRecipeUnitSystem(persistedPrefs.unitSystem),
+            darkMode: persistedPrefs.darkMode === true,
+            resetGroceryOnRegen: persistedPrefs.resetGroceryOnRegen === true,
+          },
+          checkedItems: persistedChecked,
         } as MealStore
       },
       partialize: (state) => ({
@@ -596,6 +627,7 @@ export const useMealStore = create<MealStore>()(
         userProfile: state.userProfile,
         weekPlan: state.weekPlan,
         selectedDay: state.selectedDay,
+        checkedItems: state.checkedItems,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return

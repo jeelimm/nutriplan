@@ -6,6 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { GroceryItemRow } from "@/components/grocery-item-row"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import {
@@ -970,31 +977,22 @@ export function DailyView() {
                   </div>
                   <p className="text-sm leading-6 text-muted-foreground">Controls the type of meals generated in your plan.</p>
                 </div>
-                <div className="grid gap-2">
-                  {([
-                    { id: "keto", label: "Keto", description: "Fewer carbs, more fat—if that's how you like to eat" },
-                    { id: "high-protein", label: "High Protein", description: "Extra protein in each day's mix" },
-                    { id: "balanced", label: "Balanced", description: "Carbs, protein, and fat in an even split" },
-                    { id: "intermittent-fasting", label: "Intermittent Fasting", description: "Fewer, larger meals in a set eating window" },
-                  ] as { id: DietType; label: string; description: string }[]).map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setEditDietType(item.id)}
-                      className={cn(
-                        "settings-choice-card",
-                        editDietType === item.id ? "settings-choice-card-active" : "settings-choice-card-idle"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
-                          <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.description}</div>
-                        </div>
-                        {editDietType === item.id && <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />}
-                      </div>
-                    </button>
-                  ))}
+                <div className="space-y-2">
+                  <Label htmlFor="editDietType" className="text-sm font-semibold text-foreground">Diet type</Label>
+                  <Select
+                    value={editDietType}
+                    onValueChange={(value) => setEditDietType(value as DietType)}
+                  >
+                    <SelectTrigger id="editDietType" className="settings-input w-full min-w-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="balanced">Balanced</SelectItem>
+                      <SelectItem value="high-protein">High Protein</SelectItem>
+                      <SelectItem value="keto">Keto</SelectItem>
+                      <SelectItem value="intermittent-fasting">Intermittent Fasting</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -1006,17 +1004,25 @@ export function DailyView() {
                   </div>
                   <p className="text-sm leading-6 text-muted-foreground">How many meals to split your daily calories across.</p>
                 </div>
-                <div className="flex gap-2">
-                  {[3, 4, 5].map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => setEditMealsPerDay(n)}
-                      className={cn("settings-chip flex-1", editMealsPerDay === n ? "settings-chip-active" : "settings-chip-idle")}
-                    >
-                      {n}
-                    </button>
-                  ))}
+                <div className="space-y-2">
+                  <Label htmlFor="editMealsPerDay" className="text-sm font-semibold text-foreground">Meals per day</Label>
+                  <Input
+                    id="editMealsPerDay"
+                    className="settings-input w-full min-w-0"
+                    type="number"
+                    inputMode="numeric"
+                    min={2}
+                    max={5}
+                    step={1}
+                    value={editMealsPerDay}
+                    onChange={(e) => {
+                      const raw = e.target.value
+                      if (raw === "") return
+                      const parsed = Math.floor(Number(raw))
+                      if (!Number.isFinite(parsed)) return
+                      setEditMealsPerDay(Math.max(2, Math.min(5, parsed)))
+                    }}
+                  />
                 </div>
               </div>
 
