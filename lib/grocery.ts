@@ -72,30 +72,32 @@ export function combineAmounts(amounts: string[]): string {
 }
 
 export function buildGroceryCategories(ingredients: Ingredient[]): GroceryCategory[] {
-  const byCategory = ingredients.reduce<Record<Ingredient["category"], Map<string, string[]>>>(
+  type Bucket = { displayName: string; amounts: string[] }
+  const byCategory = ingredients.reduce<Record<Ingredient["category"], Map<string, Bucket>>>(
     (acc, item) => {
       if (!acc[item.category]) {
-        acc[item.category] = new Map<string, string[]>()
+        acc[item.category] = new Map<string, Bucket>()
       }
 
       const categoryItems = acc[item.category]
-      const amounts = categoryItems.get(item.name)
-      if (amounts) {
-        amounts.push(item.amount)
+      const key = item.name.trim().toLowerCase()
+      const bucket = categoryItems.get(key)
+      if (bucket) {
+        bucket.amounts.push(item.amount)
       } else {
-        categoryItems.set(item.name, [item.amount])
+        categoryItems.set(key, { displayName: item.name, amounts: [item.amount] })
       }
 
       return acc
     },
-    {} as Record<Ingredient["category"], Map<string, string[]>>
+    {} as Record<Ingredient["category"], Map<string, Bucket>>
   )
 
   return Object.entries(byCategory).map(([category, items]) => ({
     category: category as Ingredient["category"],
-    items: Array.from(items.entries()).map(([name, values]) => ({
-      name,
-      amounts: combineAmounts(values),
+    items: Array.from(items.values()).map(({ displayName, amounts }) => ({
+      name: displayName,
+      amounts: combineAmounts(amounts),
     })),
   }))
 }
