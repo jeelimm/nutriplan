@@ -591,6 +591,9 @@ export const useMealStore = create<MealStore>()(
         }
 
         set({ weekPlan: mappedPlan, mealPlanValidation: validation })
+        if (get().appPrefs.resetGroceryOnRegen) {
+          get().clearCheckedItems()
+        }
         } finally {
           set({ isGeneratingMealPlan: false })
         }
