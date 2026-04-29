@@ -7,7 +7,7 @@ import { GroceryItemRow } from "@/components/grocery-item-row"
 import { useMealStore } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
-import { ChevronLeft, ShoppingCart, Copy, Check, Beef, Carrot, Wheat, Milk, Droplets, Apple, Sparkles } from "lucide-react"
+import { ChevronLeft, ShoppingCart, Copy, Check, Beef, Carrot, Wheat, Milk, Droplets, Apple, Sparkles, Package } from "lucide-react"
 
 const categoryIcons: Record<string, React.ReactNode> = {
   protein: <Beef className="h-5 w-5" />,
@@ -17,6 +17,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   fats: <Droplets className="h-5 w-5" />,
   fruits: <Apple className="h-5 w-5" />,
   spices: <Sparkles className="h-5 w-5" />,
+  other: <Package className="h-5 w-5" />,
 }
 
 const categoryLabels: Record<string, string> = {
@@ -27,6 +28,7 @@ const categoryLabels: Record<string, string> = {
   fats: "Fats & Oils",
   fruits: "Fruits",
   spices: "Spices & Seasonings",
+  other: "Other",
 }
 
 const categoryColors: Record<string, string> = {
@@ -37,6 +39,7 @@ const categoryColors: Record<string, string> = {
   fats: "bg-[#f5efe4] text-[#8a704f]",
   fruits: "bg-[#f5e8e0] text-[#a05d43]",
   spices: "bg-muted text-muted-foreground",
+  other: "bg-muted text-muted-foreground",
 }
 
 interface GroceryListProps {

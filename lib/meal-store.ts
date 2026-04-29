@@ -70,7 +70,7 @@ export interface Meal {
 export interface Ingredient {
   name: string
   amount: string
-  category: 'protein' | 'vegetables' | 'carbs' | 'dairy' | 'fats' | 'fruits' | 'spices'
+  category: 'protein' | 'vegetables' | 'carbs' | 'dairy' | 'fats' | 'fruits' | 'spices' | 'other'
 }
 
 export interface DayPlan {
@@ -519,7 +519,6 @@ export const useMealStore = create<MealStore>()(
                 const macros = meal?.macros ?? meal?.macro ?? {}
                 const nutrition = meal?.nutrition ?? {}
                 const rawIngredients = apiNormalizeIngredientsList(meal)
-                const categoryRaw = safeLower(String(rawIngredients[0]?.category ?? ""))
                 const mapCategory = (cat: unknown): Ingredient["category"] => {
                   const c = safeLower(String(cat ?? ""))
                   if (c.includes("protein")) return "protein"
@@ -528,8 +527,8 @@ export const useMealStore = create<MealStore>()(
                   if (c.includes("veget")) return "vegetables"
                   if (c.includes("dairy")) return "dairy"
                   if (c.includes("fruit")) return "fruits"
-                  if (c.includes("spice")) return "spices"
-                  return categoryRaw ? "protein" : "protein"
+                  if (c.includes("spice") || c.includes("season")) return "spices"
+                  return "other"
                 }
 
                 const ingredients: Ingredient[] = rawIngredients.map((ing: any) => ({
