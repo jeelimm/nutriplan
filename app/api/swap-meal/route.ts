@@ -172,6 +172,7 @@ Cuisine: ${cuisinePreference}
 ${languageRule}
 ${koreanRule}
 Available ingredients: ${selectedIngredients}
+STRICT RULE: Use ONLY the ingredients from the user's original ingredient list. Do NOT introduce any ingredient not in that list, including oils, vegetables, grains, or seasonings.
 
 Each alternative MUST stay within ±15% of these targets:
 Calories: ${calTarget} kcal (${calMin}–${calMax})

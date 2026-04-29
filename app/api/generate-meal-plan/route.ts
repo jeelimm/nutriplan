@@ -206,8 +206,17 @@ function firstTextFromMessageContent(
 
 function adjustMacros(
   days: any[],
-  targets: { calories: number; protein: number; carbs: number; fat: number }
+  targets: { calories: number; protein: number; carbs: number; fat: number },
+  selectedIngredients: string[] = []
 ) {
+  const allowedSet = new Set(
+    selectedIngredients
+      .filter((s): s is string => typeof s === "string")
+      .map((s) => s.trim().toLowerCase())
+  )
+  const oliveOilAllowed = allowedSet.has("olive oil")
+  const whiteRiceAllowed = allowedSet.has("white rice")
+
   return days.map((day) => {
     if (!Array.isArray(day.meals) || day.meals.length === 0) return day
 
@@ -217,7 +226,7 @@ function adjustMacros(
     const fatRatio = targets.fat > 0 ? totalFat / targets.fat : 1
     const carbsRatio = targets.carbs > 0 ? totalCarbs / targets.carbs : 1
 
-    if (fatRatio < 0.8 && targets.fat > 0) {
+    if (fatRatio < 0.8 && targets.fat > 0 && oliveOilAllowed) {
       const fatDeficit = targets.fat - totalFat
       const fatPerMeal = Math.round(fatDeficit / day.meals.length)
       day.meals = day.meals.map((meal: any) => {
@@ -232,7 +241,7 @@ function adjustMacros(
       })
     }
 
-    if (carbsRatio < 0.8 && targets.carbs > 0) {
+    if (carbsRatio < 0.8 && targets.carbs > 0 && whiteRiceAllowed) {
       const carbsDeficit = targets.carbs - totalCarbs
       const carbsPerMeal = Math.round(carbsDeficit / day.meals.length)
       day.meals = day.meals.map((meal: any) => {
@@ -354,6 +363,7 @@ Daily nutrition targets: Cal:${dailyCalories} P:${targetProtein}g C:${targetCarb
 Distribute calories naturally by meal type — breakfast lighter, lunch moderate, dinner substantial. Each meal should have realistic, different nutrition based on its actual ingredients and portions.
 For each ingredient, estimate its calorie contribution (kcal field) based on the amount specified.
 Use only: ${ingredientsSnippet}
+STRICT RULE: Use ONLY the ingredients provided in the user's ingredient list below. Do NOT add any ingredient that is not in this list — this includes cooking oils, vegetables, grains, sauces, seasonings, or any other item not explicitly listed. Every ingredient that appears in meal.ingredients[] and in recipe.instructions must come from the provided list only.
 
 Return JSON:
 {
@@ -401,12 +411,16 @@ Each meal: {"name":"","type":"","calories":0,
 
     const days = buildWeekDaysFromPools(breakfasts, lunches, dinners)
     const coercedDays = applyClaudeResponseNormalizer(days)
-    const macroAdjustedDays = adjustMacros(coercedDays, {
-      calories: dailyCalories,
-      protein: targetProtein,
-      carbs: targetCarbs,
-      fat: targetFat,
-    })
+    const macroAdjustedDays = adjustMacros(
+      coercedDays,
+      {
+        calories: dailyCalories,
+        protein: targetProtein,
+        carbs: targetCarbs,
+        fat: targetFat,
+      },
+      selectedIngredients
+    )
     const normalizedDays = macroAdjustedDays.map((day: any) => ({
       ...day,
       meals: Array.isArray(day?.meals)
