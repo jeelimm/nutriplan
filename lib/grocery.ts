@@ -10,6 +10,47 @@ export interface GroceryCategory {
   items: GroceryItem[]
 }
 
+const KNOWN_DISPLAY_CATEGORIES: ReadonlySet<Ingredient["category"]> = new Set([
+  "protein",
+  "vegetables",
+  "carbs",
+  "dairy",
+  "fats",
+  "fruits",
+  "spices",
+  "other",
+])
+
+// Minimal override list for clear-cut cases where Claude commonly miscategorizes.
+const NAME_OVERRIDE_RULES: Array<{ pattern: RegExp; category: Ingredient["category"] }> = [
+  { pattern: /\b(salt|pepper|sugar|oil)\b/i, category: "spices" },
+  { pattern: /\b(rice|bread|oats)\b/i, category: "carbs" },
+  { pattern: /\b(apple|banana|fruit)\b/i, category: "fruits" },
+]
+
+function normalizeRawCategory(raw: string): Ingredient["category"] | null {
+  const c = raw.trim().toLowerCase()
+  if (!c) return null
+  if (c.includes("protein")) return "protein"
+  if (c.includes("carb")) return "carbs"
+  if (c.includes("fat")) return "fats"
+  if (c.includes("veget")) return "vegetables"
+  if (c.includes("dairy")) return "dairy"
+  if (c.includes("fruit")) return "fruits"
+  if (c.includes("spice") || c.includes("season")) return "spices"
+  if (KNOWN_DISPLAY_CATEGORIES.has(c as Ingredient["category"])) {
+    return c as Ingredient["category"]
+  }
+  return null
+}
+
+function resolveDisplayCategory(item: Ingredient): Ingredient["category"] {
+  for (const rule of NAME_OVERRIDE_RULES) {
+    if (rule.pattern.test(item.name)) return rule.category
+  }
+  return normalizeRawCategory(String(item.category ?? "")) ?? "other"
+}
+
 function parseNumericToken(token: string): number | null {
   const cleaned = token.trim()
   if (!cleaned) return null
@@ -75,11 +116,12 @@ export function buildGroceryCategories(ingredients: Ingredient[]): GroceryCatego
   type Bucket = { displayName: string; amounts: string[] }
   const byCategory = ingredients.reduce<Record<Ingredient["category"], Map<string, Bucket>>>(
     (acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = new Map<string, Bucket>()
+      const displayCategory = resolveDisplayCategory(item)
+      if (!acc[displayCategory]) {
+        acc[displayCategory] = new Map<string, Bucket>()
       }
 
-      const categoryItems = acc[item.category]
+      const categoryItems = acc[displayCategory]
       const key = item.name.trim().toLowerCase()
       const bucket = categoryItems.get(key)
       if (bucket) {
