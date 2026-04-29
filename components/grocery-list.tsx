@@ -70,9 +70,18 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
   // Sort categories by item count
   groceryCategories.sort((a, b) => b.items.length - a.items.length)
 
+  // Only ingredient names present in the current weekPlan-derived grocery list
+  // may influence the UI. Stale keys left in checkedItems from prior plans are
+  // ignored so they cannot render or count as phantom checked items.
+  const currentIngredientNames = new Set<string>(
+    groceryCategories.flatMap((cat) => cat.items.map((item) => item.name))
+  )
+  const isIngredientChecked = (name: string): boolean =>
+    currentIngredientNames.has(name) ? checkedItems[name] ?? false : false
+
   const totalItems = groceryCategories.reduce((sum, cat) => sum + cat.items.length, 0)
   const checkedCount = groceryCategories.reduce(
-    (sum, cat) => sum + cat.items.filter((item) => checkedItems[item.name] ?? false).length,
+    (sum, cat) => sum + cat.items.filter((item) => isIngredientChecked(item.name)).length,
     0
   )
   const completionRatio = totalItems > 0 ? checkedCount / totalItems : 0
@@ -198,14 +207,14 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
                     </div>
                   </div>
                   <span className="grocery-category-count">
-                    {items.filter((item) => checkedItems[item.name] ?? false).length}/{items.length}
+                    {items.filter((item) => isIngredientChecked(item.name)).length}/{items.length}
                   </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0 sm:px-6">
                 <div className="grocery-list-panel overflow-hidden">
                   {items.map((item) => {
-                    const isChecked = checkedItems[item.name] ?? false
+                    const isChecked = isIngredientChecked(item.name)
 
                     return (
                       <GroceryItemRow
