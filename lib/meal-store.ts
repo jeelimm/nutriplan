@@ -604,7 +604,7 @@ export const useMealStore = create<MealStore>()(
       version: PROFILE_VERSION,
       migrate: (persistedState) => {
         const state = persistedState as Partial<MealStore> | undefined
-        if (!state) return state as MealStore
+        if (!state) return state as unknown as MealStore
         const persistedPrefs = (state.appPrefs ?? {}) as Partial<AppPrefs>
         const persistedChecked =
           state.checkedItems && typeof state.checkedItems === 'object'
