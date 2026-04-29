@@ -364,6 +364,8 @@ Distribute calories naturally by meal type — breakfast lighter, lunch moderate
 For each ingredient, estimate its calorie contribution (kcal field) based on the amount specified.
 Use only: ${ingredientsSnippet}
 STRICT RULE: Use ONLY the ingredients provided in the user's ingredient list below. Do NOT add any ingredient that is not in this list — this includes cooking oils, vegetables, grains, sauces, seasonings, or any other item not explicitly listed. Every ingredient that appears in meal.ingredients[] and in recipe.instructions must come from the provided list only.
+STRICT RULE: Use ONLY the ingredients from the user provided list. Do NOT add any ingredient not in this list — including oils, vegetables, grains, sauces, or seasonings not explicitly listed. Do NOT invent ingredient names.${language === "ko" ? "\n엄격한 규칙: 사용자가 제공한 목록의 재료만 사용하십시오. 명시적으로 나열되지 않은 기름, 채소, 곡물, 소스, 조미료를 포함하여 이 목록에 없는 재료를 추가하지 마십시오. 재료 이름을 임의로 만들지 마십시오." : ""}
+STRICT RULE: Each ingredient MUST have a correct category field. Use exactly one of: protein, carbs, fat, vegetable, fruit, dairy, seasoning, other. Assign based on the ingredient actual food type, not its role in the meal.${language === "ko" ? "\n엄격한 규칙: 각 재료는 반드시 올바른 category 필드를 가져야 합니다. 다음 중 정확히 하나만 사용하십시오: protein, carbs, fat, vegetable, fruit, dairy, seasoning, other. 식사에서의 역할이 아니라 재료의 실제 음식 종류에 따라 분류하십시오." : ""}
 
 Return JSON:
 {

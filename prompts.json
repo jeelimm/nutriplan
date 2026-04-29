@@ -1,21 +1,31 @@
 {
-  "feature": "fix-ingredient-pool-enforcement",
-  "branch": "fix/ingredient-pool-enforcement",
+  "feature": "fix-grocery-list-bugs",
+  "branch": "fix/grocery-list-bugs",
   "prompts": [
     {
       "id": "1",
-      "description": "Harden generate-meal-plan prompt to forbid ingredients outside user's selected pool",
-      "prompt": "In app/api/generate-meal-plan/route.ts, locate the Claude prompt string. Add an explicit hard rule immediately after the instruction to use the user's ingredient list: 'STRICT RULE: Use ONLY the ingredients provided in the user's ingredient list below. Do NOT add any ingredient that is not in this list — this includes cooking oils, vegetables, grains, sauces, seasonings, or any other item not explicitly listed. Every ingredient that appears in meal.ingredients[] and in recipe.instructions must come from the provided list only.' Apply this rule to both the English and Korean prompt variants if they exist separately. Do NOT change any other prompt logic, the rotation pattern, or the response parsing. Verify: npm run build passes."
+      "description": "Harden generate-meal-plan prompt: restrict ingredients to user pool + fix categories",
+      "prompt": "In app/api/generate-meal-plan/route.ts, locate the Claude prompt string and make two additions: (1) Add this hard rule: 'STRICT RULE: Use ONLY the ingredients from the user provided list. Do NOT add any ingredient not in this list — including oils, vegetables, grains, sauces, or seasonings not explicitly listed. Do NOT invent ingredient names.' (2) Add this rule for categories: 'Each ingredient MUST have a correct category field. Use exactly one of: protein, carbs, fat, vegetable, fruit, dairy, seasoning, other. Assign based on the ingredient actual food type, not its role in the meal.' Apply to both English and Korean prompt variants if they exist. Do NOT change any other prompt logic, rotation pattern, or response parsing. Verify: npm run build passes."
     },
     {
       "id": "2",
-      "description": "Remove or guard adjustMacros() auto-insertion of olive oil and white rice",
-      "prompt": "Building on prompt #1. In app/api/generate-meal-plan/route.ts, locate the adjustMacros() function (or inline logic) that automatically inserts olive oil or white rice when fat or carbs fall below 80% of target. Change this logic: instead of unconditionally inserting olive oil or white rice, first check if that ingredient already exists in the user's selected ingredient list (the same list passed to the Claude prompt). Only insert the correction ingredient if it is present in the user's list. If it is not in the list, skip the correction silently — do NOT insert unlisted ingredients. Do NOT change the macro calculation logic or the 80% threshold check itself. Do NOT touch any other part of the file. Verify: npm run build passes with no TypeScript errors."
+      "description": "Remove or guard adjustMacros() auto-insertion of unlisted ingredients",
+      "prompt": "Building on prompt #1. In app/api/generate-meal-plan/route.ts, locate the adjustMacros() function that auto-inserts olive oil or white rice when fat or carbs fall below 80% of target. Change this logic: only insert the correction ingredient if it already exists in the user's selected ingredient list passed to the Claude prompt. If the ingredient is not in the user's list, skip the correction silently — do NOT insert unlisted ingredients. Do NOT change the macro calculation logic or the 80% threshold. Verify: npm run build passes."
     },
     {
       "id": "3",
-      "description": "Apply same ingredient pool constraint to swap-meal prompt",
-      "prompt": "Building on prompts #1 and #2. In app/api/swap-meal/route.ts, locate the Claude prompt string. Add the same hard rule as in generate-meal-plan: 'STRICT RULE: Use ONLY the ingredients from the user's original ingredient list. Do NOT introduce any ingredient not in that list, including oils, vegetables, grains, or seasonings.' The user's ingredient list is already available in the request payload — reference it in the prompt the same way generate-meal-plan does. Do NOT change the ±15% macro tolerance logic, the candidate validation, or the response parsing. Verify: npm run build passes."
+      "description": "Fix case-insensitive ingredient deduplication in grocery list aggregation",
+      "prompt": "In lib/grocery.ts (or components/grocery-list.tsx if aggregation lives there), locate the ingredient grouping and deduplication logic. Fix: normalise ingredient names to lowercase before using them as grouping keys, so 'Chicken breast' and 'chicken breast' are treated as the same item and their quantities are merged. The display name shown to the user should use the first-encountered casing or title case — not the raw lowercase key. Do NOT change the category grouping, quantity calculation, or any other grocery logic. Verify: npm run build passes with no TypeScript errors."
+    },
+    {
+      "id": "4",
+      "description": "Fix grocery category mapping to prevent mis-categorised items",
+      "prompt": "Building on prompt #3. In lib/grocery.ts (or components/grocery-list.tsx), locate where ingredients are assigned to display categories (Protein / Carbs / Fats / Other). Make two fixes: (1) Add a catch-all 'Other' or 'Seasonings' bucket — any ingredient whose Claude-returned category does not match a known category string must fall into this bucket, NOT into Protein. (2) Add a category override guard: if an ingredient name matches common non-protein foods (e.g. rice, apple, salt, pepper, any grain, any fruit, any seasoning), override the Claude-assigned category to the correct bucket regardless of what Claude returned. Keep the override list minimal — only add clear-cut cases like salt/pepper/sugar/oil to seasonings, rice/bread/oats to carbs, apple/banana/fruit to fruit. Do NOT change quantity aggregation or dedup logic. Verify: npm run build passes."
+    },
+    {
+      "id": "5",
+      "description": "Apply ingredient pool constraint to swap-meal prompt",
+      "prompt": "Building on prompt #1. In app/api/swap-meal/route.ts, locate the Claude prompt string. Add the same hard rule: 'STRICT RULE: Use ONLY the ingredients from the user original ingredient list. Do NOT introduce any ingredient not in that list, including oils, vegetables, grains, or seasonings. Do NOT invent ingredient names.' The user's ingredient list is already in the request payload — reference it in the prompt the same way generate-meal-plan does. Do NOT change the ±15% macro tolerance logic, candidate validation, or response parsing. Verify: npm run build passes."
     }
   ]
 }
