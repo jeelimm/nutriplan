@@ -22,6 +22,7 @@ import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
 import { ChevronLeft, ChevronRight, ShoppingCart, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X, CalendarX } from "lucide-react"
 import { MealSwapSheet } from "@/components/meal-swap-sheet"
+import { RecoveryNudge } from "@/components/recovery-nudge"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -610,6 +611,8 @@ export function DailyView() {
             </CardContent>
           </Card>
         )}
+
+        <RecoveryNudge dayIndex={selectedDay} />
 
         <div className="space-y-3.5">
           <div className="flex items-center justify-between gap-3">
