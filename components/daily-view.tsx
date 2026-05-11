@@ -20,7 +20,7 @@ import {
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
-import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X } from "lucide-react"
 import { MealSwapSheet } from "@/components/meal-swap-sheet"
 
 function MacroProgress({ current, target, label, icon, color }: { 
@@ -89,7 +89,10 @@ export function DailyView() {
     calculateMacros,
     setMealPlanConfig,
     generateMealPlan,
+    cycleMealStatus,
+    appPrefs,
   } = useMealStore()
+  const language = appPrefs.language
   const [showGroceryList, setShowGroceryList] = useState(false)
   const [dailyListCopied, setDailyListCopied] = useState(false)
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set())
@@ -649,7 +652,14 @@ export function DailyView() {
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground">
                         {getMealLabel(idx, currentDay.meals.length)}
                       </span>
-                      <div className="mt-3 break-words text-lg font-semibold leading-snug text-foreground">{meal.name}</div>
+                      <div
+                        className={cn(
+                          "mt-3 break-words text-lg font-semibold leading-snug text-foreground",
+                          meal.status === "skipped" && "line-through"
+                        )}
+                      >
+                        {meal.name}
+                      </div>
                     </div>
                     <div className="dashboard-kpi-tile shrink-0 px-3 py-2 text-right">
                       <div className="text-lg font-semibold tabular-nums text-foreground">{meal.calories}</div>
@@ -689,6 +699,46 @@ export function DailyView() {
                       <ArrowLeftRight className="h-4 w-4" />
                       <span>Swap</span>
                     </button>
+                  </div>
+
+                  <div className="mt-4 flex justify-end">
+                    {(() => {
+                      const status = meal.status
+                      const label =
+                        status === "eaten"
+                          ? language === "ko" ? "먹었어요" : "Eaten"
+                          : status === "skipped"
+                          ? language === "ko" ? "건너뜀" : "Skipped"
+                          : language === "ko" ? "예정" : "Planned"
+                      const pillStyle =
+                        status === "eaten"
+                          ? { backgroundColor: "#26603F", color: "#FFFFFF" }
+                          : status === "skipped"
+                          ? { backgroundColor: "#FCEBEA", color: "#B23A48" }
+                          : { backgroundColor: "#F1F5F2", color: "#26603F" }
+                      const ariaLabel =
+                        status === "eaten"
+                          ? "Mark meal as skipped"
+                          : status === "skipped"
+                          ? "Mark meal as planned"
+                          : "Mark meal as eaten"
+                      return (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            cycleMealStatus(selectedDay, idx)
+                          }}
+                          aria-label={ariaLabel}
+                          className="inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium"
+                          style={pillStyle}
+                        >
+                          {status === "eaten" && <Check className="h-3 w-3" />}
+                          {status === "skipped" && <X className="h-3 w-3" />}
+                          <span>{label}</span>
+                        </button>
+                      )
+                    })()}
                   </div>
 
                   {isExpanded && (
