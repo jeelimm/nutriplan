@@ -382,7 +382,9 @@ export const useMealStore = create<MealStore>()(
         set((state) => {
           const weekPlan = state.weekPlan.map((day, dIdx) => {
             if (dIdx !== dayIndex) return day
-            const meals = day.meals.map((meal, mIdx) => (mIdx === mealIndex ? newMeal : meal))
+            const meals = day.meals.map((meal, mIdx) =>
+              mIdx === mealIndex ? { ...newMeal, status: 'planned' as MealStatus } : meal
+            )
             return {
               ...day,
               meals,
