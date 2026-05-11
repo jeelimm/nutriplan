@@ -20,8 +20,18 @@ import {
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
-import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X, CalendarX } from "lucide-react"
 import { MealSwapSheet } from "@/components/meal-swap-sheet"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 function MacroProgress({ current, target, label, icon, color }: { 
   current: number
@@ -90,6 +100,7 @@ export function DailyView() {
     setMealPlanConfig,
     generateMealPlan,
     cycleMealStatus,
+    skipDay,
     appPrefs,
   } = useMealStore()
   const language = appPrefs.language
@@ -111,6 +122,7 @@ export function DailyView() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
   const [swapTarget, setSwapTarget] = useState<{ meal: Meal; dayIndex: number; mealIndex: number } | null>(null)
+  const [skipDayDialogOpen, setSkipDayDialogOpen] = useState(false)
 
   const convertWeightValue = (value: string, fromUnit: "kg" | "lbs", toUnit: "kg" | "lbs"): string => {
     if (fromUnit === toUnit || !value.trim()) return value
@@ -480,6 +492,47 @@ export function DailyView() {
               Aim close to your targets, not perfect. This plan is meant to help you repeat good-enough days that fit
               real life.
             </p>
+
+            {weekPlan.length > 0 && (
+              <div className="flex justify-end">
+                <AlertDialog open={skipDayDialogOpen} onOpenChange={setSkipDayDialogOpen}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => setSkipDayDialogOpen(true)}
+                  >
+                    <CalendarX size={16} />
+                    {language === "ko" ? "오늘 다 건너뛰었어요" : "I skipped today"}
+                  </Button>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {language === "ko"
+                          ? "오늘 식사를 모두 건너뜀으로 표시할까요?"
+                          : "Mark all of today's meals as skipped?"}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {language === "ko"
+                          ? "오늘의 모든 식사가 건너뜀으로 표시돼요. 식사별로 다시 변경할 수 있어요."
+                          : "This sets every meal for the active day to Skipped. You can undo per meal afterwards."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{language === "ko" ? "취소" : "Cancel"}</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          skipDay(selectedDay)
+                          setSkipDayDialogOpen(false)
+                        }}
+                      >
+                        {language === "ko" ? "확인" : "Confirm"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
 
             <div className="flex items-center gap-2">
               <button
