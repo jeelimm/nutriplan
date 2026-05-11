@@ -20,46 +20,19 @@ import {
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
-import { ChevronLeft, ChevronRight, ShoppingCart, Flame, Beef, Wheat, Droplets, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShoppingCart, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X, CalendarX } from "lucide-react"
 import { MealSwapSheet } from "@/components/meal-swap-sheet"
-
-function MacroProgress({ current, target, label, icon, color }: { 
-  current: number
-  target: number
-  label: string
-  icon: React.ReactNode
-  color: string
-}) {
-  const percentage = Math.min((current / target) * 100, 100)
-  const targetRemaining = Math.max(target - current, 0)
-  
-  return (
-    <div className="dashboard-progress-row min-w-0 space-y-3">
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary/95">
-            {icon}
-          </span>
-          <div className="min-w-0">
-            <div className="truncate text-sm font-medium text-foreground">{label}</div>
-            <div className="text-xs text-muted-foreground">
-              {current >= target ? "At or above target" : `${targetRemaining}g still to go`}
-            </div>
-          </div>
-        </div>
-        <span className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums text-foreground">
-          {current}g / {target}g
-        </span>
-      </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-secondary">
-        <div
-          className={`h-full rounded-full transition-all ${color}`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-    </div>
-  )
-}
+import { RecoveryNudge } from "@/components/recovery-nudge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const activityLevels: { id: ActivityLevel; label: string; description: string }[] = [
   { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, little planned exercise" },
@@ -89,7 +62,11 @@ export function DailyView() {
     calculateMacros,
     setMealPlanConfig,
     generateMealPlan,
+    cycleMealStatus,
+    skipDay,
+    appPrefs,
   } = useMealStore()
+  const language = appPrefs.language
   const [showGroceryList, setShowGroceryList] = useState(false)
   const [dailyListCopied, setDailyListCopied] = useState(false)
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set())
@@ -108,6 +85,7 @@ export function DailyView() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLongWaitError, setShowLongWaitError] = useState(false)
   const [swapTarget, setSwapTarget] = useState<{ meal: Meal; dayIndex: number; mealIndex: number } | null>(null)
+  const [skipDayDialogOpen, setSkipDayDialogOpen] = useState(false)
 
   const convertWeightValue = (value: string, fromUnit: "kg" | "lbs", toUnit: "kg" | "lbs"): string => {
     if (fromUnit === toUnit || !value.trim()) return value
@@ -361,8 +339,13 @@ export function DailyView() {
     spices: "Spices & Seasonings",
   }
 
-  const calorieProgress = (currentDay.totalCalories / userProfile.dailyCalories) * 100
-  const calorieDifference = userProfile.dailyCalories - currentDay.totalCalories
+  const eatenMeals = currentDay.meals.filter((m) => m.status === "eaten")
+  const eatenKcal = eatenMeals.reduce((s, m) => s + m.calories, 0)
+  const eatenProtein = eatenMeals.reduce((s, m) => s + m.protein, 0)
+  const eatenCarbs = eatenMeals.reduce((s, m) => s + m.carbs, 0)
+  const eatenFat = eatenMeals.reduce((s, m) => s + m.fat, 0)
+  const targetKcal = userProfile.dailyCalories
+  const calorieFillPct = Math.min(100, (eatenKcal / Math.max(targetKcal, 1)) * 100)
   const getMealLabel = (index: number, totalMeals: number): string => {
     if (index === 0) return "Breakfast"
     if (index === 1) return "Lunch"
@@ -478,6 +461,47 @@ export function DailyView() {
               real life.
             </p>
 
+            {weekPlan.length > 0 && (
+              <div className="flex justify-end">
+                <AlertDialog open={skipDayDialogOpen} onOpenChange={setSkipDayDialogOpen}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => setSkipDayDialogOpen(true)}
+                  >
+                    <CalendarX size={16} />
+                    {language === "ko" ? "오늘 다 건너뛰었어요" : "I skipped today"}
+                  </Button>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {language === "ko"
+                          ? "오늘 식사를 모두 건너뜀으로 표시할까요?"
+                          : "Mark all of today's meals as skipped?"}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {language === "ko"
+                          ? "오늘의 모든 식사가 건너뜀으로 표시돼요. 식사별로 다시 변경할 수 있어요."
+                          : "This sets every meal for the active day to Skipped. You can undo per meal afterwards."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{language === "ko" ? "취소" : "Cancel"}</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          skipDay(selectedDay)
+                          setSkipDayDialogOpen(false)
+                        }}
+                      >
+                        {language === "ko" ? "확인" : "Confirm"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -528,82 +552,40 @@ export function DailyView() {
           </div>
         )}
         <Card className="bridge-section dark:bg-card dark:border-border">
-          <CardHeader className="gap-2 px-5 pb-3 pt-5 sm:px-6">
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
-              <span className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Today at a glance</span>
-            </div>
-            <div className="flex min-w-0 items-end justify-between gap-3">
-              <CardTitle className="flex min-w-0 items-center gap-2 text-[1.35rem] leading-tight">
-                <Flame className="h-5 w-5 shrink-0 text-primary" />
-                <span className="break-words">Calories and macros</span>
-              </CardTitle>
-              <div className="shrink-0 text-right">
-                <div className="flex items-baseline justify-end gap-1.5">
-                  <span className="text-3xl font-semibold tabular-nums text-foreground">{currentDay.totalCalories}</span>
-                  <span className="text-sm font-medium text-muted-foreground">/ {userProfile.dailyCalories} kcal</span>
-                </div>
-                {calorieDifference !== 0 && (
-                  <span
-                    className={cn(
-                      "mt-0.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                      calorieDifference < 0
-                        ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
-                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
-                    )}
-                  >
-                    {calorieDifference < 0
-                      ? `+${Math.abs(Math.round(calorieDifference))} kcal`
-                      : `-${Math.round(calorieDifference)} kcal`}
-                  </span>
-                )}
+          <CardContent className="space-y-3 px-5 py-5 sm:px-6">
+            <div>
+              <div className="text-sm font-medium text-foreground">
+                {language === "ko"
+                  ? `먹은 양 ${eatenKcal} kcal / 목표 ${targetKcal} kcal`
+                  : `Eaten ${eatenKcal} kcal / Target ${targetKcal} kcal`}
+              </div>
+              <div
+                className="mt-2 w-full rounded-full"
+                style={{ backgroundColor: "#F1F5F2", height: "6px" }}
+              >
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{ backgroundColor: "#26603F", width: `${calorieFillPct}%` }}
+                />
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4 px-5 pb-5 sm:px-6">
-
-            <div className="bridge-note-strip">
-              <Flame className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span className="break-words">
-                Close enough counts. Use this as a guide for the day, not a pass-fail score.
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="dashboard-meta-pill">
+                {language === "ko"
+                  ? `단백질 ${eatenProtein}/${userProfile.macros.protein}g`
+                  : `P ${eatenProtein}/${userProfile.macros.protein}g`}
+              </span>
+              <span className="dashboard-meta-pill">
+                {language === "ko"
+                  ? `탄수 ${eatenCarbs}/${userProfile.macros.carbs}g`
+                  : `C ${eatenCarbs}/${userProfile.macros.carbs}g`}
+              </span>
+              <span className="dashboard-meta-pill">
+                {language === "ko"
+                  ? `지방 ${eatenFat}/${userProfile.macros.fat}g`
+                  : `F ${eatenFat}/${userProfile.macros.fat}g`}
               </span>
             </div>
-
-            <div className="relative h-3.5 w-full overflow-hidden rounded-full bg-secondary">
-              <div
-                className={`absolute left-0 top-0 h-full rounded-full transition-all ${
-                  calorieProgress > 100 ? "bg-rose-700/60" : "bg-primary"
-                }`}
-                style={{ width: `${Math.min(calorieProgress, 100)}%` }}
-              />
-              {calorieProgress >= 95 && calorieProgress <= 105 && (
-                <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                  <Check className="h-3 w-3 text-primary-foreground" />
-                </div>
-              )}
-            </div>
-
-            <MacroProgress
-              current={currentDay.totalProtein}
-              target={userProfile.macros.protein}
-              label="Protein"
-              icon={<Beef className="h-4 w-4 text-chart-1" />}
-              color="bg-emerald-700/60"
-            />
-            <MacroProgress
-              current={currentDay.totalCarbs}
-              target={userProfile.macros.carbs}
-              label="Carbs"
-              icon={<Wheat className="h-4 w-4 text-chart-3" />}
-              color="bg-amber-700/60"
-            />
-            <MacroProgress
-              current={currentDay.totalFat}
-              target={userProfile.macros.fat}
-              label="Fat"
-              icon={<Droplets className="h-4 w-4 text-chart-2" />}
-              color="bg-sky-700/60"
-            />
           </CardContent>
         </Card>
 
@@ -630,6 +612,8 @@ export function DailyView() {
           </Card>
         )}
 
+        <RecoveryNudge dayIndex={selectedDay} />
+
         <div className="space-y-3.5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
@@ -649,7 +633,14 @@ export function DailyView() {
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground">
                         {getMealLabel(idx, currentDay.meals.length)}
                       </span>
-                      <div className="mt-3 break-words text-lg font-semibold leading-snug text-foreground">{meal.name}</div>
+                      <div
+                        className={cn(
+                          "mt-3 break-words text-lg font-semibold leading-snug text-foreground",
+                          meal.status === "skipped" && "line-through"
+                        )}
+                      >
+                        {meal.name}
+                      </div>
                     </div>
                     <div className="dashboard-kpi-tile shrink-0 px-3 py-2 text-right">
                       <div className="text-lg font-semibold tabular-nums text-foreground">{meal.calories}</div>
@@ -689,6 +680,46 @@ export function DailyView() {
                       <ArrowLeftRight className="h-4 w-4" />
                       <span>Swap</span>
                     </button>
+                  </div>
+
+                  <div className="mt-4 flex justify-end">
+                    {(() => {
+                      const status = meal.status
+                      const label =
+                        status === "eaten"
+                          ? language === "ko" ? "먹었어요" : "Eaten"
+                          : status === "skipped"
+                          ? language === "ko" ? "건너뜀" : "Skipped"
+                          : language === "ko" ? "예정" : "Planned"
+                      const pillStyle =
+                        status === "eaten"
+                          ? { backgroundColor: "#26603F", color: "#FFFFFF" }
+                          : status === "skipped"
+                          ? { backgroundColor: "#FCEBEA", color: "#B23A48" }
+                          : { backgroundColor: "#F1F5F2", color: "#26603F" }
+                      const ariaLabel =
+                        status === "eaten"
+                          ? "Mark meal as skipped"
+                          : status === "skipped"
+                          ? "Mark meal as planned"
+                          : "Mark meal as eaten"
+                      return (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            cycleMealStatus(selectedDay, idx)
+                          }}
+                          aria-label={ariaLabel}
+                          className="inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium"
+                          style={pillStyle}
+                        >
+                          {status === "eaten" && <Check className="h-3 w-3" />}
+                          {status === "skipped" && <X className="h-3 w-3" />}
+                          <span>{label}</span>
+                        </button>
+                      )
+                    })()}
                   </div>
 
                   {isExpanded && (

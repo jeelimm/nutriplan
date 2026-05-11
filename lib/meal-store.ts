@@ -13,6 +13,8 @@ export type Language = 'en' | 'ko'
 export type WeightLossPace = 'steady' | 'moderate' | 'aggressive'
 export type BodyType = 'slim' | 'average' | 'athletic' | 'heavy'
 
+export type MealStatus = 'planned' | 'eaten' | 'skipped'
+
 export type CuisinePreference =
   | 'western'
   | 'korean'
@@ -65,6 +67,7 @@ export interface Meal {
   instructions: string[]
   prepTime: number
   cookTime: number
+  status: MealStatus
 }
 
 export interface Ingredient {
@@ -133,12 +136,16 @@ interface MealStore {
   ) => { calories: number; macros: UserProfile['macros']; calorieFloorApplied: boolean }
   generateMealPlan: () => Promise<void>
   swapMeal: (dayIndex: number, mealIndex: number, newMeal: Meal) => void
+  setMealStatus: (dayIndex: number, mealIndex: number, status: MealStatus) => void
+  cycleMealStatus: (dayIndex: number, mealIndex: number) => void
+  skipDay: (dayIndex: number) => void
+  resetDayStatuses: (dayIndex: number) => void
   swapCandidates: SwapCandidate[]
   setSwapCandidates: (candidates: SwapCandidate[]) => void
   clearSwapCandidates: () => void
 }
 
-const PROFILE_VERSION = 2
+const PROFILE_VERSION = 3
 
 const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'moderate'
 const DEFAULT_DIET_TYPE: DietType = 'balanced'
@@ -259,7 +266,7 @@ function normalizeUserProfile(raw: unknown): UserProfile | null {
 }
 
 // Sample meal database
-const mealDatabase: Record<DietType, Meal[]> = {
+const mealDatabase: Record<DietType, Omit<Meal, 'status'>[]> = {
   'keto': [
     { id: '1', name: 'Avocado Egg Scramble', calories: 420, protein: 22, carbs: 8, fat: 35, ingredients: [{ name: 'Eggs', amount: '3 large', category: 'protein' }, { name: 'Avocado', amount: '1/2', category: 'fats' }, { name: 'Butter', amount: '1 tbsp', category: 'fats' }, { name: 'Spinach', amount: '1 cup', category: 'vegetables' }], instructions: ['Melt butter in a non-stick pan over medium heat.', 'Crack eggs into the pan and scramble gently for 2-3 minutes.', 'Add spinach and cook until wilted.', 'Top with sliced avocado and season with salt and pepper.'], prepTime: 5, cookTime: 8 },
     { id: '2', name: 'Grilled Salmon with Asparagus', calories: 480, protein: 42, carbs: 6, fat: 32, ingredients: [{ name: 'Salmon fillet', amount: '6 oz', category: 'protein' }, { name: 'Asparagus', amount: '8 spears', category: 'vegetables' }, { name: 'Olive oil', amount: '2 tbsp', category: 'fats' }, { name: 'Lemon', amount: '1/2', category: 'fruits' }], instructions: ['Preheat grill or grill pan to medium-high heat.', 'Brush salmon and asparagus with olive oil, season with salt and pepper.', 'Grill salmon for 4-5 minutes per side until cooked through.', 'Grill asparagus for 3-4 minutes, turning occasionally.', 'Squeeze fresh lemon over salmon before serving.'], prepTime: 10, cookTime: 12 },
@@ -375,7 +382,9 @@ export const useMealStore = create<MealStore>()(
         set((state) => {
           const weekPlan = state.weekPlan.map((day, dIdx) => {
             if (dIdx !== dayIndex) return day
-            const meals = day.meals.map((meal, mIdx) => (mIdx === mealIndex ? newMeal : meal))
+            const meals = day.meals.map((meal, mIdx) =>
+              mIdx === mealIndex ? { ...newMeal, status: 'planned' as MealStatus } : meal
+            )
             return {
               ...day,
               meals,
@@ -383,6 +392,61 @@ export const useMealStore = create<MealStore>()(
               totalProtein: meals.reduce((sum, m) => sum + m.protein, 0),
               totalCarbs: meals.reduce((sum, m) => sum + m.carbs, 0),
               totalFat: meals.reduce((sum, m) => sum + m.fat, 0),
+            }
+          })
+          return { weekPlan }
+        }),
+      setMealStatus: (dayIndex, mealIndex, status) =>
+        set((state) => {
+          const weekPlan = state.weekPlan.map((day, dIdx) => {
+            if (dIdx !== dayIndex) return day
+            return {
+              ...day,
+              meals: day.meals.map((meal, mIdx) =>
+                mIdx === mealIndex ? { ...meal, status } : meal
+              ),
+            }
+          })
+          return { weekPlan }
+        }),
+      cycleMealStatus: (dayIndex, mealIndex) =>
+        set((state) => {
+          const weekPlan = state.weekPlan.map((day, dIdx) => {
+            if (dIdx !== dayIndex) return day
+            return {
+              ...day,
+              meals: day.meals.map((meal, mIdx) => {
+                if (mIdx !== mealIndex) return meal
+                const next: MealStatus =
+                  meal.status === 'planned'
+                    ? 'eaten'
+                    : meal.status === 'eaten'
+                    ? 'skipped'
+                    : 'planned'
+                return { ...meal, status: next }
+              }),
+            }
+          })
+          return { weekPlan }
+        }),
+      skipDay: (dayIndex) =>
+        set((state) => {
+          const weekPlan = state.weekPlan.map((day, dIdx) => {
+            if (dIdx !== dayIndex) return day
+            return {
+              ...day,
+              meals: day.meals.map((meal) => ({ ...meal, status: 'skipped' as MealStatus })),
+            }
+          })
+          return { weekPlan }
+        }),
+      resetDayStatuses: (dayIndex) =>
+        set((state) => {
+          const weekPlan = state.weekPlan.map((day, dIdx) => {
+            if (dIdx !== dayIndex) return day
+            return {
+              ...day,
+              meals: day.meals.map((meal) => ({ ...meal, status: 'planned' as MealStatus })),
             }
           })
           return { weekPlan }
@@ -524,6 +588,12 @@ export const useMealStore = create<MealStore>()(
 
                 const { prepTime, cookTime, instructions } = extractRecipeFromApiMeal(meal)
 
+                const rawStatus = meal?.status
+                const status: MealStatus =
+                  rawStatus === 'eaten' || rawStatus === 'skipped' || rawStatus === 'planned'
+                    ? rawStatus
+                    : 'planned'
+
                 return {
                   id: `${dayName}-${mealIdx}`,
                   name: String(meal?.name ?? ""),
@@ -539,6 +609,7 @@ export const useMealStore = create<MealStore>()(
                   instructions,
                   prepTime,
                   cookTime,
+                  status,
                 }
               })
             : []
@@ -583,12 +654,32 @@ export const useMealStore = create<MealStore>()(
     {
       name: 'meal-plan-storage',
       version: PROFILE_VERSION,
-      migrate: (persistedState) => {
+      migrate: (persistedState, version) => {
         const state = persistedState as Partial<MealStore> | undefined
         if (!state) return state as MealStore
+
+        let weekPlan = state.weekPlan
+        if (version <= 2 && Array.isArray(weekPlan)) {
+          weekPlan = weekPlan.map((day) => {
+            if (!day || !Array.isArray(day.meals)) return day
+            return {
+              ...day,
+              meals: day.meals.map((meal) => {
+                if (!meal) return meal
+                const rawStatus = (meal as Meal & { status?: unknown }).status
+                if (rawStatus === 'planned' || rawStatus === 'eaten' || rawStatus === 'skipped') {
+                  return meal
+                }
+                return { ...meal, status: 'planned' as MealStatus }
+              }),
+            }
+          })
+        }
+
         return {
           ...state,
           userProfile: normalizeUserProfile(state.userProfile),
+          weekPlan,
         } as MealStore
       },
       partialize: (state) => ({
