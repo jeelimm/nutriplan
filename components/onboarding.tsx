@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  AlertCircle,
 } from "lucide-react"
 
 const goals: { id: Goal; label: string; description: string; icon: React.ReactNode }[] = [
@@ -264,7 +265,7 @@ const onboardingUi = {
   inputNote:
     "text-xs leading-[1.35] text-[#7a8079] dark:text-muted-foreground",
   inputValidation:
-    "text-xs leading-[1.35] text-[#8b5a47] dark:text-destructive/90",
+    "flex items-start gap-2 rounded-md border border-[#DC2626] bg-[#FEF2F2] px-[14px] py-[10px] text-xs font-semibold leading-[1.35] text-[#B91C1C]",
   secondaryActionRow:
     "flex min-h-11 w-full items-center justify-between rounded-2xl border border-[#d8ccb9] dark:border-border bg-[#fff7ee] dark:bg-secondary/60 px-4 py-3 text-left text-sm font-medium text-[#5e665f] dark:text-muted-foreground transition-colors hover:bg-[#f8efe4] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20",
   primaryCtaBase:
@@ -314,7 +315,15 @@ function OnboardingFieldNote({
   error?: boolean
   children: ReactNode
 }) {
-  return <p className={error ? onboardingUi.inputValidation : onboardingUi.inputNote}>{children}</p>
+  if (error) {
+    return (
+      <p className={onboardingUi.inputValidation}>
+        <AlertCircle size={16} className="mt-px shrink-0 text-[#DC2626]" />
+        <span>{children}</span>
+      </p>
+    )
+  }
+  return <p className={onboardingUi.inputNote}>{children}</p>
 }
 
 function OnboardingBoundedInput({
