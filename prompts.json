@@ -1,16 +1,11 @@
 {
-  "feature": "ingredient-macro-preview-grocery-scroll",
-  "branch": "feature/ingredient-macro-preview-grocery-scroll",
+  "feature": "fix-meal-plan-truncation",
+  "branch": "feature/fix-meal-plan-truncation",
   "prompts": [
     {
       "id": "1",
-      "description": "Reset scroll to top on Grocery List page mount",
-      "prompt": "In components/grocery-list.tsx, the page currently opens with the scroll position inherited from the previous screen (often scrolled to the bottom). Add a useEffect that runs once on mount and calls window.scrollTo(0, 0) so the Grocery List always opens at the top. If the component already has a useEffect, add a separate one rather than merging unrelated logic. Do NOT change any other behavior, the ScrollToTop button, or grocery rendering logic. Verify: npm run build passes and navigating into the Full weekly shopping list page opens scrolled to the top."
-    },
-    {
-      "id": "2",
-      "description": "Show macro info immediately after AI ingredient lookup, before the user adds it",
-      "prompt": "In components/onboarding.tsx, find the flow where fetchIngredientViaClaude looks up a custom ingredient not in the catalog. There is an existing pending-state UI (pendingClaudeIngredient or similar) shown after lookup with an inline category picker, before the ingredient is committed to the catalog. Locate that pending UI. Add a compact macro preview row to it so the user sees nutrition data BEFORE pressing Add: display per-100g calories, protein, carbs, and fat from the looked-up data (e.g. '120 kcal · P 22g · C 0g · F 3g'). Style it as a small muted text row (text-sm, text-muted-foreground) directly under the ingredient name. Use the exact field names already returned by the lookup (name, calories, protein, carbs, fat). If a value is missing, omit that token gracefully. Do NOT change fetchIngredientViaClaude, the category picker logic, the add-to-catalog behavior, or the API route. Display only. Verify: npm run build passes; after an AI lookup, the macro numbers appear in the pending UI before the ingredient is added."
+      "description": "Fix intermittent meal-plan generation failure caused by max_tokens truncating the JSON response",
+      "prompt": "Edit only app/api/generate-meal-plan/route.ts. Problem: the Claude response is sometimes cut off by max_tokens, producing invalid JSON ('Unterminated string in JSON at position ~12000') and a 500, especially for high-variety plans. Make these changes: (1) Raise the Anthropic call's max_tokens from 4000 to 8000. (2) If there is a Promise.race hard timeout currently set to 35s (35000ms) guarding the Claude call, raise it to 50s (50000ms) — but do NOT touch `export const maxDuration` (leave it at 60). (3) Around the JSON.parse of Claude's response, if a parse error is thrown, log the response length and the stop_reason if available, then throw a clear error message like 'Meal plan response was truncated (stop_reason: max_tokens) — increase max_tokens'. Do NOT change the prompt content, the meal rotation logic, adjustMacros, validateMealPlan, or any other file. Verify: npm run build passes; generating a meal plan with the most-variety / most-expensive setting succeeds consistently across at least 3 attempts without a 500."
     }
   ]
 }
