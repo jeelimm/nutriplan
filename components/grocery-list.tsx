@@ -56,6 +56,13 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
   const prevFingerprintRef = useRef<string>("")
 
+  // Always open the grocery list scrolled to the top, regardless of prior screen position
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    // intentionally run once on mount only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Load persisted checklist on mount; discard if it belongs to a different plan
   useEffect(() => {
     try {

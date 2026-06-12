@@ -1,31 +1,16 @@
 {
-  "feature": "ux-batch-dogfood",
-  "branch": "feature/ux-batch-dogfood",
+  "feature": "ingredient-macro-preview-grocery-scroll",
+  "branch": "feature/ingredient-macro-preview-grocery-scroll",
   "prompts": [
     {
       "id": "1",
-      "description": "Rename onboarding entry paths: Quick Start to Estimate, InBody path to Precise (InBody)",
-      "prompt": "In components/onboarding.tsx, locate the entry screen where the user chooses between the two onboarding paths (Quick Estimate / quick start vs InBody / precise). Rename the user-facing labels ONLY: the quick-estimate path button/card title becomes \"Estimate\" and the precise path becomes \"Precise (InBody)\". Update any subtitle/description copy so it no longer claims the Estimate path is faster or has fewer fields — instead describe it as \"Estimate body composition from your body type\" for Estimate and \"Enter exact InBody measurements\" for Precise (InBody). If Korean strings exist (language === 'ko'), update them too: \"추정\" and \"정밀 (InBody)\" with matching descriptions. Do NOT change any logic, field order, state, or the applyQuickEstimate flow — labels and description copy only. Verify: npm run build passes and the onboarding entry screen shows the new names."
+      "description": "Reset scroll to top on Grocery List page mount",
+      "prompt": "In components/grocery-list.tsx, the page currently opens with the scroll position inherited from the previous screen (often scrolled to the bottom). Add a useEffect that runs once on mount and calls window.scrollTo(0, 0) so the Grocery List always opens at the top. If the component already has a useEffect, add a separate one rather than merging unrelated logic. Do NOT change any other behavior, the ScrollToTop button, or grocery rendering logic. Verify: npm run build passes and navigating into the Full weekly shopping list page opens scrolled to the top."
     },
     {
       "id": "2",
-      "description": "Make per-meal status pill look tappable in Daily View (icon + button styling)",
-      "prompt": "Building on the existing meal status pill in components/daily-view.tsx (the pill that cycles planned/eaten/skipped/cheat on each meal card). Make it visually obvious the pill is interactive WITHOUT changing its click/cycle logic. Changes: (a) add a small Lucide icon inside the pill indicating it cycles — use the RotateCw icon (size 12) placed left of the status label; (b) style the pill as a button: add subtle border, rounded-full, px-2.5 py-1, cursor-pointer, and a hover state (slightly darker bg); (c) add an active/press feedback via active:scale-95 transition-transform. Keep the existing per-status color scheme intact. Do NOT change the status cycling handler, the Meal type, or any Zustand logic. Verify: npm run build passes and tapping the pill still cycles status, now with visible button affordance + press animation."
-    },
-    {
-      "id": "3",
-      "description": "Increase visibility of ingredient-selection warning text in onboarding",
-      "prompt": "In components/onboarding.tsx, locate the warning shown when the user has selected fewer than the required ingredients (text similar to \"Select at least X proteins, Y carb, and Z fat to continue\"). Increase its visibility: wrap it in a styled alert container with bg #FEF2F2, border 1px #DC2626, rounded-md, padding 10px 14px, text color #B91C1C, font-weight 600, and a Lucide AlertCircle icon (size 16, color #DC2626) before the text. Apply the same alert styling pattern to any other inline validation warning in onboarding.tsx so warnings are consistent. Do NOT change the validation logic or the minimum-selection rules — styling only. Verify: npm run build passes and the warning is clearly visible against the background."
-    },
-    {
-      "id": "4",
-      "description": "Trigger AI ingredient lookup on Enter key in onboarding ingredient search",
-      "prompt": "In components/onboarding.tsx, locate the ingredient search input where fetchIngredientViaClaude is called when a searched ingredient is not in the catalog (currently triggered by a button). Add an onKeyDown handler to that search input so pressing Enter triggers the same AI lookup action as the existing button. Guard against empty/whitespace-only input (do nothing if trimmed value is empty) and prevent default form submission. Do NOT remove the existing button and do NOT change fetchIngredientViaClaude itself — only wire the Enter key to the existing handler. Verify: npm run build passes and pressing Enter in the ingredient search field triggers the AI lookup."
-    },
-    {
-      "id": "5",
-      "description": "Add a Go-to-top floating button on long-scroll screens (Settings + Grocery List)",
-      "prompt": "Create a reusable component components/scroll-to-top.tsx: a fixed-position floating button (bottom-right, bottom-20 right-4, z-40) that appears only after the user scrolls down more than 400px and smooth-scrolls to top on click. Use a Lucide ArrowUp icon (size 20), circular button (h-10 w-10 rounded-full), bg #26603F, text white, shadow-lg, hover darkens slightly. Track scroll position with a useEffect scroll listener and local useState (cleanup listener on unmount). It must not overlap existing FABs — if a bottom-right FAB already exists on a screen, position this above it. Then mount <ScrollToTop /> in the two longest-scroll screens: components/settings-screen.tsx and components/grocery-list.tsx. Do NOT add it to onboarding or daily-view. Verify: npm run build passes; scrolling down past 400px on Settings or Grocery List reveals the button, and clicking it scrolls to top."
+      "description": "Show macro info immediately after AI ingredient lookup, before the user adds it",
+      "prompt": "In components/onboarding.tsx, find the flow where fetchIngredientViaClaude looks up a custom ingredient not in the catalog. There is an existing pending-state UI (pendingClaudeIngredient or similar) shown after lookup with an inline category picker, before the ingredient is committed to the catalog. Locate that pending UI. Add a compact macro preview row to it so the user sees nutrition data BEFORE pressing Add: display per-100g calories, protein, carbs, and fat from the looked-up data (e.g. '120 kcal · P 22g · C 0g · F 3g'). Style it as a small muted text row (text-sm, text-muted-foreground) directly under the ingredient name. Use the exact field names already returned by the lookup (name, calories, protein, carbs, fat). If a value is missing, omit that token gracefully. Do NOT change fetchIngredientViaClaude, the category picker logic, the add-to-catalog behavior, or the API route. Display only. Verify: npm run build passes; after an AI lookup, the macro numbers appear in the pending UI before the ingredient is added."
     }
   ]
 }
