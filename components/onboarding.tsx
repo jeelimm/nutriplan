@@ -2235,6 +2235,13 @@ export function Onboarding() {
                         <OnboardingBoundedInput
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              if (!search.trim() || fetchingIngredient) return
+                              void fetchIngredientViaClaude()
+                            }
+                          }}
                           placeholder="Search ingredients..."
                           className="pl-10"
                         />

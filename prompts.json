@@ -29,5 +29,3 @@
     }
   ]
 }
-EOF
-jq -r '.prompts[].id' prompts.json
