@@ -20,7 +20,7 @@ import {
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
-import { ChevronLeft, ChevronRight, ShoppingCart, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X, CalendarX } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShoppingCart, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X, CalendarX, RotateCw } from "lucide-react"
 import { MealSwapSheet } from "@/components/meal-swap-sheet"
 import { RecoveryNudge } from "@/components/recovery-nudge"
 import {
@@ -711,9 +711,10 @@ export function DailyView() {
                             cycleMealStatus(selectedDay, idx)
                           }}
                           aria-label={ariaLabel}
-                          className="inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium"
+                          className="inline-flex items-center gap-1 rounded-full border border-black/10 px-2.5 py-1 text-xs font-medium cursor-pointer transition-transform hover:brightness-95 active:scale-95"
                           style={pillStyle}
                         >
+                          <RotateCw size={12} className="shrink-0 opacity-70" />
                           {status === "eaten" && <Check className="h-3 w-3" />}
                           {status === "skipped" && <X className="h-3 w-3" />}
                           <span>{label}</span>

@@ -1,14 +1,31 @@
-cat > prompts.json << 'EOF'
 {
-  "feature": "protein-macro-floor",
-  "branch": "fix/protein-macro-floor",
+  "feature": "ux-batch-dogfood",
+  "branch": "feature/ux-batch-dogfood",
   "prompts": [
     {
       "id": "1",
-      "description": "Raise protein multipliers (lose-fat all diets, gain-muscle+keto) and lift min clamp from 1.2 to 1.6 g/kg LBM in lib/nutrition.ts",
-      "prompt": "Edit only the file lib/nutrition.ts. Make exactly two changes, both numeric-literal updates — do NOT change any function signature, export, parameter, or surrounding control flow. Change 1: inside `proteinGPerKgLbm(goal, dietType)`, update the `lose-fat` branch and the `gain-muscle` + `keto` sub-branch only. The new return values must be: for goal === \"lose-fat\" — `high-protein` → 2.2, `keto` → 1.8, `balanced` or `intermittent-fasting` → 1.8, default (no matching dietType) → 1.8. For goal === \"gain-muscle\" — `keto` → 1.8. Leave all other branches in `proteinGPerKgLbm` untouched (gain-muscle high-protein stays 2.2, gain-muscle balanced/IF/default stays 1.8, recomposition high-protein stays 2.0, recomposition default stays 1.8, final fallback stays 1.8). Change 2: inside `calculateNutritionTargets()`, replace the literal `1.2` in `const minProteinG = Math.round(lbmForFormula * 1.2)` with `1.6`. Leave the `2.2` max clamp on the very next line unchanged. Do NOT edit any other file — specifically NOT lib/meal-store.ts (do NOT bump PROFILE_VERSION), NOT any app/api/* route, NOT components/*. Verify: `npm run build` passes with zero TS errors; the only diff is in lib/nutrition.ts and consists solely of numeric-literal changes."
+      "description": "Rename onboarding entry paths: Quick Start to Estimate, InBody path to Precise (InBody)",
+      "prompt": "In components/onboarding.tsx, locate the entry screen where the user chooses between the two onboarding paths (Quick Estimate / quick start vs InBody / precise). Rename the user-facing labels ONLY: the quick-estimate path button/card title becomes \"Estimate\" and the precise path becomes \"Precise (InBody)\". Update any subtitle/description copy so it no longer claims the Estimate path is faster or has fewer fields — instead describe it as \"Estimate body composition from your body type\" for Estimate and \"Enter exact InBody measurements\" for Precise (InBody). If Korean strings exist (language === 'ko'), update them too: \"추정\" and \"정밀 (InBody)\" with matching descriptions. Do NOT change any logic, field order, state, or the applyQuickEstimate flow — labels and description copy only. Verify: npm run build passes and the onboarding entry screen shows the new names."
+    },
+    {
+      "id": "2",
+      "description": "Make per-meal status pill look tappable in Daily View (icon + button styling)",
+      "prompt": "Building on the existing meal status pill in components/daily-view.tsx (the pill that cycles planned/eaten/skipped/cheat on each meal card). Make it visually obvious the pill is interactive WITHOUT changing its click/cycle logic. Changes: (a) add a small Lucide icon inside the pill indicating it cycles — use the RotateCw icon (size 12) placed left of the status label; (b) style the pill as a button: add subtle border, rounded-full, px-2.5 py-1, cursor-pointer, and a hover state (slightly darker bg); (c) add an active/press feedback via active:scale-95 transition-transform. Keep the existing per-status color scheme intact. Do NOT change the status cycling handler, the Meal type, or any Zustand logic. Verify: npm run build passes and tapping the pill still cycles status, now with visible button affordance + press animation."
+    },
+    {
+      "id": "3",
+      "description": "Increase visibility of ingredient-selection warning text in onboarding",
+      "prompt": "In components/onboarding.tsx, locate the warning shown when the user has selected fewer than the required ingredients (text similar to \"Select at least X proteins, Y carb, and Z fat to continue\"). Increase its visibility: wrap it in a styled alert container with bg #FEF2F2, border 1px #DC2626, rounded-md, padding 10px 14px, text color #B91C1C, font-weight 600, and a Lucide AlertCircle icon (size 16, color #DC2626) before the text. Apply the same alert styling pattern to any other inline validation warning in onboarding.tsx so warnings are consistent. Do NOT change the validation logic or the minimum-selection rules — styling only. Verify: npm run build passes and the warning is clearly visible against the background."
+    },
+    {
+      "id": "4",
+      "description": "Trigger AI ingredient lookup on Enter key in onboarding ingredient search",
+      "prompt": "In components/onboarding.tsx, locate the ingredient search input where fetchIngredientViaClaude is called when a searched ingredient is not in the catalog (currently triggered by a button). Add an onKeyDown handler to that search input so pressing Enter triggers the same AI lookup action as the existing button. Guard against empty/whitespace-only input (do nothing if trimmed value is empty) and prevent default form submission. Do NOT remove the existing button and do NOT change fetchIngredientViaClaude itself — only wire the Enter key to the existing handler. Verify: npm run build passes and pressing Enter in the ingredient search field triggers the AI lookup."
+    },
+    {
+      "id": "5",
+      "description": "Add a Go-to-top floating button on long-scroll screens (Settings + Grocery List)",
+      "prompt": "Create a reusable component components/scroll-to-top.tsx: a fixed-position floating button (bottom-right, bottom-20 right-4, z-40) that appears only after the user scrolls down more than 400px and smooth-scrolls to top on click. Use a Lucide ArrowUp icon (size 20), circular button (h-10 w-10 rounded-full), bg #26603F, text white, shadow-lg, hover darkens slightly. Track scroll position with a useEffect scroll listener and local useState (cleanup listener on unmount). It must not overlap existing FABs — if a bottom-right FAB already exists on a screen, position this above it. Then mount <ScrollToTop /> in the two longest-scroll screens: components/settings-screen.tsx and components/grocery-list.tsx. Do NOT add it to onboarding or daily-view. Verify: npm run build passes; scrolling down past 400px on Settings or Grocery List reveals the button, and clicking it scrolls to top."
     }
   ]
 }
-EOF
-jq -r '.prompts[0].id' prompts.json

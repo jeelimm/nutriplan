@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { GroceryItemRow } from "@/components/grocery-item-row"
+import { ScrollToTop } from "@/components/scroll-to-top"
 import { useMealStore } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
@@ -312,6 +313,7 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
           </CardContent>
         </Card>
       </div>
+      <ScrollToTop />
     </div>
   )
 }

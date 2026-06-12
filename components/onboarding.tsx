@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  AlertCircle,
 } from "lucide-react"
 
 const goals: { id: Goal; label: string; description: string; icon: React.ReactNode }[] = [
@@ -264,7 +265,7 @@ const onboardingUi = {
   inputNote:
     "text-xs leading-[1.35] text-[#7a8079] dark:text-muted-foreground",
   inputValidation:
-    "text-xs leading-[1.35] text-[#8b5a47] dark:text-destructive/90",
+    "flex items-start gap-2 rounded-md border border-[#DC2626] bg-[#FEF2F2] px-[14px] py-[10px] text-xs font-semibold leading-[1.35] text-[#B91C1C]",
   secondaryActionRow:
     "flex min-h-11 w-full items-center justify-between rounded-2xl border border-[#d8ccb9] dark:border-border bg-[#fff7ee] dark:bg-secondary/60 px-4 py-3 text-left text-sm font-medium text-[#5e665f] dark:text-muted-foreground transition-colors hover:bg-[#f8efe4] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20",
   primaryCtaBase:
@@ -314,7 +315,15 @@ function OnboardingFieldNote({
   error?: boolean
   children: ReactNode
 }) {
-  return <p className={error ? onboardingUi.inputValidation : onboardingUi.inputNote}>{children}</p>
+  if (error) {
+    return (
+      <p className={onboardingUi.inputValidation}>
+        <AlertCircle size={16} className="mt-px shrink-0 text-[#DC2626]" />
+        <span>{children}</span>
+      </p>
+    )
+  }
+  return <p className={onboardingUi.inputNote}>{children}</p>
 }
 
 function OnboardingBoundedInput({
@@ -1342,10 +1351,9 @@ export function Onboarding() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-semibold text-[#243128] dark:text-foreground">Quick Start</div>
-                    <div className="mt-0.5 text-sm leading-5 text-[#4f5e56] dark:text-muted-foreground">Estimate your body type</div>
+                    <div className="text-[15px] font-semibold text-[#243128] dark:text-foreground">Estimate</div>
+                    <div className="mt-0.5 text-sm leading-5 text-[#4f5e56] dark:text-muted-foreground">Estimate body composition from your body type</div>
                   </div>
-                  <span className={cn(onboardingUi.stepChip, "shrink-0 mt-0.5")}>2 min</span>
                 </div>
               </button>
 
@@ -1359,10 +1367,9 @@ export function Onboarding() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">Precise Setup</div>
-                    <div className="mt-0.5 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">Enter exact measurements</div>
+                    <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">Precise (InBody)</div>
+                    <div className="mt-0.5 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">Enter exact InBody measurements</div>
                   </div>
-                  <span className={cn(onboardingUi.stepChip, "shrink-0 mt-0.5")}>5 min</span>
                 </div>
               </button>
             </CardContent>
@@ -2228,6 +2235,13 @@ export function Onboarding() {
                         <OnboardingBoundedInput
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              if (!search.trim() || fetchingIngredient) return
+                              void fetchIngredientViaClaude()
+                            }
+                          }}
                           placeholder="Search ingredients..."
                           className="pl-10"
                         />

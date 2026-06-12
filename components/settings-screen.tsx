@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ScrollToTop } from "@/components/scroll-to-top"
 import {
   useMealStore,
   CUISINE_OPTIONS,
@@ -534,6 +535,7 @@ export function SettingsScreen() {
           </BridgeCard>
           <div style={{ height: 24 }} />
         </div>
+        <ScrollToTop />
       </div>
     )
   }
@@ -931,6 +933,7 @@ export function SettingsScreen() {
 
         <div style={{ height: 24 }} />
       </div>
+      <ScrollToTop />
     </div>
   )
 }
