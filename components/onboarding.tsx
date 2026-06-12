@@ -1342,10 +1342,9 @@ export function Onboarding() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-semibold text-[#243128] dark:text-foreground">Quick Start</div>
-                    <div className="mt-0.5 text-sm leading-5 text-[#4f5e56] dark:text-muted-foreground">Estimate your body type</div>
+                    <div className="text-[15px] font-semibold text-[#243128] dark:text-foreground">Estimate</div>
+                    <div className="mt-0.5 text-sm leading-5 text-[#4f5e56] dark:text-muted-foreground">Estimate body composition from your body type</div>
                   </div>
-                  <span className={cn(onboardingUi.stepChip, "shrink-0 mt-0.5")}>2 min</span>
                 </div>
               </button>
 
@@ -1359,10 +1358,9 @@ export function Onboarding() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">Precise Setup</div>
-                    <div className="mt-0.5 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">Enter exact measurements</div>
+                    <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">Precise (InBody)</div>
+                    <div className="mt-0.5 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">Enter exact InBody measurements</div>
                   </div>
-                  <span className={cn(onboardingUi.stepChip, "shrink-0 mt-0.5")}>5 min</span>
                 </div>
               </button>
             </CardContent>
