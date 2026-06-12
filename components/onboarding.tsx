@@ -2278,6 +2278,16 @@ export function Onboarding() {
                               <p className="text-xs font-medium text-[#5e665f] dark:text-muted-foreground">
                                 What category is <span className="font-semibold text-[#28312b] dark:text-foreground">{pendingClaudeIngredient.name}</span>?
                               </p>
+                              {(() => {
+                                const tokens: string[] = []
+                                if (typeof pendingClaudeIngredient.calories === "number") tokens.push(`${Math.round(pendingClaudeIngredient.calories)} kcal`)
+                                if (typeof pendingClaudeIngredient.protein === "number") tokens.push(`P ${Math.round(pendingClaudeIngredient.protein)}g`)
+                                if (typeof pendingClaudeIngredient.carbs === "number") tokens.push(`C ${Math.round(pendingClaudeIngredient.carbs)}g`)
+                                if (typeof pendingClaudeIngredient.fat === "number") tokens.push(`F ${Math.round(pendingClaudeIngredient.fat)}g`)
+                                return tokens.length > 0 ? (
+                                  <p className="text-sm text-muted-foreground">{tokens.join(" · ")} <span className="text-xs">(per 100g)</span></p>
+                                ) : null
+                              })()}
                               <div className="grid grid-cols-4 gap-2">
                                 {([["Protein", "protein"], ["Carb", "carbs"], ["Fat", "fats"], ["Vegetable", "vegetables"]] as const).map(([label, value]) => (
                                   <button
