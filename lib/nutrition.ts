@@ -66,14 +66,14 @@ export function getLbmKgForNutrition(weightKg: number, bodyFat: number): number 
 /** Grams of protein per kg LBM from goal + dietType (before min/max clamp on total protein grams). */
 export function proteinGPerKgLbm(goal: Goal, dietType: DietType): number {
   if (goal === "lose-fat") {
-    if (dietType === "high-protein") return 2.0
-    if (dietType === "keto") return 1.4
-    if (dietType === "balanced" || dietType === "intermittent-fasting") return 1.6
-    return 1.6
+    if (dietType === "high-protein") return 2.2
+    if (dietType === "keto") return 1.8
+    if (dietType === "balanced" || dietType === "intermittent-fasting") return 1.8
+    return 1.8
   }
   if (goal === "gain-muscle") {
     if (dietType === "high-protein") return 2.2
-    if (dietType === "keto") return 1.6
+    if (dietType === "keto") return 1.8
     if (dietType === "balanced" || dietType === "intermittent-fasting") return 1.8
     return 1.8
   }
@@ -158,7 +158,7 @@ export function calculateNutritionTargets(input: {
   let calories = Math.max(minCalories, rawRounded)
 
   const proteinPerKg = proteinGPerKgLbm(input.goal, input.dietType)
-  const minProteinG = Math.round(lbmForFormula * 1.2)
+  const minProteinG = Math.round(lbmForFormula * 1.6)
   const maxProteinG = Math.round(lbmForFormula * 2.2)
   let proteinG = Math.round(lbmForFormula * proteinPerKg)
   proteinG = Math.min(maxProteinG, Math.max(minProteinG, proteinG))
