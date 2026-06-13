@@ -18,6 +18,8 @@ import {
   type Meal,
 } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
+import { localizeIngredientName } from "@/lib/ingredient-i18n"
+import { useT } from "@/lib/i18n"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
 import { ChevronLeft, ChevronRight, ShoppingCart, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X, CalendarX, RotateCw } from "lucide-react"
@@ -67,6 +69,7 @@ export function DailyView() {
     appPrefs,
   } = useMealStore()
   const language = appPrefs.language
+  const t = useT()
   const [showGroceryList, setShowGroceryList] = useState(false)
   const [dailyListCopied, setDailyListCopied] = useState(false)
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set())
@@ -86,6 +89,23 @@ export function DailyView() {
   const [showLongWaitError, setShowLongWaitError] = useState(false)
   const [swapTarget, setSwapTarget] = useState<{ meal: Meal; dayIndex: number; mealIndex: number } | null>(null)
   const [skipDayDialogOpen, setSkipDayDialogOpen] = useState(false)
+  const [showAiDisclosure, setShowAiDisclosure] = useState(false)
+
+  // Korean law requires prior notice that this feature uses generative AI.
+  // Show a one-time disclosure the first time the daily meal view mounts.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (window.localStorage.getItem("nutriplan-ai-disclosure-seen") !== "1") {
+      setShowAiDisclosure(true)
+    }
+  }, [])
+
+  const dismissAiDisclosure = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("nutriplan-ai-disclosure-seen", "1")
+    }
+    setShowAiDisclosure(false)
+  }
 
   const convertWeightValue = (value: string, fromUnit: "kg" | "lbs", toUnit: "kg" | "lbs"): string => {
     if (fromUnit === toUnit || !value.trim()) return value
@@ -640,6 +660,10 @@ export function DailyView() {
                         )}
                       >
                         {meal.name}
+                        <span className="ml-2 inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground align-middle">
+                          <Sparkles className="h-3 w-3" />
+                          {t('aiDisclosure.badge')}
+                        </span>
                       </div>
                     </div>
                     <div className="dashboard-kpi-tile shrink-0 px-3 py-2 text-right">
@@ -725,6 +749,10 @@ export function DailyView() {
 
                   {isExpanded && (
                     <div className="mt-4 space-y-4 border-t border-border pt-4">
+                      <span className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                        <Sparkles className="h-3 w-3" />
+                        {t('aiDisclosure.badge')}
+                      </span>
                       <div className="flex flex-wrap items-center gap-2 text-sm">
                         <div className="dashboard-meta-pill border-primary/15 bg-primary/10 text-foreground">
                           <Clock className="h-4 w-4 shrink-0 text-primary" />
@@ -743,7 +771,7 @@ export function DailyView() {
                           {meal.ingredients.map((ingredient, i) => (
                             <li key={i} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
                               <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                              <span className="min-w-0 flex-1 break-words text-foreground">{ingredient.name}</span>
+                              <span className="min-w-0 flex-1 break-words text-foreground">{localizeIngredientName(ingredient.name, language)}</span>
                               <span className="break-words text-muted-foreground">— {convertRecipeText(ingredient.amount, recipeUnitSystem)}</span>
                             </li>
                           ))}
@@ -1110,6 +1138,18 @@ export function DailyView() {
           </div>
         </div>
       )}
+
+      <AlertDialog open={showAiDisclosure} onOpenChange={(open) => { if (!open) dismissAiDisclosure() }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('aiDisclosure.badge')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('aiDisclosure.notice')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={dismissAiDisclosure}>{t('aiDisclosure.gotIt')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {swapTarget && (
         <MealSwapSheet

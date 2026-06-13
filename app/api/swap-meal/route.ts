@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { NextResponse } from "next/server"
 import type { Meal, UserProfile } from "@/lib/meal-store"
 import { validateSwapCandidate } from "@/lib/meal-validator"
+import { localizeIngredientName } from "@/lib/ingredient-i18n"
 
 export const maxDuration = 60
 
@@ -131,7 +132,7 @@ export async function POST(req: Request) {
       formatCuisinePreference(userProfile.cuisinePreference) || userProfile.dietType
     const language = userProfile.language === "ko" ? "ko" : "en"
     const selectedIngredients = Array.isArray(userProfile.selectedIngredients)
-      ? userProfile.selectedIngredients.slice(0, 10).join(", ")
+      ? userProfile.selectedIngredients.slice(0, 10).map((n) => localizeIngredientName(n, language)).join(", ")
       : ""
 
     const calTarget = firstNumber(currentMeal.calories)

@@ -1,3 +1,5 @@
+import { localizeIngredientName } from '@/lib/ingredient-i18n'
+
 type IngredientLike = { name: string; category?: string }
 type MealLike = {
   calories: number
@@ -78,14 +80,23 @@ export function validateSwapCandidate(
     ? userProfile.selectedIngredients
     : []
   if (allowedIngredients.length > 0) {
-    const allowedSet = new Set(allowedIngredients.map((i) => i.toLowerCase()))
-    for (const ingredient of candidate.ingredients) {
-      if (!allowedSet.has(ingredient.name.toLowerCase())) {
-        reasons.push(
-          `Ingredient "${ingredient.name}" is not in the user's selected ingredients.`
-        )
-        break
-      }
+    // Allowlist is language-aware: selectedIngredients are stored in English, but
+    // swap candidate ingredient names may come back in Korean, so accept both forms.
+    const allowedSet = new Set<string>()
+    for (const i of allowedIngredients) {
+      allowedSet.add(i.toLowerCase())
+      allowedSet.add(localizeIngredientName(i, "ko").toLowerCase())
+    }
+    // Reject only when the candidate entirely ignores the user's selected ingredients
+    // (none of its ingredients are on the allowlist), not when a single incidental
+    // item like oil/seasoning is unlisted.
+    const hasAllowedIngredient = candidate.ingredients.some((ingredient) =>
+      allowedSet.has(ingredient.name.toLowerCase())
+    )
+    if (candidate.ingredients.length > 0 && !hasAllowedIngredient) {
+      reasons.push(
+        "None of the candidate's ingredients are in the user's selected ingredients."
+      )
     }
   }
 
