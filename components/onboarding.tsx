@@ -146,7 +146,7 @@ const budgetPresets: {
   {
     id: "low",
     label: "가성비",
-    weeklyCost: "~$50/week · simple staples",
+    weeklyCost: "주당 ~$50 · 기본 식재료 위주",
     items: [
       "Chicken breast",
       "Eggs",
@@ -167,7 +167,7 @@ const budgetPresets: {
   {
     id: "medium",
     label: "적당한 지출",
-    weeklyCost: "~$80/week · mix of basics and upgrades",
+    weeklyCost: "주당 ~$80 · 기본 + 약간의 업그레이드",
     items: [
       "Chicken breast",
       "Salmon",
@@ -192,7 +192,7 @@ const budgetPresets: {
   {
     id: "high",
     label: "다양하게",
-    weeklyCost: "~$120/week · wider ingredient range",
+    weeklyCost: "주당 ~$120 · 더 다양한 재료 구성",
     items: [
       "Ribeye",
       "Salmon",
@@ -612,14 +612,14 @@ export function Onboarding() {
   const ingredientMinimumMessage = "계속하려면 단백질 2개, 탄수화물 1개, 지방 1개 이상 선택하세요"
 
   const sustainabilityLabel = useMemo(() => {
-    if (!selectedCatalogItems.length) return "Pick ingredients to see a cost mix"
+    if (!selectedCatalogItems.length) return "재료를 고르면 가격 구성을 보여드려요"
     const scoreMap: Record<CostTier, number> = { "$": 1, "$$": 2, "$$$": 3 }
     const avgScore =
       selectedCatalogItems.reduce((sum, item) => sum + scoreMap[item.cost], 0) / selectedCatalogItems.length
 
-    if (avgScore <= 1.5) return "Mostly budget-friendly"
-    if (avgScore <= 2.2) return "Mix of price points"
-    return "Includes pricier picks"
+    if (avgScore <= 1.5) return "대체로 가성비 좋은 구성"
+    if (avgScore <= 2.2) return "다양한 가격대가 섞인 구성"
+    return "다소 비싼 재료 포함"
   }, [selectedCatalogItems])
 
   const handleNumericInput = (value: string, setter: (val: string) => void) => {
@@ -745,13 +745,13 @@ export function Onboarding() {
     const current = parseFloat(weight)
     if (!Number.isFinite(target) || !Number.isFinite(current) || !selectedGoal) return null
     if (selectedGoal === "lose-fat" && target >= current) {
-      return `Your target weight should be lower than your current weight (${current}${unit}) for a Lose Fat goal.`
+      return `체지방 감량 목표에서는 목표 체중이 현재 체중(${current}${unit})보다 낮아야 해요.`
     }
     if (selectedGoal === "gain-muscle" && target <= current) {
-      return "Your target weight should be higher than your current weight for a Gain Muscle goal."
+      return "근육 증가 목표에서는 목표 체중이 현재 체중보다 높아야 해요."
     }
     if (selectedGoal === "recomposition" && target >= current) {
-      return "For recomposition, use a lower scale target or skip this step and focus on body composition instead."
+      return "린 리컴프에서는 더 낮은 목표 체중을 쓰거나, 이 단계를 건너뛰고 체성분 변화에 집중하세요."
     }
     return null
   })()
@@ -774,30 +774,30 @@ export function Onboarding() {
 
   const stepFourSupportingCopy =
     isLoseFatGoal
-      ? "If you want, add a goal weight and choose a pace. We’ll use it to estimate a rough timeline, or you can skip this and focus on habits first."
+      ? "원한다면 목표 체중과 속도를 정해보세요. 대략적인 일정을 추정하는 데 사용하며, 건너뛰고 먼저 습관에 집중해도 좋아요."
       : isGainMuscleGoal
-        ? "If you have a goal weight in mind, add it here as a reference point. You can also skip this and focus on steady progress first."
+        ? "생각해둔 목표 체중이 있다면 참고용으로 입력하세요. 건너뛰고 먼저 꾸준한 진전에 집중해도 좋아요."
         : isRecompositionGoal
-          ? "If you want a loose scale reference, add it here. We’ll use a gentle recomposition approach, or you can skip this and focus on consistency first."
-          : "Add a target if you want a reference point for your plan, or skip this and keep things simple."
+          ? "느슨한 체중 기준이 필요하면 여기에 입력하세요. 부드러운 리컴프 방식을 사용하며, 건너뛰고 먼저 꾸준함에 집중해도 좋아요."
+          : "플랜의 기준점이 필요하면 목표를 입력하고, 아니면 건너뛰고 간단하게 진행하세요."
 
   const stepFourTargetDescription =
     isLoseFatGoal
-      ? "Add a number if you want a rough timeline. If not, use the skip option below and focus on the routine."
+      ? "대략적인 일정을 원하면 숫자를 입력하세요. 아니라면 아래 건너뛰기를 눌러 루틴에 집중하세요."
       : isGainMuscleGoal
-        ? "Add a number if you have a goal in mind. If not, use the skip option below and keep the focus on steady progress."
+        ? "생각해둔 목표가 있으면 숫자를 입력하세요. 아니라면 아래 건너뛰기를 눌러 꾸준한 진전에 집중하세요."
         : isRecompositionGoal
-          ? "Add a number if you want a loose scale reference. If not, use the skip option below and focus on consistency."
-          : "Add a target if you want one, or use the skip option below."
+          ? "느슨한 체중 기준을 원하면 숫자를 입력하세요. 아니라면 아래 건너뛰기를 눌러 꾸준함에 집중하세요."
+          : "원하면 목표를 입력하고, 아니면 아래 건너뛰기를 사용하세요."
 
   const stepFourTargetHelper =
     isLoseFatGoal
-      ? "Use the skip option below if you’d rather not set a scale target yet."
+      ? "아직 체중 목표를 정하고 싶지 않다면 아래 건너뛰기를 사용하세요."
       : isGainMuscleGoal
-        ? "Use the skip option below if you’d rather focus on consistent training and meals first."
+        ? "먼저 꾸준한 운동과 식사에 집중하고 싶다면 아래 건너뛰기를 사용하세요."
         : isRecompositionGoal
-          ? "Use the skip option below if you’d rather focus on body composition, not scale changes."
-          : "Use the skip option below if you’d rather keep this flexible."
+          ? "체중 변화보다 체성분에 집중하고 싶다면 아래 건너뛰기를 사용하세요."
+          : "유연하게 두고 싶다면 아래 건너뛰기를 사용하세요."
 
   const fetchIngredientViaClaude = async () => {
     const query = search.trim()
@@ -827,7 +827,7 @@ export function Onboarding() {
         setSelectedClaudeCategory(null)
       }
     } catch {
-      window.alert("We couldn’t look up that ingredient right now. Try another name or pick from the list.")
+      window.alert("지금은 해당 재료를 찾을 수 없어요. 다른 이름으로 시도하거나 목록에서 선택하세요.")
     } finally {
       setFetchingIngredient(false)
     }
@@ -1042,16 +1042,16 @@ export function Onboarding() {
 
     if (!shouldValidate) return null
     if (!trimmed) {
-      return "Enter this so we can set a starting point."
+      return "시작점을 설정할 수 있도록 입력해 주세요."
     }
 
     const value = Number(trimmed)
     if (!Number.isFinite(value) || value <= 0) {
-      return "Use a number greater than 0."
+      return "0보다 큰 숫자를 입력하세요."
     }
 
     if (field === "bodyFat" && (value < 1 || value > 75)) {
-      return "Use a body fat estimate between 1 and 75."
+      return "체지방률은 1에서 75 사이로 입력하세요."
     }
 
     return null
@@ -1163,38 +1163,38 @@ export function Onboarding() {
             className="justify-start mb-3"
           >
             {step === "body"
-              ? "Back to setup options"
+              ? "설정 옵션으로 돌아가기"
               : step === "activity"
-                ? (firstStep === "quick-estimate" ? "Back to basics setup" : "Back to body stats")
+                ? (firstStep === "quick-estimate" ? "기본 설정으로 돌아가기" : "신체 정보로 돌아가기")
                 : step === "goal"
-                  ? "Back to activity"
+                  ? "활동량으로 돌아가기"
                   : step === "target-weight"
-                    ? "Back to goal"
+                    ? "목표로 돌아가기"
                     : step === "cuisine"
-                      ? "Back to target weight"
+                      ? "목표 체중으로 돌아가기"
                       : step === "diet"
-                        ? "Back to cuisines"
+                        ? "요리 선택으로 돌아가기"
                         : step === "ingredient-mode"
-                          ? "Back to diet style"
-                          : "Back to ingredient setup"}
+                          ? "식단 스타일로 돌아가기"
+                          : "재료 설정으로 돌아가기"}
           </OnboardingSecondaryActionRow>
         )}
 
         {step === "body" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 1 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 1단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                Use detailed body stats
+                상세 신체 정보 사용
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                Best if you have body fat or scan-based measurements. These give us a more precise calorie and protein target.
+                체지방률이나 인바디 측정값이 있다면 가장 좋아요. 더 정확한 칼로리·단백질 목표를 잡을 수 있어요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2.5">
-                  <Label>Gender</Label>
+                  <Label>성별</Label>
                   <OnboardingSegmentedGroup>
                     <button
                       type="button"
@@ -1202,7 +1202,7 @@ export function Onboarding() {
                       className={optionButtonClass(sex === "male")}
                       aria-pressed={sex === "male"}
                     >
-                      Male
+                      남성
                     </button>
                     <button
                       type="button"
@@ -1210,12 +1210,12 @@ export function Onboarding() {
                       className={optionButtonClass(sex === "female")}
                       aria-pressed={sex === "female"}
                     >
-                      Female
+                      여성
                     </button>
                   </OnboardingSegmentedGroup>
                 </div>
                 <div className="space-y-2.5">
-                  <Label>Measurement system</Label>
+                  <Label>단위 시스템</Label>
                   <OnboardingSegmentedGroup>
                     <button
                       type="button"
@@ -1223,7 +1223,7 @@ export function Onboarding() {
                       className={optionButtonClass(unitSystem === "metric")}
                       aria-pressed={unitSystem === "metric"}
                     >
-                      Metric
+                      미터법
                     </button>
                     <button
                       type="button"
@@ -1231,27 +1231,27 @@ export function Onboarding() {
                       className={optionButtonClass(unitSystem === "imperial")}
                       aria-pressed={unitSystem === "imperial"}
                     >
-                      Imperial
+                      야드파운드법
                     </button>
                   </OnboardingSegmentedGroup>
-                  <OnboardingFieldNote>This sets both your body inputs and recipe measurements.</OnboardingFieldNote>
+                  <OnboardingFieldNote>신체 입력값과 레시피 단위를 함께 설정해요.</OnboardingFieldNote>
                 </div>
               </div>
 
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Your body stats"
-                  description="Enter your numbers from an InBody scan, smart scale, or your best estimate."
+                  title="신체 정보"
+                  description="인바디 측정, 스마트 체중계, 또는 대략적인 추정값을 입력하세요."
                 />
 
                 <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] dark:border-border pt-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="weight" className={getBodyLabelClassName("weight")}>Weight ({unit})</Label>
+                    <Label htmlFor="weight" className={getBodyLabelClassName("weight")}>체중 ({unit})</Label>
                     <OnboardingBoundedInput
                       id="weight"
                       type="text"
                       inputMode="decimal"
-                      placeholder={unit === "kg" ? "e.g., 80" : "e.g., 175"}
+                      placeholder={unit === "kg" ? "예: 80" : "예: 175"}
                       value={weight}
                       onChange={(e) => handleNumericInput(e.target.value, setWeight)}
                       onFocus={() => setFocusedBodyField("weight")}
@@ -1260,16 +1260,16 @@ export function Onboarding() {
                       className={getBodyFieldClassName("weight", weight)}
                     />
                     <OnboardingFieldNote error={Boolean(weightError)}>
-                      {weightError ?? "Your current weight or best recent average."}
+                      {weightError ?? "현재 체중 또는 최근 평균값."}
                     </OnboardingFieldNote>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="bodyFat" className={getBodyLabelClassName("bodyFat")}>Body Fat (%)</Label>
+                    <Label htmlFor="bodyFat" className={getBodyLabelClassName("bodyFat")}>체지방률 (%)</Label>
                     <OnboardingBoundedInput
                       id="bodyFat"
                       type="text"
                       inputMode="decimal"
-                      placeholder="e.g., 18"
+                      placeholder="예: 18"
                       value={bodyFat}
                       onChange={(e) => handleNumericInput(e.target.value, setBodyFat)}
                       onFocus={() => setFocusedBodyField("bodyFat")}
@@ -1278,16 +1278,16 @@ export function Onboarding() {
                       className={getBodyFieldClassName("bodyFat", bodyFat)}
                     />
                     <OnboardingFieldNote error={Boolean(bodyFatError)}>
-                      {bodyFatError ?? "From an InBody scan, smart scale, or your best estimate."}
+                      {bodyFatError ?? "인바디 측정, 스마트 체중계, 또는 대략적인 추정값."}
                     </OnboardingFieldNote>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="muscleMass" className={getBodyLabelClassName("muscleMass")}>Muscle Mass ({unit})</Label>
+                    <Label htmlFor="muscleMass" className={getBodyLabelClassName("muscleMass")}>근육량 ({unit})</Label>
                     <OnboardingBoundedInput
                       id="muscleMass"
                       type="text"
                       inputMode="decimal"
-                      placeholder={unit === "kg" ? "e.g., 65" : "e.g., 140"}
+                      placeholder={unit === "kg" ? "예: 65" : "예: 140"}
                       value={muscleMass}
                       onChange={(e) => handleNumericInput(e.target.value, setMuscleMass)}
                       onFocus={() => setFocusedBodyField("muscleMass")}
@@ -1296,7 +1296,7 @@ export function Onboarding() {
                       className={getBodyFieldClassName("muscleMass", muscleMass)}
                     />
                     <OnboardingFieldNote error={Boolean(muscleMassError)}>
-                      {muscleMassError ?? "From an InBody scan or smart scale. If you don&apos;t have it, the basics setup estimates this for you."}
+                      {muscleMassError ?? "인바디 측정이나 스마트 체중계 값. 없다면 기본 설정에서 대신 추정해 드려요."}
                     </OnboardingFieldNote>
                   </div>
                 </div>
@@ -1317,15 +1317,15 @@ export function Onboarding() {
                   {isAdvancingBody ? (
                     <span className="inline-flex items-center gap-2">
                       <Spinner className="size-4 text-[#fffaf4]" />
-                      Setting up your targets...
+                      목표를 설정하는 중...
                     </span>
                   ) : (
-                    "Set my targets"
+                    "목표 설정하기"
                   )}
                 </OnboardingPrimaryCta>
 
                 <p className="text-center text-[11px] leading-[1.45] text-[#7a8079] dark:text-muted-foreground">
-                  Use your best estimate for now. You can update these details later.
+                  지금은 대략적인 추정값을 사용하세요. 나중에 수정할 수 있어요.
                 </p>
               </div>
             </CardContent>
@@ -1336,10 +1336,10 @@ export function Onboarding() {
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-4 pt-5 sm:px-7 sm:pt-7">
               <CardTitle className="text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                How do you want to start?
+                어떻게 시작할까요?
               </CardTitle>
               <CardDescription className="mt-2 max-w-sm text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                Choose how you&apos;d like to set up your calorie targets.
+                칼로리 목표를 설정할 방법을 선택하세요.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 px-5 pb-6 sm:px-7">
@@ -1353,8 +1353,8 @@ export function Onboarding() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-semibold text-[#243128] dark:text-foreground">Estimate</div>
-                    <div className="mt-0.5 text-sm leading-5 text-[#4f5e56] dark:text-muted-foreground">Estimate body composition from your body type</div>
+                    <div className="text-[15px] font-semibold text-[#243128] dark:text-foreground">추정하기</div>
+                    <div className="mt-0.5 text-sm leading-5 text-[#4f5e56] dark:text-muted-foreground">체형으로 체성분을 추정해요</div>
                   </div>
                 </div>
               </button>
@@ -1369,8 +1369,8 @@ export function Onboarding() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">Precise (InBody)</div>
-                    <div className="mt-0.5 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">Enter exact InBody measurements</div>
+                    <div className="text-[15px] font-semibold text-[#28312b] dark:text-foreground">정밀 (인바디)</div>
+                    <div className="mt-0.5 text-sm leading-5 text-[#5e665f] dark:text-muted-foreground">정확한 인바디 측정값 입력</div>
                   </div>
                 </div>
               </button>
@@ -1384,32 +1384,32 @@ export function Onboarding() {
             iconPosition="start"
             className="justify-start mb-3"
           >
-            Back to setup options
+            설정 옵션으로 돌아가기
           </OnboardingSecondaryActionRow>
         )}
 
         {step === "quick-estimate" && entryChosen && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 1 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 1단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                Start with the basics
+                기본 정보부터 시작
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                A faster setup using height, weight, age, and body type.
+                키, 체중, 나이, 체형으로 더 빠르게 설정해요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Basic details"
-                  description="Enter your best estimates — you can update these anytime."
+                  title="기본 정보"
+                  description="대략적인 추정값을 입력하세요 — 언제든 수정할 수 있어요."
                 />
 
                 <div className="mt-3.5 grid gap-4 border-t border-[#eadfce] dark:border-border pt-3">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2.5">
-                      <Label>Sex</Label>
+                      <Label>성별</Label>
                       <OnboardingSegmentedGroup>
                         <button
                           type="button"
@@ -1417,7 +1417,7 @@ export function Onboarding() {
                           className={optionButtonClass(sex === "male")}
                           aria-pressed={sex === "male"}
                         >
-                          Male
+                          남성
                         </button>
                         <button
                           type="button"
@@ -1425,12 +1425,12 @@ export function Onboarding() {
                           className={optionButtonClass(sex === "female")}
                           aria-pressed={sex === "female"}
                         >
-                          Female
+                          여성
                         </button>
                       </OnboardingSegmentedGroup>
                     </div>
                     <div className="space-y-2.5">
-                      <Label>Measurement system</Label>
+                      <Label>단위 시스템</Label>
                       <OnboardingSegmentedGroup>
                         <button
                           type="button"
@@ -1438,7 +1438,7 @@ export function Onboarding() {
                           className={optionButtonClass(unitSystem === "metric")}
                           aria-pressed={unitSystem === "metric"}
                         >
-                          Metric
+                          미터법
                         </button>
                         <button
                           type="button"
@@ -1446,32 +1446,32 @@ export function Onboarding() {
                           className={optionButtonClass(unitSystem === "imperial")}
                           aria-pressed={unitSystem === "imperial"}
                         >
-                          Imperial
+                          야드파운드법
                         </button>
                       </OnboardingSegmentedGroup>
-                      <OnboardingFieldNote>This switches both your estimate inputs and recipe measurements.</OnboardingFieldNote>
+                      <OnboardingFieldNote>추정 입력값과 레시피 단위를 함께 전환해요.</OnboardingFieldNote>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label htmlFor="quickWeight">Weight ({unit})</Label>
+                      <Label htmlFor="quickWeight">체중 ({unit})</Label>
                       <OnboardingBoundedInput
                         id="quickWeight"
                         type="text"
                         inputMode="decimal"
-                        placeholder={unit === "kg" ? "e.g., 80" : "e.g., 175"}
+                        placeholder={unit === "kg" ? "예: 80" : "예: 175"}
                         value={weight}
                         onChange={(e) => handleNumericInput(e.target.value, setWeight)}
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="quickHeight">Height ({unit === "kg" ? "cm" : "in"})</Label>
+                      <Label htmlFor="quickHeight">키 ({unit === "kg" ? "cm" : "in"})</Label>
                       <OnboardingBoundedInput
                         id="quickHeight"
                         type="text"
                         inputMode="decimal"
-                        placeholder={unit === "kg" ? "e.g., 175" : "e.g., 69"}
+                        placeholder={unit === "kg" ? "예: 175" : "예: 69"}
                         value={quickHeight}
                         onChange={(e) => handleNumericInput(e.target.value, setQuickHeight)}
                       />
@@ -1479,12 +1479,12 @@ export function Onboarding() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="quickAge">Age</Label>
+                    <Label htmlFor="quickAge">나이</Label>
                     <OnboardingBoundedInput
                       id="quickAge"
                       type="text"
                       inputMode="numeric"
-                      placeholder="e.g., 30"
+                      placeholder="예: 30"
                       value={quickAge}
                       onChange={(e) => handleNumericInput(e.target.value, setQuickAge)}
                     />
@@ -1494,8 +1494,8 @@ export function Onboarding() {
 
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Body type"
-                  description="Pick the closest match. It doesn&apos;t need to be perfect."
+                  title="체형"
+                  description="가장 비슷한 것을 고르세요. 완벽하지 않아도 괜찮아요."
                 />
 
                 <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-3">
@@ -1546,24 +1546,24 @@ export function Onboarding() {
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={applyQuickEstimate}
                   >
-                    Set my targets
+                    목표 설정하기
                   </OnboardingPrimaryCta>
                 </div>
               </div>
 
               <p className="text-center text-[11px] leading-[1.45] text-[#7a8079] dark:text-muted-foreground">
-                You can refine this later with detailed stats.
+                나중에 상세 정보로 더 정교하게 조정할 수 있어요.
               </p>
 
               <div className="border-t border-[#eadfce] dark:border-border pt-4 text-center">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Use detailed body stats</p>
-                <p className="mt-1 text-xs leading-5 text-[#7a8079] dark:text-muted-foreground">Best if you have body fat or scan-based measurements.</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">상세 신체 정보 사용</p>
+                <p className="mt-1 text-xs leading-5 text-[#7a8079] dark:text-muted-foreground">체지방률이나 인바디 측정값이 있다면 가장 좋아요.</p>
                 <button
                   type="button"
                   onClick={() => setStep("body")}
                   className="mt-2 text-sm font-medium text-[#7a5b41] dark:text-muted-foreground underline underline-offset-2 hover:text-[#5e3e27] dark:hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:rounded"
                 >
-                  I have detailed body stats (InBody, smart scale, etc.)
+                  상세 신체 정보가 있어요 (인바디, 스마트 체중계 등)
                 </button>
               </div>
 
@@ -1573,7 +1573,7 @@ export function Onboarding() {
                   onClick={handleStartOver}
                   className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20 focus-visible:rounded"
                 >
-                  Start over
+                  처음부터 다시
                 </button>
               </div>
             </CardContent>
@@ -1583,19 +1583,19 @@ export function Onboarding() {
         {step === "activity" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 2 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 2단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                How active is your week?
+                한 주가 얼마나 활동적인가요?
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                Pick the option that feels closest to a normal week. This helps us turn your body stats into a realistic calorie starting point, and you can update it later.
+                평소 한 주와 가장 비슷한 것을 고르세요. 신체 정보를 현실적인 칼로리 시작점으로 바꾸는 데 도움이 되며, 나중에 수정할 수 있어요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Weekly activity"
-                  description="Choose the option that sounds most like a regular week."
+                  title="주간 활동량"
+                  description="평소 한 주와 가장 비슷하게 들리는 것을 고르세요."
                 />
 
                 <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
@@ -1631,7 +1631,7 @@ export function Onboarding() {
               </div>
 
               <OnboardingFieldNote>
-                This helps us match your meal plan to how your week actually feels, not a perfect routine.
+                완벽한 루틴이 아니라 실제 한 주의 느낌에 맞춰 식단을 구성하는 데 도움이 돼요.
               </OnboardingFieldNote>
 
               <div
@@ -1645,7 +1645,7 @@ export function Onboarding() {
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={moveToNextStep}
                   >
-                    Continue — {activityLevels.find(l => l.id === selectedActivityLevel)?.label}
+                    계속 — {activityLevels.find(l => l.id === selectedActivityLevel)?.label}
                   </OnboardingPrimaryCta>
                 </div>
               </div>
@@ -1656,19 +1656,19 @@ export function Onboarding() {
         {step === "goal" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 3 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 3단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                What are you aiming for?
+                무엇을 목표로 하나요?
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                No wrong answer here. This just nudges calories and macros in the right direction.
+                정답은 없어요. 칼로리와 영양소를 알맞은 방향으로 살짝 조정할 뿐이에요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Your goal"
-                  description="Choose the direction you want this plan to support first."
+                  title="목표"
+                  description="이 플랜이 먼저 지원했으면 하는 방향을 고르세요."
                 />
 
                 <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
@@ -1709,7 +1709,7 @@ export function Onboarding() {
               </div>
 
               <OnboardingFieldNote>
-                You can fine-tune your target weight and pace on the next step.
+                목표 체중과 속도는 다음 단계에서 세밀하게 조정할 수 있어요.
               </OnboardingFieldNote>
 
               <div
@@ -1723,7 +1723,7 @@ export function Onboarding() {
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={moveToNextStep}
                   >
-                    Continue — {goals.find(g => g.id === selectedGoal)?.label}
+                    계속 — {goals.find(g => g.id === selectedGoal)?.label}
                   </OnboardingPrimaryCta>
                 </div>
               </div>
@@ -1734,9 +1734,9 @@ export function Onboarding() {
         {step === "target-weight" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 4 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 4단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                Set your target weight (optional)
+                목표 체중 설정 (선택)
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
                 {stepFourSupportingCopy}
@@ -1745,17 +1745,17 @@ export function Onboarding() {
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Target weight"
+                  title="목표 체중"
                   description={stepFourTargetDescription}
                 />
 
                 <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] dark:border-border pt-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="target-weight">Target weight ({unit})</Label>
+                    <Label htmlFor="target-weight">목표 체중 ({unit})</Label>
                     <OnboardingBoundedInput
                       id="target-weight"
                       inputMode="decimal"
-                      placeholder={unit === "kg" ? "e.g. 72" : "e.g. 160"}
+                      placeholder={unit === "kg" ? "예: 72" : "예: 160"}
                       value={targetWeightInput}
                       onChange={(e) => {
                         setTargetWeightSkipped(false)
@@ -1772,8 +1772,8 @@ export function Onboarding() {
               {isGainMuscleGoal && (
                 <div className={onboardingUi.sectionSurface}>
                   <OnboardingSectionHeadingRow
-                    title="Muscle gain approach"
-                    description="We&apos;ll use a steady calorie surplus of about 300 kcal to support muscle growth."
+                    title="근육 증가 방식"
+                    description="근육 성장을 돕기 위해 약 300kcal의 꾸준한 잉여 칼로리를 사용해요."
                   />
                 </div>
               )}
@@ -1781,16 +1781,16 @@ export function Onboarding() {
               {isLoseFatGoal && (
                 <div className={onboardingUi.sectionSurface}>
                   <OnboardingSectionHeadingRow
-                    title="Weight loss pace"
-                    description="Pick the pace that feels realistic for your week."
+                    title="감량 속도"
+                    description="한 주에 현실적으로 느껴지는 속도를 고르세요."
                   />
 
                   <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
                     {weightLossPaceOptions.map((opt) => {
                       const weekly =
                         unit === "kg"
-                          ? `~${opt.kgPerWeek}kg/week`
-                          : `~${(opt.kgPerWeek * 2.20462).toFixed(1)}lb/week`
+                          ? `주당 ~${opt.kgPerWeek}kg`
+                          : `주당 ~${(opt.kgPerWeek * 2.20462).toFixed(1)}lb`
 
                       return (
                         <button
@@ -1806,7 +1806,7 @@ export function Onboarding() {
                               weightLossPace === opt.id ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                             )}
                           >
-                            {opt.emoji} {opt.label} — {weekly} (deficit ~{opt.deficitKcal} kcal/day)
+                            {opt.emoji} {opt.label} — {weekly} (하루 ~{opt.deficitKcal} kcal 부족)
                           </div>
                           <div
                             className={cn(
@@ -1826,8 +1826,8 @@ export function Onboarding() {
               {isRecompositionGoal && (
                 <div className={onboardingUi.sectionSurface}>
                   <OnboardingSectionHeadingRow
-                    title="Recomposition approach"
-                    description="We&apos;ll use a gentle calorie deficit and adapt as your body changes over time."
+                    title="리컴프 방식"
+                    description="부드러운 칼로리 부족을 사용하고, 시간에 따라 몸이 변하면 맞춰 조정해요."
                   />
                 </div>
               )}
@@ -1835,7 +1835,7 @@ export function Onboarding() {
               {macroPreview?.calorieFloorApplied &&
                 (isLoseFatGoal || isRecompositionGoal) && (
                   <OnboardingFieldNote error>
-                    We&apos;ve adjusted your target to stay above the minimum safe intake.
+                    최소 안전 섭취량 이상을 유지하도록 목표를 조정했어요.
                   </OnboardingFieldNote>
                 )}
 
@@ -1848,7 +1848,7 @@ export function Onboarding() {
                   }}
                   className="whitespace-normal break-words py-3 leading-snug"
                 >
-                  I&apos;ll focus on habits, not numbers
+                  숫자보다 습관에 집중할게요
                 </OnboardingSecondaryActionRow>
                 <OnboardingPrimaryCta
                   className={cn(
@@ -1859,7 +1859,7 @@ export function Onboarding() {
                   onClick={moveToNextStep}
                   disabled={!targetWeightStepValid}
                 >
-                  Continue with this target
+                  이 목표로 계속
                 </OnboardingPrimaryCta>
               </div>
             </CardContent>
@@ -1869,19 +1869,19 @@ export function Onboarding() {
         {step === "cuisine" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 5 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 5단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                What kind of food do you usually eat?
+                평소 어떤 음식을 드시나요?
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                Pick one or two cuisines that feel closest to your real week. We&apos;ll lean toward foods you can actually find, afford, and want to keep eating.
+                실제 한 주와 가장 가까운 요리를 한두 개 고르세요. 실제로 구할 수 있고, 부담 없고, 계속 먹고 싶은 음식 위주로 구성해요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Cuisine preferences"
-                  description="Choose one or two styles so the plan feels familiar from the start."
+                  title="요리 취향"
+                  description="처음부터 익숙하게 느껴지도록 한두 가지 스타일을 고르세요."
                 />
 
                 <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-2.5">
@@ -1926,10 +1926,10 @@ export function Onboarding() {
 
               <OnboardingFieldNote>
                 {selectedCuisines.length === 0
-                  ? "Pick at least one. You can choose up to two cuisines."
+                  ? "최소 하나를 고르세요. 요리는 최대 두 개까지 선택할 수 있어요."
                   : selectedCuisines.length === 1
-                    ? "You can add one more cuisine if your meals usually mix styles."
-                    : "Two cuisines selected. We’ll balance your plan across both styles."}
+                    ? "평소 여러 스타일을 섞어 드신다면 요리를 하나 더 추가할 수 있어요."
+                    : "두 가지 요리를 선택했어요. 두 스타일을 균형 있게 반영할게요."}
               </OnboardingFieldNote>
 
               <div className="space-y-2.5 pt-0.5">
@@ -1942,7 +1942,7 @@ export function Onboarding() {
                   onClick={moveToNextStep}
                   disabled={selectedCuisines.length < 1}
                 >
-                  {selectedCuisines.length > 1 ? "Continue with these cuisines" : "Continue with this cuisine"}
+                  {selectedCuisines.length > 1 ? "이 요리들로 계속" : "이 요리로 계속"}
                 </OnboardingPrimaryCta>
               </div>
             </CardContent>
@@ -1952,19 +1952,19 @@ export function Onboarding() {
         {step === "diet" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 6 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 6단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                How do you like to eat?
+                어떻게 드시는 걸 좋아하나요?
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                Keep it simple: choose the style that sounds easiest to stick with, and we&apos;ll show a rough macro starting point below.
+                간단하게 — 가장 지키기 쉬울 것 같은 스타일을 고르면, 아래에 대략적인 영양소 시작점을 보여드려요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Diet style"
-                  description="Pick the style that feels most realistic for your day-to-day meals."
+                  title="식단 스타일"
+                  description="일상 식사에 가장 현실적으로 느껴지는 스타일을 고르세요."
                 />
 
                 <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-3">
@@ -2002,14 +2002,14 @@ export function Onboarding() {
               </div>
 
               <OnboardingFieldNote>
-                Choose the style that sounds easiest to repeat in real life. You can adjust it later if your plan feels too restrictive.
+                실생활에서 가장 반복하기 쉬울 것 같은 스타일을 고르세요. 플랜이 너무 빡빡하면 나중에 조정할 수 있어요.
               </OnboardingFieldNote>
 
               {macroPreview && (
                 <div className={onboardingUi.sectionSurface}>
                   <OnboardingSectionHeadingRow
-                    title="Rough preview"
-                    description="A starting point based on your body stats, activity, goal, and diet style."
+                    title="대략 미리보기"
+                    description="신체 정보, 활동량, 목표, 식단 스타일을 바탕으로 한 시작점이에요."
                   />
 
                   <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#eadfce] dark:border-border pt-3 sm:grid-cols-4">
@@ -2018,15 +2018,15 @@ export function Onboarding() {
                       <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b] dark:text-foreground">{macroPreview.calories}</div>
                     </div>
                     <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Protein</div>
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">단백질</div>
                       <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b] dark:text-foreground">{macroPreview.macros.protein}g</div>
                     </div>
                     <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Carbs</div>
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">탄수화물</div>
                       <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b] dark:text-foreground">{macroPreview.macros.carbs}g</div>
                     </div>
                     <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5 text-center shadow-[0_8px_18px_-28px_rgba(40,49,43,0.24)]">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Fat</div>
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">지방</div>
                       <div className="mt-1 text-[1.1rem] font-semibold tabular-nums leading-none text-[#28312b] dark:text-foreground">{macroPreview.macros.fat}g</div>
                     </div>
                   </div>
@@ -2044,7 +2044,7 @@ export function Onboarding() {
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={moveToNextStep}
                   >
-                    Continue — {dietTypes.find(d => d.id === selectedDietType)?.label}
+                    계속 — {dietTypes.find(d => d.id === selectedDietType)?.label}
                   </OnboardingPrimaryCta>
                 </div>
               </div>
@@ -2055,19 +2055,19 @@ export function Onboarding() {
         {step === "ingredient-mode" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 7 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 7단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                Build your food list
+                식재료 목록 만들기
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-md pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                Use a starter list by budget, or choose ingredients yourself. Both paths work, so pick the one that feels easiest to start with.
+                예산별 추천 목록을 쓰거나, 직접 재료를 고르세요. 둘 다 괜찮으니 시작하기 편한 쪽을 고르세요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-5 sm:px-7 sm:pb-6">
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Ingredient setup"
-                  description="Choose how you want to build the ingredient list for your first plan."
+                  title="재료 설정"
+                  description="첫 플랜의 재료 목록을 어떻게 만들지 고르세요."
                 />
 
                 <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-3">
@@ -2084,7 +2084,7 @@ export function Onboarding() {
                       )}
                       suppressHydrationWarning
                     >
-                      Suggest a list for me
+                      목록을 추천해 주세요
                     </div>
                     <div
                       className={cn(
@@ -2093,7 +2093,7 @@ export function Onboarding() {
                       )}
                       suppressHydrationWarning
                     >
-                      Start from a budget-friendly, balanced, or wider-cost preset
+                      가성비, 균형, 또는 더 다양한 가격대 프리셋으로 시작해요
                     </div>
                   </button>
 
@@ -2113,7 +2113,7 @@ export function Onboarding() {
                       )}
                       suppressHydrationWarning
                     >
-                      I&apos;ll pick my own
+                      직접 고를게요
                     </div>
                     <div
                       className={cn(
@@ -2122,7 +2122,7 @@ export function Onboarding() {
                       )}
                       suppressHydrationWarning
                     >
-                      Browse by protein, carbs, fats, and vegetables
+                      단백질, 탄수화물, 지방, 채소별로 둘러봐요
                     </div>
                   </button>
                 </div>
@@ -2130,10 +2130,10 @@ export function Onboarding() {
 
               <OnboardingFieldNote>
                 {ingredientMode === "recommend"
-                  ? "Good for a faster start. You’ll choose a preset on the next step."
+                  ? "더 빠르게 시작하기 좋아요. 다음 단계에서 프리셋을 고르게 돼요."
                   : ingredientMode === "custom"
-                    ? "Good if you already know what you like to buy and cook."
-                    : "You can start simple with a preset or build the list yourself. Both lead to the same plan generator."}
+                    ? "평소 사고 요리하는 재료를 잘 안다면 좋아요."
+                    : "프리셋으로 간단히 시작하거나 직접 목록을 만들 수 있어요. 둘 다 같은 플랜 생성기로 이어져요."}
               </OnboardingFieldNote>
 
               <div
@@ -2148,10 +2148,10 @@ export function Onboarding() {
                     onClick={moveToNextStep}
                   >
                     {ingredientMode === "recommend"
-                      ? "Continue with a starter list"
+                      ? "추천 재료로 계속"
                       : ingredientMode === "custom"
-                        ? "Continue with custom ingredients"
-                        : "Continue with this setup"}
+                        ? "선택한 재료로 계속"
+                        : "이 구성으로 계속"}
                   </OnboardingPrimaryCta>
                 </div>
               </div>
@@ -2162,20 +2162,20 @@ export function Onboarding() {
         {step === "ingredients" && (
           <OnboardingMainCard>
             <CardHeader className="px-5 pb-3 pt-4 sm:px-7 sm:pt-6">
-              <OnboardingStepChip>Step 8 of 8</OnboardingStepChip>
+              <OnboardingStepChip>8단계 중 8단계</OnboardingStepChip>
               <CardTitle className="mt-3 text-[1.78rem] leading-[1.08] text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                Choose ingredients
+                재료 선택
               </CardTitle>
               <CardDescription className="mt-1.5 max-w-xl pr-1 text-[14px] leading-6 text-[#5e665f] dark:text-muted-foreground sm:text-[15px]" suppressHydrationWarning>
-                Build a list that feels realistic to shop for and repeat. For a workable plan, aim for at least 2 proteins, 1 carb, and 1 fat. Vegetables are a nice add-on.
+                장 보고 반복하기에 현실적인 목록을 만드세요. 쓸 만한 플랜을 위해 단백질 2개, 탄수화물 1개, 지방 1개 이상을 목표로 하세요. 채소는 더하면 좋아요.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4.5 px-5 pb-24 sm:px-7 sm:pb-8">
               {ingredientMode === "recommend" && (
                 <div className={onboardingUi.sectionSurface}>
                   <OnboardingSectionHeadingRow
-                    title="Starter presets"
-                    description="Choose the budget range that feels most realistic for your week."
+                    title="추천 프리셋"
+                    description="한 주에 가장 현실적으로 느껴지는 예산대를 고르세요."
                   />
 
                   <div className="mt-3.5 max-h-[40vh] space-y-1.5 overflow-y-auto border-t border-[#eadfce] dark:border-border pt-3 pr-1 sm:max-h-[44vh]">
@@ -2211,7 +2211,7 @@ export function Onboarding() {
                                 {preset.weeklyCost}
                               </div>
                             </div>
-                            <span className={ingredientPresetStatusBadgeClass(isActive)}>{isActive ? "Selected" : "Preset"}</span>
+                            <span className={ingredientPresetStatusBadgeClass(isActive)}>{isActive ? "선택됨" : "프리셋"}</span>
                           </div>
                           <div className="mt-1.5 text-xs leading-5 text-[#7a8079] dark:text-muted-foreground" suppressHydrationWarning>
                             {preset.items.join(", ")}
@@ -2227,8 +2227,8 @@ export function Onboarding() {
                 <>
                   <div className={onboardingUi.sectionSurface}>
                     <OnboardingSectionHeadingRow
-                      title="Find ingredients"
-                      description="Search for something specific first, or browse by category below."
+                      title="재료 찾기"
+                      description="먼저 특정 재료를 검색하거나, 아래에서 카테고리별로 둘러보세요."
                     />
 
                     <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
@@ -2244,7 +2244,7 @@ export function Onboarding() {
                               void fetchIngredientViaClaude()
                             }
                           }}
-                          placeholder="Search ingredients..."
+                          placeholder="재료 검색..."
                           className="pl-10"
                         />
                       </div>
@@ -2262,7 +2262,7 @@ export function Onboarding() {
                                 className="flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left text-sm text-[#28312b] dark:text-foreground transition-colors hover:bg-[#f7efe5] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
                               >
                                 <span className="min-w-0 break-words">{localizeIngredientName(item.name, language)}</span>
-                                <span className="shrink-0 text-[11px] font-medium text-[#7a8079] dark:text-muted-foreground">Tap to add</span>
+                                <span className="shrink-0 text-[11px] font-medium text-[#7a8079] dark:text-muted-foreground">탭하여 추가</span>
                               </button>
                             ))}
                           <Button
@@ -2273,12 +2273,12 @@ export function Onboarding() {
                             disabled={fetchingIngredient}
                             >
                             <Search className="mr-2 h-4 w-4 shrink-0 text-[#7a5b41] dark:text-muted-foreground" />
-                            {fetchingIngredient ? "Looking that up…" : "Can’t find it? Look up with AI"}
+                            {fetchingIngredient ? "찾는 중…" : "못 찾으셨나요? AI로 찾아보기"}
                           </Button>
                           {pendingClaudeIngredient !== null && (
                             <div className="mt-3 flex flex-col gap-2">
                               <p className="text-xs font-medium text-[#5e665f] dark:text-muted-foreground">
-                                What category is <span className="font-semibold text-[#28312b] dark:text-foreground">{localizeIngredientName(pendingClaudeIngredient.name, language)}</span>?
+                                <span className="font-semibold text-[#28312b] dark:text-foreground">{localizeIngredientName(pendingClaudeIngredient.name, language)}</span>은(는) 어떤 카테고리인가요?
                               </p>
                               {(() => {
                                 const tokens: string[] = []
@@ -2287,11 +2287,11 @@ export function Onboarding() {
                                 if (typeof pendingClaudeIngredient.carbs === "number") tokens.push(`C ${Math.round(pendingClaudeIngredient.carbs)}g`)
                                 if (typeof pendingClaudeIngredient.fat === "number") tokens.push(`F ${Math.round(pendingClaudeIngredient.fat)}g`)
                                 return tokens.length > 0 ? (
-                                  <p className="text-sm text-muted-foreground">{tokens.join(" · ")} <span className="text-xs">(per 100g)</span></p>
+                                  <p className="text-sm text-muted-foreground">{tokens.join(" · ")} <span className="text-xs">(100g당)</span></p>
                                 ) : null
                               })()}
                               <div className="grid grid-cols-4 gap-2">
-                                {([["Protein", "protein"], ["Carb", "carbs"], ["Fat", "fats"], ["Vegetable", "vegetables"]] as const).map(([label, value]) => (
+                                {([["단백질", "protein"], ["탄수화물", "carbs"], ["지방", "fats"], ["채소", "vegetables"]] as const).map(([label, value]) => (
                                   <button
                                     key={value}
                                     type="button"
@@ -2313,14 +2313,14 @@ export function Onboarding() {
                                 disabled={!selectedClaudeCategory}
                                 onClick={() => confirmClaudeIngredient(selectedClaudeCategory!)}
                               >
-                                Add {localizeIngredientName(pendingClaudeIngredient.name, language)}
+                                {localizeIngredientName(pendingClaudeIngredient.name, language)} 추가
                               </Button>
                               <button
                                 type="button"
                                 onClick={cancelClaudeIngredient}
                                 className="text-xs text-[#7a8079] dark:text-muted-foreground underline underline-offset-2 self-center"
                               >
-                                Cancel
+                                취소
                               </button>
                             </div>
                           )}
@@ -2331,8 +2331,8 @@ export function Onboarding() {
 
                   <div className={onboardingUi.sectionSurface}>
                     <OnboardingSectionHeadingRow
-                      title="Browse by category"
-                      description="Tap ingredients to add or remove them from your list."
+                      title="카테고리별 둘러보기"
+                      description="재료를 탭하여 목록에 추가하거나 제거하세요."
                     />
 
                     <div className="mt-3.5 grid gap-3 border-t border-[#eadfce] dark:border-border pt-3">
@@ -2379,12 +2379,12 @@ export function Onboarding() {
                                       <span>P {item.protein}</span>
                                       <span>C {item.carbs}</span>
                                       <span>F {item.fat}</span>
-                                      <span>per 100g</span>
+                                      <span>100g당</span>
                                     </div>
                                   </div>
                                   <div className="flex shrink-0 flex-col items-end gap-1">
                                     <span className={ingredientPriceBadgeClass(item.cost, selected)}>{item.cost}</span>
-                                    {selected ? <span className="text-[11px] font-medium text-[#617055] dark:text-primary">Added</span> : null}
+                                    {selected ? <span className="text-[11px] font-medium text-[#617055] dark:text-primary">추가됨</span> : null}
                                   </div>
                                 </div>
                               </button>
@@ -2398,40 +2398,40 @@ export function Onboarding() {
 
               <div className={onboardingUi.sectionSurface}>
                 <OnboardingSectionHeadingRow
-                  title="Selection snapshot"
-                  description="A quick check to keep the first meal plan practical."
+                  title="선택 요약"
+                  description="첫 식단을 실용적으로 유지하기 위한 간단한 확인이에요."
                 />
 
                 <div className="mt-3.5 grid gap-2.5 border-t border-[#eadfce] dark:border-border pt-3">
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Cost mix</div>
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">가격 구성</div>
                       <div className="mt-1 text-sm font-semibold leading-5 text-[#28312b] dark:text-foreground" suppressHydrationWarning>
                         {sustainabilityLabel}
                       </div>
                     </div>
                     <div className="rounded-[18px] border border-[#e1d5c5] dark:border-border bg-[#fffdf9] dark:bg-card px-3 py-2.5">
-                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">Selected</div>
+                      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7a8079] dark:text-muted-foreground">선택됨</div>
                       <div className="mt-1 text-sm font-semibold leading-5 text-[#28312b] dark:text-foreground" suppressHydrationWarning>
-                        {selectedIngredients.length} ingredients
+                        재료 {selectedIngredients.length}개
                       </div>
                     </div>
                   </div>
 
                   <div className="flex flex-wrap gap-1.5">
                     <span className={ingredientRequirementPillClass(ingredientCounts.protein >= 2)}>
-                      Proteins: {ingredientCounts.protein} {ingredientCounts.protein >= 2 ? "OK" : "Need 2"}
+                      단백질: {ingredientCounts.protein} {ingredientCounts.protein >= 2 ? "충족" : "2개 필요"}
                     </span>
                     <span className={ingredientRequirementPillClass(ingredientCounts.carbs >= 1)}>
-                      Carbs: {ingredientCounts.carbs} {ingredientCounts.carbs >= 1 ? "OK" : "Need 1"}
+                      탄수화물: {ingredientCounts.carbs} {ingredientCounts.carbs >= 1 ? "충족" : "1개 필요"}
                     </span>
                     <span className={ingredientRequirementPillClass(ingredientCounts.fats >= 1)}>
-                      Fats: {ingredientCounts.fats} {ingredientCounts.fats >= 1 ? "OK" : "Need 1"}
+                      지방: {ingredientCounts.fats} {ingredientCounts.fats >= 1 ? "충족" : "1개 필요"}
                     </span>
                   </div>
 
                   <OnboardingFieldNote>
-                    So far: Protein {ingredientCounts.protein}, Carbs {ingredientCounts.carbs}, Fats {ingredientCounts.fats}
+                    현재: 단백질 {ingredientCounts.protein}, 탄수화물 {ingredientCounts.carbs}, 지방 {ingredientCounts.fats}
                   </OnboardingFieldNote>
                 </div>
               </div>
@@ -2451,7 +2451,7 @@ export function Onboarding() {
                   disabled={!isIngredientSelectionValid}
                   suppressHydrationWarning
                 >
-                  Create my 7-day plan ({selectedIngredients.length} ingredients)
+                  7일 플랜 만들기 (재료 {selectedIngredients.length}개)
                 </OnboardingPrimaryCta>
               </div>
             </CardContent>
