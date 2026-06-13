@@ -29,23 +29,23 @@ import {
 } from "lucide-react"
 
 const goals: { id: Goal; label: string; description: string; icon: React.ReactNode }[] = [
-  { id: "lose-fat", label: "Lose Fat", description: "Slightly fewer calories, with protein to help you stay full", icon: <TrendingUp className="h-6 w-6" /> },
-  { id: "gain-muscle", label: "Gain Muscle", description: "A bit more fuel to support strength work and recovery", icon: <Dumbbell className="h-6 w-6" /> },
-  { id: "recomposition", label: "Lean Recomposition", description: "Steady eating with room to train and trim fat over time", icon: <RefreshCw className="h-6 w-6" /> },
+  { id: "lose-fat", label: "체지방 감량", description: "칼로리는 살짝 줄이고, 포만감을 위해 단백질은 충분히", icon: <TrendingUp className="h-6 w-6" /> },
+  { id: "gain-muscle", label: "근육 증가", description: "근력 운동과 회복을 돕도록 칼로리를 조금 더", icon: <Dumbbell className="h-6 w-6" /> },
+  { id: "recomposition", label: "린 리컴프(체지방↓근육↑)", description: "꾸준히 먹으면서 시간을 두고 체지방을 줄이고 근육은 유지", icon: <RefreshCw className="h-6 w-6" /> },
 ]
 
 const activityLevels: { id: ActivityLevel; label: string; description: string; multiplier: number }[] = [
-  { id: "sedentary", label: "Sedentary", description: "Mostly desk or home, little planned exercise", multiplier: 1.2 },
-  { id: "light", label: "Light activity", description: "Easy walks, light workouts, or on-your-feet days", multiplier: 1.375 },
-  { id: "moderate", label: "Moderate", description: "Regular workouts or active job, most weeks", multiplier: 1.55 },
-  { id: "very-active", label: "Very active", description: "Hard training or very physical days most of the week", multiplier: 1.725 },
+  { id: "sedentary", label: "거의 안 움직임", description: "주로 책상·집에서 생활, 계획된 운동은 거의 없음", multiplier: 1.2 },
+  { id: "light", label: "가벼운 활동", description: "가벼운 산책·운동, 또는 서서 일하는 날", multiplier: 1.375 },
+  { id: "moderate", label: "보통", description: "대부분 주에 규칙적인 운동 또는 활동적인 직업", multiplier: 1.55 },
+  { id: "very-active", label: "매우 활발", description: "주 대부분 강도 높은 훈련이나 육체 활동", multiplier: 1.725 },
 ]
 
 const dietTypes: { id: DietType; label: string; description: string }[] = [
-  { id: "keto", label: "Keto", description: "Fewer carbs, more fat—if that’s how you like to eat" },
-  { id: "high-protein", label: "High Protein", description: "Extra protein in each day’s mix" },
-  { id: "balanced", label: "Balanced", description: "Carbs, protein, and fat in an even split" },
-  { id: "intermittent-fasting", label: "Intermittent Fasting", description: "Fewer, larger meals in a set eating window" },
+  { id: "keto", label: "키토", description: "탄수화물은 적게, 지방은 많게 — 이런 식사를 선호한다면" },
+  { id: "high-protein", label: "고단백", description: "매일 단백질 비중을 더 높게" },
+  { id: "balanced", label: "균형", description: "탄수화물·단백질·지방을 고르게 배분" },
+  { id: "intermittent-fasting", label: "간헐적 단식", description: "정해진 시간대에 끼니는 적게, 양은 크게" },
 ]
 
 const weightLossPaceOptions: {
@@ -59,26 +59,26 @@ const weightLossPaceOptions: {
   {
     id: "steady",
     emoji: "🐢",
-    label: "Steady",
+    label: "천천히",
     kgPerWeek: 0.5,
     deficitKcal: 550,
-    hint: "Easier to maintain, minimal muscle loss",
+    hint: "유지하기 쉽고 근손실 최소",
   },
   {
     id: "moderate",
     emoji: "🚶",
-    label: "Moderate",
+    label: "보통",
     kgPerWeek: 0.75,
     deficitKcal: 820,
-    hint: "Balanced pace, good for most people",
+    hint: "균형 잡힌 속도, 대부분에게 적합",
   },
   {
     id: "aggressive",
     emoji: "🏃",
-    label: "Aggressive",
+    label: "빠르게",
     kgPerWeek: 1,
     deficitKcal: 1100,
-    hint: "Faster results, requires more discipline",
+    hint: "결과는 빠르지만 더 큰 절제가 필요",
   },
 ]
 
@@ -144,7 +144,7 @@ const budgetPresets: {
 }[] = [
   {
     id: "low",
-    label: "Budget-friendly",
+    label: "가성비",
     weeklyCost: "~$50/week · simple staples",
     items: [
       "Chicken breast",
@@ -165,7 +165,7 @@ const budgetPresets: {
   },
   {
     id: "medium",
-    label: "Balanced spend",
+    label: "적당한 지출",
     weeklyCost: "~$80/week · mix of basics and upgrades",
     items: [
       "Chicken breast",
@@ -190,7 +190,7 @@ const budgetPresets: {
   },
   {
     id: "high",
-    label: "More variety",
+    label: "다양하게",
     weeklyCost: "~$120/week · wider ingredient range",
     items: [
       "Ribeye",
@@ -216,10 +216,10 @@ const budgetPresets: {
 ]
 
 const categoryTabs: { id: IngredientCategory; label: string }[] = [
-  { id: "protein", label: "Protein" },
-  { id: "carbs", label: "Carbs" },
-  { id: "fats", label: "Fats" },
-  { id: "vegetables", label: "Vegetables" },
+  { id: "protein", label: "단백질" },
+  { id: "carbs", label: "탄수화물" },
+  { id: "fats", label: "지방" },
+  { id: "vegetables", label: "채소" },
 ]
 
 const stepOrder = ["body", "activity", "goal", "target-weight", "cuisine", "diet", "ingredient-mode", "ingredients"] as const
@@ -607,7 +607,7 @@ export function Onboarding() {
   )
 
   const isIngredientSelectionValid = ingredientCounts.protein >= 2 && ingredientCounts.carbs >= 1 && ingredientCounts.fats >= 1
-  const ingredientMinimumMessage = "Select at least 2 proteins, 1 carb, and 1 fat to continue"
+  const ingredientMinimumMessage = "계속하려면 단백질 2개, 탄수화물 1개, 지방 1개 이상 선택하세요"
 
   const sustainabilityLabel = useMemo(() => {
     if (!selectedCatalogItems.length) return "Pick ingredients to see a cost mix"
@@ -1498,10 +1498,10 @@ export function Onboarding() {
 
                 <div className="mt-3.5 grid gap-2 border-t border-[#eadfce] dark:border-border pt-3">
                   {([
-                    { id: "lean", label: "Slim", description: "Naturally lean build, lower body fat" },
-                    { id: "average", label: "Average", description: "Typical build, moderate body fat" },
-                    { id: "athletic", label: "Athletic", description: "Visibly muscular, active lifestyle" },
-                    { id: "heavy-set", label: "Heavy", description: "Carrying extra weight currently" },
+                    { id: "lean", label: "마른 편", description: "타고나게 마른 체형, 낮은 체지방" },
+                    { id: "average", label: "보통", description: "평균 체형, 보통 체지방" },
+                    { id: "athletic", label: "탄탄한 편", description: "눈에 띄게 근육질, 활동적인 생활" },
+                    { id: "heavy-set", label: "건장한 편", description: "현재 체중이 다소 있는 편" },
                   ] as const).map((item) => (
                     <button
                       key={item.id}
