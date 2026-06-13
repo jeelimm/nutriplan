@@ -372,12 +372,12 @@ Each meal: {"name":"","type":"","calories":0,
     const response = await Promise.race([
       anthropic.messages.create({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 4000,
+        max_tokens: 8000,
         system: "Output strict JSON only.",
         messages: [{ role: "user", content: prompt }],
       }),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Claude timeout")), 35000)
+        setTimeout(() => reject(new Error("Claude timeout")), 50000)
       ),
     ])
 
@@ -385,13 +385,29 @@ Each meal: {"name":"","type":"","calories":0,
     if (!text) throw new Error("Claude returned empty content")
 
     const jsonText = extractJSON(text)
-    const parsed = JSON.parse(jsonText) as {
+    let parsed: {
       breakfasts?: unknown
       lunches?: unknown
       dinners?: unknown
       breakfast?: unknown
       lunch?: unknown
       dinner?: unknown
+    }
+    try {
+      parsed = JSON.parse(jsonText)
+    } catch (parseErr) {
+      // Claude's JSON was likely cut off by max_tokens, producing invalid
+      // (unterminated) JSON. Surface the truncation explicitly.
+      const stopReason = response.stop_reason ?? "unknown"
+      console.error(
+        "[generate-meal-plan] Failed to parse Claude JSON response.",
+        `Response length: ${text.length} chars.`,
+        `stop_reason: ${stopReason}.`,
+        `Parse error: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`
+      )
+      throw new Error(
+        `Meal plan response was truncated (stop_reason: ${stopReason}) — increase max_tokens`
+      )
     }
 
     const breakfasts = coercePool(parsed.breakfasts ?? parsed.breakfast, "breakfasts")
