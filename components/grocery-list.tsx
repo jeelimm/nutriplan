@@ -8,6 +8,7 @@ import { ScrollToTop } from "@/components/scroll-to-top"
 import { useMealStore } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
 import { convertRecipeText } from "@/lib/recipe-units"
+import { useT } from "@/lib/i18n"
 import { ChevronLeft, ShoppingCart, Copy, Check, Beef, Carrot, Wheat, Milk, Droplets, Apple, Sparkles } from "lucide-react"
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -18,16 +19,6 @@ const categoryIcons: Record<string, React.ReactNode> = {
   fats: <Droplets className="h-5 w-5" />,
   fruits: <Apple className="h-5 w-5" />,
   spices: <Sparkles className="h-5 w-5" />,
-}
-
-const categoryLabels: Record<string, string> = {
-  protein: "Proteins",
-  vegetables: "Vegetables",
-  carbs: "Carbohydrates",
-  dairy: "Dairy",
-  fats: "Fats & Oils",
-  fruits: "Fruits",
-  spices: "Spices & Seasonings",
 }
 
 const categoryColors: Record<string, string> = {
@@ -52,6 +43,7 @@ interface GroceryListProps {
 
 export function GroceryList({ selectedDay }: GroceryListProps = {}) {
   const { weekPlan, setCurrentStep, userProfile } = useMealStore()
+  const t = useT()
   const [copied, setCopied] = useState(false)
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
   const prevFingerprintRef = useRef<string>("")
@@ -133,7 +125,7 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
 
   const handleCopy = async () => {
     const listText = groceryCategories
-      .map(cat => `${categoryLabels[cat.category] || cat.category}:\n${cat.items.map(item => `  - ${item.name}: ${item.amounts}`).join('\n')}`)
+      .map(cat => `${t(`grocery.category.${cat.category}`)}:\n${cat.items.map(item => `  - ${item.name}: ${item.amounts}`).join('\n')}`)
       .join('\n\n')
     
     await navigator.clipboard.writeText(listText)
@@ -256,7 +248,7 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
                     {categoryIcons[category] || <ShoppingCart className="h-4 w-4" />}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="break-words text-base font-semibold text-foreground">{categoryLabels[category] || category}</div>
+                    <div className="break-words text-base font-semibold text-foreground">{t(`grocery.category.${category}`)}</div>
                     <div className="text-xs text-muted-foreground">
                       {items.length} item{items.length === 1 ? "" : "s"}
                     </div>
