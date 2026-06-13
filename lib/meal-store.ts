@@ -152,7 +152,7 @@ const DEFAULT_DIET_TYPE: DietType = 'balanced'
 const DEFAULT_MEALS_PER_DAY = 3
 const DEFAULT_SEX: Sex = 'male'
 const DEFAULT_RECIPE_UNIT_SYSTEM: RecipeUnitSystem = 'metric'
-const DEFAULT_LANGUAGE: Language = 'en'
+const DEFAULT_LANGUAGE: Language = 'ko'
 
 const toNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value)
