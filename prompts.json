@@ -1,11 +1,11 @@
 {
-  "feature": "fix-meal-plan-truncation",
-  "branch": "feature/fix-meal-plan-truncation",
+  "feature": "pretendard-font",
+  "branch": "feature/pretendard-font",
   "prompts": [
     {
       "id": "1",
-      "description": "Fix intermittent meal-plan generation failure caused by max_tokens truncating the JSON response",
-      "prompt": "Edit only app/api/generate-meal-plan/route.ts. Problem: the Claude response is sometimes cut off by max_tokens, producing invalid JSON ('Unterminated string in JSON at position ~12000') and a 500, especially for high-variety plans. Make these changes: (1) Raise the Anthropic call's max_tokens from 4000 to 8000. (2) If there is a Promise.race hard timeout currently set to 35s (35000ms) guarding the Claude call, raise it to 50s (50000ms) — but do NOT touch `export const maxDuration` (leave it at 60). (3) Around the JSON.parse of Claude's response, if a parse error is thrown, log the response length and the stop_reason if available, then throw a clear error message like 'Meal plan response was truncated (stop_reason: max_tokens) — increase max_tokens'. Do NOT change the prompt content, the meal rotation logic, adjustMacros, validateMealPlan, or any other file. Verify: npm run build passes; generating a meal plan with the most-variety / most-expensive setting succeeds consistently across at least 3 attempts without a 500."
+      "description": "Load Pretendard Variable (dynamic subset) web font and make it the primary UI font",
+      "prompt": "Edit ONLY app/globals.css. Goal: replace the system-gothic fallback with the Pretendard web font so Korean and Latin text look polished. Make exactly two changes:\n(1) At the TOP of the file, immediately AFTER the existing `@import 'tailwindcss';` and `@import 'tw-animate-css';` lines and BEFORE any other rule (CSS requires every @import to come before non-import rules), add this line:\n@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');\n(2) Find the `--font-sans` custom property, currently:\n  --font-sans: \"Avenir Next\", \"Avenir\", \"Segoe UI\", \"Noto Sans KR\", \"Apple SD Gothic Neo\", sans-serif;\nand change it to:\n  --font-sans: \"Pretendard Variable\", \"Pretendard\", \"Apple SD Gothic Neo\", \"Segoe UI\", sans-serif;\nDo NOT modify styles/globals.css (it is unused — layout.tsx imports app/globals.css). Do NOT change --font-mono, any color tokens, spacing, or anything else. Do NOT install any npm package. Verify: `npm run build` passes; after a hard refresh, Korean text (e.g. the onboarding labels) and numbers render in Pretendard — visibly rounder and more even than the previous system gothic — and the body's existing `font-sans` class now resolves to Pretendard Variable."
     }
   ]
 }
