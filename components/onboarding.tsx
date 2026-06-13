@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
+import { localizeIngredientName } from "@/lib/ingredient-i18n"
 import {
   useMealStore,
   CUISINE_OPTIONS,
@@ -409,7 +410,8 @@ function OnboardingProgressIndicator({
 }
 
 export function Onboarding() {
-  const { setUserProfile, setCurrentStep, calculateMacros } = useMealStore()
+  const { setUserProfile, setCurrentStep, calculateMacros, appPrefs } = useMealStore()
+  const language = appPrefs.language
   const [step, setStep] = useState<OnboardingStep>("quick-estimate")
   const [firstStep, setFirstStep] = useState<"quick-estimate" | "body">("quick-estimate")
   const [sex, setSex] = useState<Sex>("male")
@@ -2259,7 +2261,7 @@ export function Onboarding() {
                                 onClick={() => addIngredientFromSearch(item.name)}
                                 className="flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left text-sm text-[#28312b] dark:text-foreground transition-colors hover:bg-[#f7efe5] dark:hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8a6e4b]/20"
                               >
-                                <span className="min-w-0 break-words">{item.name}</span>
+                                <span className="min-w-0 break-words">{localizeIngredientName(item.name, language)}</span>
                                 <span className="shrink-0 text-[11px] font-medium text-[#7a8079] dark:text-muted-foreground">Tap to add</span>
                               </button>
                             ))}
@@ -2276,7 +2278,7 @@ export function Onboarding() {
                           {pendingClaudeIngredient !== null && (
                             <div className="mt-3 flex flex-col gap-2">
                               <p className="text-xs font-medium text-[#5e665f] dark:text-muted-foreground">
-                                What category is <span className="font-semibold text-[#28312b] dark:text-foreground">{pendingClaudeIngredient.name}</span>?
+                                What category is <span className="font-semibold text-[#28312b] dark:text-foreground">{localizeIngredientName(pendingClaudeIngredient.name, language)}</span>?
                               </p>
                               {(() => {
                                 const tokens: string[] = []
@@ -2311,7 +2313,7 @@ export function Onboarding() {
                                 disabled={!selectedClaudeCategory}
                                 onClick={() => confirmClaudeIngredient(selectedClaudeCategory!)}
                               >
-                                Add {pendingClaudeIngredient.name}
+                                Add {localizeIngredientName(pendingClaudeIngredient.name, language)}
                               </Button>
                               <button
                                 type="button"
@@ -2370,7 +2372,7 @@ export function Onboarding() {
                                         selected ? "text-[#243128] dark:text-foreground" : "text-[#28312b] dark:text-foreground"
                                       )}
                                     >
-                                      {item.name}
+                                      {localizeIngredientName(item.name, language)}
                                     </div>
                                     <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-[#7a8079] dark:text-muted-foreground">
                                       <span>{item.calories} kcal</span>
