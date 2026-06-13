@@ -206,7 +206,8 @@ function firstTextFromMessageContent(
 
 function adjustMacros(
   days: any[],
-  targets: { calories: number; protein: number; carbs: number; fat: number }
+  targets: { calories: number; protein: number; carbs: number; fat: number },
+  language: "en" | "ko"
 ) {
   return days.map((day) => {
     if (!Array.isArray(day.meals) || day.meals.length === 0) return day
@@ -223,7 +224,7 @@ function adjustMacros(
       day.meals = day.meals.map((meal: any) => {
         if (!Array.isArray(meal.ingredients)) meal.ingredients = []
         meal.ingredients.push({
-          name: "Olive oil",
+          name: localizeIngredientName("Olive oil", language),
           amount: `${Math.round((fatPerMeal * 1000) / 884)}ml`,
           category: "Fat",
         })
@@ -238,7 +239,7 @@ function adjustMacros(
       day.meals = day.meals.map((meal: any) => {
         if (!Array.isArray(meal.ingredients)) meal.ingredients = []
         meal.ingredients.push({
-          name: "White rice",
+          name: localizeIngredientName("White rice", language),
           amount: `${Math.round((carbsPerMeal * 100) / 28)}g cooked`,
           category: "Carbs",
         })
@@ -404,7 +405,7 @@ Each meal: {"name":"","type":"","calories":0,
       protein: targetProtein,
       carbs: targetCarbs,
       fat: targetFat,
-    })
+    }, language)
     const normalizedDays = macroAdjustedDays.map((day: any) => ({
       ...day,
       meals: Array.isArray(day?.meals)
