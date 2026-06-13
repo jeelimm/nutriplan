@@ -18,6 +18,7 @@ import {
   type Meal,
 } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
+import { useT } from "@/lib/i18n"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
 import { ChevronLeft, ChevronRight, ShoppingCart, UtensilsCrossed, Check, ChevronDown, Clock, Sparkles, ArrowLeftRight, X, CalendarX, RotateCw } from "lucide-react"
@@ -67,6 +68,7 @@ export function DailyView() {
     appPrefs,
   } = useMealStore()
   const language = appPrefs.language
+  const t = useT()
   const [showGroceryList, setShowGroceryList] = useState(false)
   const [dailyListCopied, setDailyListCopied] = useState(false)
   const [expandedMeals, setExpandedMeals] = useState<Set<string>>(new Set())
@@ -640,6 +642,10 @@ export function DailyView() {
                         )}
                       >
                         {meal.name}
+                        <span className="ml-2 inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground align-middle">
+                          <Sparkles className="h-3 w-3" />
+                          {t('aiDisclosure.badge')}
+                        </span>
                       </div>
                     </div>
                     <div className="dashboard-kpi-tile shrink-0 px-3 py-2 text-right">
@@ -725,6 +731,10 @@ export function DailyView() {
 
                   {isExpanded && (
                     <div className="mt-4 space-y-4 border-t border-border pt-4">
+                      <span className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                        <Sparkles className="h-3 w-3" />
+                        {t('aiDisclosure.badge')}
+                      </span>
                       <div className="flex flex-wrap items-center gap-2 text-sm">
                         <div className="dashboard-meta-pill border-primary/15 bg-primary/10 text-foreground">
                           <Clock className="h-4 w-4 shrink-0 text-primary" />
