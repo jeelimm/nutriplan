@@ -39,6 +39,8 @@ export default function RootLayout({
             __html: `(function(){try{var s=localStorage.getItem('meal-plan-storage');if(s){var d=JSON.parse(s)?.state?.appPrefs?.darkMode;if(d)document.documentElement.classList.add('dark');}}catch(e){}})();`,
           }}
         />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
       </head>
       <body className="min-h-screen overflow-x-hidden font-sans antialiased">
         {children}
