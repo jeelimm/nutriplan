@@ -88,6 +88,23 @@ export function DailyView() {
   const [showLongWaitError, setShowLongWaitError] = useState(false)
   const [swapTarget, setSwapTarget] = useState<{ meal: Meal; dayIndex: number; mealIndex: number } | null>(null)
   const [skipDayDialogOpen, setSkipDayDialogOpen] = useState(false)
+  const [showAiDisclosure, setShowAiDisclosure] = useState(false)
+
+  // Korean law requires prior notice that this feature uses generative AI.
+  // Show a one-time disclosure the first time the daily meal view mounts.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (window.localStorage.getItem("nutriplan-ai-disclosure-seen") !== "1") {
+      setShowAiDisclosure(true)
+    }
+  }, [])
+
+  const dismissAiDisclosure = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("nutriplan-ai-disclosure-seen", "1")
+    }
+    setShowAiDisclosure(false)
+  }
 
   const convertWeightValue = (value: string, fromUnit: "kg" | "lbs", toUnit: "kg" | "lbs"): string => {
     if (fromUnit === toUnit || !value.trim()) return value
@@ -1120,6 +1137,18 @@ export function DailyView() {
           </div>
         </div>
       )}
+
+      <AlertDialog open={showAiDisclosure} onOpenChange={(open) => { if (!open) dismissAiDisclosure() }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('aiDisclosure.badge')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('aiDisclosure.notice')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={dismissAiDisclosure}>{t('aiDisclosure.gotIt')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {swapTarget && (
         <MealSwapSheet
