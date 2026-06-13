@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { NextResponse } from "next/server"
+import { localizeIngredientName } from "@/lib/ingredient-i18n"
 
 export const maxDuration = 60
 
@@ -324,7 +325,7 @@ export async function POST(req: Request) {
       return cleaned
     }
 
-    const ingredientsSnippet = selectedIngredients.slice(0, 10).join(",")
+    const ingredientsSnippet = selectedIngredients.slice(0, 10).map((n) => localizeIngredientName(n, language)).join(",")
 
     const isKoreanCuisine = /(^|,\s*)korean(\s*,|$)/i.test(cuisinePreference)
     const koreanStrictRule = isKoreanCuisine
