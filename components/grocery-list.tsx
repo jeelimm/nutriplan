@@ -7,6 +7,7 @@ import { GroceryItemRow } from "@/components/grocery-item-row"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { useMealStore } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
+import { localizeIngredientName } from "@/lib/ingredient-i18n"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { useT } from "@/lib/i18n"
 import { ChevronLeft, ShoppingCart, Copy, Check, Beef, Carrot, Wheat, Milk, Droplets, Apple, Sparkles } from "lucide-react"
@@ -42,7 +43,8 @@ interface GroceryListProps {
 }
 
 export function GroceryList({ selectedDay }: GroceryListProps = {}) {
-  const { weekPlan, setCurrentStep, userProfile } = useMealStore()
+  const { weekPlan, setCurrentStep, userProfile, appPrefs } = useMealStore()
+  const language = appPrefs.language
   const t = useT()
   const [copied, setCopied] = useState(false)
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
@@ -125,7 +127,7 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
 
   const handleCopy = async () => {
     const listText = groceryCategories
-      .map(cat => `${t(`grocery.category.${cat.category}`)}:\n${cat.items.map(item => `  - ${item.name}: ${item.amounts}`).join('\n')}`)
+      .map(cat => `${t(`grocery.category.${cat.category}`)}:\n${cat.items.map(item => `  - ${localizeIngredientName(item.name, language)}: ${item.amounts}`).join('\n')}`)
       .join('\n\n')
     
     await navigator.clipboard.writeText(listText)
@@ -267,7 +269,7 @@ export function GroceryList({ selectedDay }: GroceryListProps = {}) {
                     return (
                       <GroceryItemRow
                         key={item.name}
-                        name={item.name}
+                        name={localizeIngredientName(item.name, language)}
                         amount={item.amounts}
                         checked={isChecked}
                         showCheckbox

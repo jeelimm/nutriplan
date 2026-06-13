@@ -18,6 +18,7 @@ import {
   type Meal,
 } from "@/lib/meal-store"
 import { buildGroceryCategories } from "@/lib/grocery"
+import { localizeIngredientName } from "@/lib/ingredient-i18n"
 import { useT } from "@/lib/i18n"
 import { convertRecipeText } from "@/lib/recipe-units"
 import { getGoalWeightTimeline, toKg } from "@/lib/nutrition"
@@ -770,7 +771,7 @@ export function DailyView() {
                           {meal.ingredients.map((ingredient, i) => (
                             <li key={i} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
                               <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                              <span className="min-w-0 flex-1 break-words text-foreground">{ingredient.name}</span>
+                              <span className="min-w-0 flex-1 break-words text-foreground">{localizeIngredientName(ingredient.name, language)}</span>
                               <span className="break-words text-muted-foreground">— {convertRecipeText(ingredient.amount, recipeUnitSystem)}</span>
                             </li>
                           ))}
