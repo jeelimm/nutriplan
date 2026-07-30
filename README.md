@@ -86,4 +86,4 @@ Open [http://localhost:3000](http://localhost:3000) to see it running.
 
 ## Built By
 
-Built with zero prior coding experience using vibe coding — Claude + Cursor + v0.dev.
+Built solo from the PM seat. I wrote the PRDs in `docs/prd/` (10 revisions, v1.6 to v3.1), turned each into a prompt set (`prompts.json`, `run-prompts.sh`), and drove the build with Claude and Cursor. 200+ commits, 140+ deployments. I did not hand-write the code; I specced it, reviewed it, and shipped it.
